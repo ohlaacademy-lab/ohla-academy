@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#F8F8F7">
+  <meta name="description" content="Ohla Academy — Aprendé, Creá, Emprendé">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Ohla Academy">
+  <title>Ohla Academy</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #F8F8F7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* PANTALLA BIENVENIDA */
+    .screen { display: none; flex-direction: column; flex: 1; }
+    .screen.active { display: flex; }
+
+    .welcome-hero {
+      background: #F8F8F7;
+      padding: 60px 32px 40px;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ornament {
+      font-family: 'Cormorant Garamond', serif;
+      color: #C4723A;
+      font-size: 22px;
+      letter-spacing: 6px;
+      opacity: 0.7;
+      margin-bottom: 12px;
+    }
+
+    .logo-main {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      font-weight: 700;
+      color: #5F5E5A;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .logo-main span { color: #C4723A; }
+
+    .logo-sub {
+      font-family: 'Lato', sans-serif;
+      font-size: 11px;
+      letter-spacing: 8px;
+      color: #C4723A;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .hero-divider {
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #C4723A, transparent);
+      margin: 24px auto;
+    }
+
+    .hero-frase {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      color: #5F5E5A;
+      line-height: 1.6;
+      font-style: italic;
+      padding: 0 16px;
+    }
+
+    .hero-firma {
+      font-size: 12px;
+      color: #888780;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+
+    .welcome-footer {
+      padding: 32px 28px 48px;
+      background: #fff;
+      border-top: 1px solid #F0EDE8;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: #C4723A;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: #A85E2A; }
+
+    .btn-secondary {
+      width: 100%;
+      background: transparent;
+      color: #5F5E5A;
+      border: 1px solid #D0CEC8;
+      border-radius: 12px;
+      padding: 14px;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: #C4723A; color: #C4723A; }
+
+    /* PANTALLA LOGIN */
+    .login-header {
+      background: #F8F8F7;
+      padding: 48px 28px 28px;
+      text-align: center;
+      border-bottom: 1px solid #F0EDE8;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: none;
+      border: none;
+      color: #C4723A;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .login-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #5F5E5A;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: #888780;
+      margin-top: 4px;
+    }
+
+    .login-body {
+      padding: 28px 28px 48px;
+      flex: 1;
+      background: #FFFAF8;
+    }
+
+    .field-group { margin-bottom: 20px; }
+
+    .field-label {
+      font-size: 11px;
+      color: #888780;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .field-input {
+      width: 100%;
+      background: #F8F5F2;
+      border: 1px solid #E0C8B8;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #5F5E5A;
+      font-family: 'Lato', sans-serif;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .field-input:focus { border-color: #C4723A; }
+    .field-input::placeholder { color: #C0B8B0; }
+
+    .forgot-link {
+      text-align: right;
+      margin-top: 6px;
+    }
+
+    .forgot-link a {
+      font-size: 12px;
+      color: #C4723A;
+      text-decoration: none;
+    }
+
+    .divider-or {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .divider-or hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid #E8E5E0;
+    }
+
+    .divider-or span {
+      font-size: 12px;
+      color: #C0B8B0;
+    }
+
+    .register-link {
+      text-align: center;
+      font-size: 13px;
+      color: #888780;
+      margin-top: 16px;
+    }
+
+    .register-link a {
+      color: #C4723A;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .profe-note {
+      text-align: center;
+      font-size: 11px;
+      color: #B0AEA8;
+      margin-top: 20px;
+      padding: 12px;
+      border-top: 1px solid #F0EDE8;
+    }
+
+    /* PANTALLA REGISTRO */
+    .register-body {
+      padding: 28px 28px 48px;
+      flex: 1;
+      background: #FFFAF8;
+      overflow-y: auto;
+    }
+
+    .success-note {
+      background: #F0FAF5;
+      border: 1px solid #A8DCBC;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #1A6B3A;
+      margin-bottom: 20px;
+    }
+
+    .terms-note {
+      text-align: center;
+      font-size: 11px;
+      color: #B0AEA8;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .terms-note a { color: #C4723A; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- PANTALLA 1: BIENVENIDA -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-hero">
+      <div class="ornament">~ ❧ ~</div>
+      <div class="logo-main"><span>O</span>hla</div>
+      <div class="logo-sub">Academy</div>
+      <div class="hero-divider"></div>
+      <div class="hero-frase">"Cada cosa que creás con tus manos es un paso hacia tu libertad"</div>
+      <div class="hero-firma">— Flor & Mery</div>
+    </div>
+    <div class="welcome-footer">
+      <button class="btn-primary" onclick="showScreen('screen-login')">Ingresar a mi cuenta</button>
+      <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: LOGIN -->
+  <div class="screen" id="screen-login" style="position:relative;">
+    <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
+    <div class="login-header">
+      <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
+      <div class="logo-sub" style="font-size:9px;">Academy</div>
+      <div style="margin-top:16px;">
+        <div class="login-title">Bienvenida de vuelta</div>
+        <div class="login-sub">Ingresá a tu cuenta</div>
+      </div>
+    </div>
+    <div class="login-body">
+      <div class="field-group">
+        <label class="field-label">Correo electrónico</label>
+        <input type="email" class="field-input" placeholder="tu@mail.com">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Contraseña</label>
+        <input type="password" class="field-input" placeholder="Tu contraseña">
+        <div class="forgot-link"><a href="#">¿Olvidaste tu contraseña?</a></div>
+      </div>
+      <button class="btn-primary">Ingresar</button>
+      <div class="divider-or"><hr><span>o</span><hr></div>
+      <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+      <div class="register-link" style="margin-top:16px;">
+        ¿No tenés cuenta? <a href="#" onclick="showScreen('screen-register')">Registrate acá</a>
+      </div>
+      <div class="profe-note">¿Sos profe? Tu acceso lo habilita el equipo de Ohla Academy</div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: REGISTRO -->
+  <div class="screen" id="screen-register" style="position:relative;">
+    <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
+    <div class="login-header">
+      <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
+      <div class="logo-sub" style="font-size:9px;">Academy</div>
+      <div style="margin-top:16px;">
+        <div class="login-title">Crear mi cuenta</div>
+        <div class="login-sub">Gratis · Solo toma un momento</div>
+      </div>
+    </div>
+    <div class="register-body">
+      <div class="success-note">✦ Bienvenida a Ohla Academy — completá tus datos para empezar</div>
+      <div class="field-group">
+        <label class="field-label">Nombre completo</label>
+        <input type="text" class="field-input" placeholder="Tu nombre y apellido">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Correo electrónico</label>
+        <input type="email" class="field-input" placeholder="tu@mail.com">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Contraseña</label>
+        <input type="password" class="field-input" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Confirmar contraseña</label>
+        <input type="password" class="field-input" placeholder="Repetí tu contraseña">
+      </div>
+      <button class="btn-primary">Crear mi cuenta</button>
+      <div class="register-link" style="margin-top:16px;">
+        ¿Ya tenés cuenta? <a href="#" onclick="showScreen('screen-login')">Ingresá acá</a>
+      </div>
+      <div class="terms-note">
+        Al registrarte aceptás los <a href="#">términos y condiciones</a><br>y la <a href="#">política de privacidad</a> de Ohla Academy
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

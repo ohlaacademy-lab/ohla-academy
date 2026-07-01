@@ -12,107 +12,224 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Lato', sans-serif; background: #F8F8F7; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .app { width: 100%; max-width: 420px; min-height: 100vh; background: #fff; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+    :root {
+      --terracota: #C4723A;
+      --terracota-dark: #A85E2A;
+      --terracota-light: #FDDECF;
+      --gris: #5F5E5A;
+      --gris-medio: #888780;
+      --gris-claro: #F8F8F7;
+      --borde: #F0EDE8;
+      --fondo-form: #FFFAF8;
+    }
+
+    body { font-family: 'Lato', sans-serif; background: var(--gris-claro); min-height: 100vh; }
+
+    /* ── DESKTOP LAYOUT ── */
+    .app {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Pantallas */
     .screen { display: none; flex-direction: column; flex: 1; }
     .screen.active { display: flex; }
 
-    /* BIENVENIDA */
-    .welcome-hero { background: #F8F8F7; padding: 60px 32px 40px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .ornament { font-family: 'Cormorant Garamond', serif; color: #C4723A; font-size: 22px; letter-spacing: 6px; opacity: 0.7; margin-bottom: 12px; }
-    .logo-main { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 700; color: #5F5E5A; letter-spacing: 4px; line-height: 1; }
-    .logo-main span { color: #C4723A; }
-    .logo-sub { font-family: 'Lato', sans-serif; font-size: 11px; letter-spacing: 8px; color: #C4723A; margin-top: 6px; text-transform: uppercase; }
-    .hero-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, #C4723A, transparent); margin: 24px auto; }
-    .hero-frase { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #5F5E5A; line-height: 1.6; font-style: italic; padding: 0 16px; }
-    .hero-firma { font-size: 12px; color: #888780; margin-top: 8px; letter-spacing: 1px; }
-    .welcome-footer { padding: 32px 28px 48px; background: #fff; border-top: 1px solid #F0EDE8; }
+    /* ── BIENVENIDA ── */
+    .welcome-wrap {
+      display: flex;
+      flex: 1;
+      min-height: 100vh;
+    }
 
-    /* BOTONES */
-    .btn-primary { width: 100%; background: #C4723A; color: #fff; border: none; border-radius: 12px; padding: 16px; font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
-    .btn-primary:hover { background: #A85E2A; }
+    .welcome-left {
+      flex: 1;
+      background: var(--gris-claro);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 48px;
+      text-align: center;
+    }
+
+    .welcome-right {
+      width: 460px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 48px;
+      border-left: 1px solid var(--borde);
+    }
+
+    .ornament { font-family: 'Cormorant Garamond', serif; color: var(--terracota); font-size: 22px; letter-spacing: 6px; opacity: 0.7; margin-bottom: 12px; }
+    .logo-main { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 700; color: var(--gris); letter-spacing: 4px; line-height: 1; }
+    .logo-main span { color: var(--terracota); }
+    .logo-sub { font-size: 11px; letter-spacing: 8px; color: var(--terracota); margin-top: 6px; text-transform: uppercase; }
+    .hero-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, var(--terracota), transparent); margin: 28px auto; }
+    .hero-frase { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gris); line-height: 1.6; font-style: italic; max-width: 440px; }
+    .hero-firma { font-size: 13px; color: var(--gris-medio); margin-top: 10px; letter-spacing: 1px; }
+
+    /* ── BOTONES ── */
+    .btn-primary { width: 100%; background: var(--terracota); color: #fff; border: none; border-radius: 12px; padding: 16px; font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--terracota-dark); }
     .btn-primary:disabled { background: #D9A882; cursor: not-allowed; }
-    .btn-secondary { width: 100%; background: transparent; color: #5F5E5A; border: 1px solid #D0CEC8; border-radius: 12px; padding: 14px; font-family: 'Lato', sans-serif; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
-    .btn-secondary:hover { border-color: #C4723A; color: #C4723A; }
+    .btn-secondary { width: 100%; background: transparent; color: var(--gris); border: 1px solid #D0CEC8; border-radius: 12px; padding: 14px; font-family: 'Lato', sans-serif; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
+    .btn-secondary:hover { border-color: var(--terracota); color: var(--terracota); }
+    .btn-danger { background: #fff0f0; color: #c0392b; border: 1px solid #f5c5c5; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+    .btn-small { background: var(--terracota); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+    .btn-small:hover { background: var(--terracota-dark); }
 
-    /* LOGIN / REGISTRO */
-    .screen-header { background: #F8F8F7; padding: 48px 28px 28px; text-align: center; border-bottom: 1px solid #F0EDE8; position: relative; }
-    .back-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: #C4723A; font-size: 22px; cursor: pointer; padding: 8px; }
-    .screen-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: #5F5E5A; margin-top: 16px; }
-    .screen-sub { font-size: 13px; color: #888780; margin-top: 4px; }
-    .form-body { padding: 28px 28px 48px; flex: 1; background: #FFFAF8; overflow-y: auto; }
+    /* ── FORMULARIOS ── */
+    .screen-header { background: var(--gris-claro); padding: 40px 48px 28px; text-align: center; border-bottom: 1px solid var(--borde); position: relative; }
+    .back-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: var(--terracota); font-size: 22px; cursor: pointer; padding: 8px; }
+    .screen-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: var(--gris); margin-top: 16px; }
+    .screen-sub { font-size: 13px; color: var(--gris-medio); margin-top: 4px; }
+
+    .form-wrap { display: flex; flex: 1; }
+    .form-side { flex: 1; background: var(--gris-claro); display: none; }
+    .form-body { width: 100%; max-width: 480px; padding: 40px 48px 60px; background: var(--fondo-form); overflow-y: auto; margin: 0 auto; }
+
     .field-group { margin-bottom: 20px; }
-    .field-label { font-size: 11px; color: #888780; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
-    .field-input { width: 100%; background: #F8F5F2; border: 1px solid #E0C8B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: #5F5E5A; font-family: 'Lato', sans-serif; transition: border-color 0.2s; outline: none; }
-    .field-input:focus { border-color: #C4723A; }
+    .field-label { font-size: 11px; color: var(--gris-medio); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .field-input { width: 100%; background: #F8F5F2; border: 1px solid #E0C8B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: var(--gris); font-family: 'Lato', sans-serif; transition: border-color 0.2s; outline: none; }
+    .field-input:focus { border-color: var(--terracota); }
     .field-input::placeholder { color: #C0B8B0; }
     .forgot-link { text-align: right; margin-top: 6px; }
-    .forgot-link a { font-size: 12px; color: #C4723A; text-decoration: none; }
+    .forgot-link a { font-size: 12px; color: var(--terracota); text-decoration: none; }
     .divider-or { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
     .divider-or hr { flex: 1; border: none; border-top: 1px solid #E8E5E0; }
     .divider-or span { font-size: 12px; color: #C0B8B0; }
-    .link-txt { text-align: center; font-size: 13px; color: #888780; margin-top: 16px; }
-    .link-txt a { color: #C4723A; text-decoration: none; font-weight: 700; }
-    .profe-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 20px; padding: 12px; border-top: 1px solid #F0EDE8; }
+    .link-txt { text-align: center; font-size: 13px; color: var(--gris-medio); margin-top: 16px; }
+    .link-txt a { color: var(--terracota); text-decoration: none; font-weight: 700; }
+    .profe-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 20px; padding: 12px; border-top: 1px solid var(--borde); }
     .terms-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 12px; line-height: 1.5; }
-    .terms-note a { color: #C4723A; text-decoration: none; }
+    .terms-note a { color: var(--terracota); text-decoration: none; }
 
-    /* MENSAJES */
     .msg { border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
     .msg.show { display: block; }
     .msg-error { background: #FFF0EC; border: 1px solid #F0C5A0; color: #8B3A1A; }
     .msg-success { background: #F0FAF5; border: 1px solid #A8DCBC; color: #1A6B3A; }
 
-    /* PANTALLA INICIO (después de login) */
-    .home-header { background: #F8F8F7; padding: 24px 20px 16px; border-bottom: 1px solid #F0EDE8; display: flex; align-items: center; justify-content: space-between; }
-    .home-logo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: #5F5E5A; }
-    .home-logo span { color: #C4723A; }
-    .home-user { font-size: 11px; color: #888780; text-align: right; }
-    .home-user strong { display: block; color: #5F5E5A; font-size: 13px; }
-    .home-body { padding: 20px 20px 80px; flex: 1; overflow-y: auto; background: #FFFAF8; }
-    .home-bienvenida { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #5F5E5A; margin-bottom: 4px; }
-    .home-sub { font-size: 13px; color: #888780; margin-bottom: 20px; }
-    .section-title { font-size: 11px; color: #888780; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
-    .camino-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 12px; border: 1px solid; margin-bottom: 10px; background: transparent; cursor: pointer; transition: opacity 0.2s; }
-    .camino-btn:hover { opacity: 0.85; }
+    /* ── HOME (logueada) ── */
+    .home-topbar { background: #fff; padding: 16px 32px; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; }
+    .home-logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: var(--gris); }
+    .home-logo span { color: var(--terracota); }
+    .home-user-info { display: flex; align-items: center; gap: 16px; }
+    .home-user-name { font-size: 14px; color: var(--gris); font-weight: 700; }
+    .home-user-email { font-size: 12px; color: var(--gris-medio); }
+    .logout-btn { background: none; border: 1px solid #E0DED8; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: var(--gris-medio); cursor: pointer; }
+    .logout-btn:hover { color: var(--terracota); border-color: var(--terracota); }
+
+    .home-content { display: flex; flex: 1; }
+    .home-sidebar { width: 240px; background: var(--gris-claro); border-right: 1px solid var(--borde); padding: 28px 20px; flex-shrink: 0; }
+    .sidebar-title { font-size: 10px; color: var(--gris-medio); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; font-size: 14px; color: var(--gris); transition: background 0.15s; }
+    .sidebar-item:hover, .sidebar-item.active { background: var(--terracota-light); color: var(--terracota); }
+    .sidebar-item .si-icon { font-size: 18px; }
+    .home-main { flex: 1; padding: 32px 40px; overflow-y: auto; }
+
+    .greeting { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--gris); margin-bottom: 4px; }
+    .greeting-sub { font-size: 14px; color: var(--gris-medio); margin-bottom: 28px; }
+    .section-label { font-size: 11px; color: var(--gris-medio); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+
+    .caminos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .camino-card { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 14px; border: 1px solid; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .camino-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
     .c1 { border-color: #F0C5A0; background: #FFF5EC; }
     .c2 { border-color: #E8C5D8; background: #FFF0F7; }
     .c3 { border-color: #C8D8B8; background: #F5FAF0; }
-    .camino-icon { font-size: 24px; }
+    .c4 { border-color: #C5D8E8; background: #F0F7FF; }
+    .c5 { border-color: #D8C5E8; background: #F7F0FF; }
+    .c6 { border-color: #E8D8C5; background: #FFF8F0; }
+    .camino-icon { font-size: 28px; }
     .camino-info { flex: 1; }
-    .camino-name { font-size: 14px; font-weight: 700; color: #5F5E5A; }
-    .camino-desc { font-size: 12px; color: #888780; margin-top: 2px; }
-    .camino-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
-    .badge-nuevo { background: #FDDECF; color: #8B3A1A; }
-    .badge-pronto { background: #F0F0EC; color: #888780; }
-    .nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; display: flex; justify-content: space-around; padding: 10px 4px 16px; border-top: 1px solid #E0DED8; background: #F8F8F7; z-index: 100; }
+    .camino-name { font-size: 15px; font-weight: 700; color: var(--gris); }
+    .camino-desc { font-size: 12px; color: var(--gris-medio); margin-top: 3px; }
+    .camino-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+    .badge-nuevo { background: var(--terracota-light); color: #8B3A1A; }
+    .badge-pronto { background: #F0F0EC; color: var(--gris-medio); }
+
+    /* ── PANEL ADMIN ── */
+    .admin-panel { background: #fff; border-radius: 14px; border: 1px solid var(--borde); padding: 28px; max-width: 800px; }
+    .admin-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--gris); margin-bottom: 20px; }
+    .activity-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--borde); }
+    .activity-row:last-child { border-bottom: none; }
+    .activity-icon-input { width: 50px; font-size: 22px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px; }
+    .activity-name-input { flex: 1; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
+    .activity-name-input:focus { border-color: var(--terracota); }
+    .activity-desc-input { flex: 1.5; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--gris-medio); font-family: 'Lato', sans-serif; outline: none; }
+    .activity-status { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
+    .add-activity-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border: 2px dashed #E0DED8; border-radius: 12px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 14px; margin-top: 12px; width: 100%; justify-content: center; transition: all 0.2s; }
+    .add-activity-btn:hover { border-color: var(--terracota); color: var(--terracota); }
+
+    /* ── RESPONSIVE MOBILE ── */
+    @media (max-width: 768px) {
+      .welcome-right { width: 100%; border-left: none; padding: 32px 24px 48px; }
+      .welcome-left { display: none; }
+      .welcome-wrap { flex-direction: column; }
+      .form-side { display: none; }
+      .form-body { padding: 28px 24px 48px; }
+      .screen-header { padding: 40px 24px 24px; }
+      .home-sidebar { display: none; }
+      .home-topbar { padding: 12px 20px; }
+      .home-main { padding: 20px 16px 80px; }
+      .greeting { font-size: 26px; }
+      .caminos-grid { grid-template-columns: 1fr; }
+      .admin-panel { padding: 16px; }
+      .activity-row { flex-wrap: wrap; }
+      .activity-desc-input { width: 100%; }
+
+      /* Nav mobile */
+      .mobile-nav { display: flex; }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-nav { display: none; }
+      .form-side { display: block; }
+    }
+
+    .mobile-nav { position: fixed; bottom: 0; left: 0; right: 0; justify-content: space-around; padding: 10px 4px 16px; border-top: 1px solid #E0DED8; background: var(--gris-claro); z-index: 100; }
     .nav-item { text-align: center; cursor: pointer; padding: 4px 12px; }
-    .nav-icon { font-size: 18px; }
-    .nav-label { font-size: 9px; color: #888780; margin-top: 2px; }
-    .nav-label.active { color: #C4723A; }
-    .logout-btn { background: none; border: none; font-size: 11px; color: #C4723A; cursor: pointer; margin-top: 16px; display: block; width: 100%; text-align: center; }
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 9px; color: var(--gris-medio); margin-top: 2px; }
+    .nav-label.active { color: var(--terracota); }
+
+    /* Badge admin */
+    .admin-badge { background: var(--terracota-light); color: #8B3A1A; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- BIENVENIDA -->
+  <!-- ══ BIENVENIDA ══ -->
   <div class="screen active" id="screen-welcome">
-    <div class="welcome-hero">
-      <div class="ornament">~ ❧ ~</div>
-      <div class="logo-main"><span>O</span>hla</div>
-      <div class="logo-sub">Academy</div>
-      <div class="hero-divider"></div>
-      <div class="hero-frase">"Cada cosa que creás con tus manos es un paso hacia tu libertad"</div>
-      <div class="hero-firma">— Flor & Mery</div>
-    </div>
-    <div class="welcome-footer">
-      <button class="btn-primary" onclick="showScreen('screen-login')">Ingresar a mi cuenta</button>
-      <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+    <div class="welcome-wrap">
+      <div class="welcome-left">
+        <div class="ornament">~ ❧ ~</div>
+        <div class="logo-main"><span>O</span>hla</div>
+        <div class="logo-sub">Academy</div>
+        <div class="hero-divider"></div>
+        <div class="hero-frase">"Cada cosa que creás con tus manos es un paso hacia tu libertad"</div>
+        <div class="hero-firma">— Flor & Mery</div>
+      </div>
+      <div class="welcome-right">
+        <div class="ornament" style="font-size:16px;">~ ❧ ~</div>
+        <div class="logo-main" style="font-size:40px;"><span>O</span>hla</div>
+        <div class="logo-sub" style="font-size:10px;">Academy</div>
+        <div style="height:24px;"></div>
+        <button class="btn-primary" onclick="showScreen('screen-login')">Ingresar a mi cuenta</button>
+        <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+      </div>
     </div>
   </div>
 
-  <!-- LOGIN -->
+  <!-- ══ LOGIN ══ -->
   <div class="screen" id="screen-login">
     <div class="screen-header">
       <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
@@ -121,26 +238,29 @@
       <div class="screen-title">Bienvenida de vuelta</div>
       <div class="screen-sub">Ingresá a tu cuenta</div>
     </div>
-    <div class="form-body">
-      <div class="msg msg-error" id="login-error"></div>
-      <div class="field-group">
-        <label class="field-label">Correo electrónico</label>
-        <input type="email" class="field-input" id="login-email" placeholder="tu@mail.com">
+    <div class="form-wrap">
+      <div class="form-side"></div>
+      <div class="form-body">
+        <div class="msg msg-error" id="login-error"></div>
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" class="field-input" id="login-email" placeholder="tu@mail.com">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" class="field-input" id="login-password" placeholder="Tu contraseña">
+          <div class="forgot-link"><a href="#" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></div>
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Ingresar</button>
+        <div class="divider-or"><hr><span>o</span><hr></div>
+        <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+        <div class="link-txt"><a href="#" onclick="showScreen('screen-register')">¿No tenés cuenta? Registrate acá</a></div>
+        <div class="profe-note">¿Sos profe? Tu acceso lo habilita el equipo de Ohla Academy</div>
       </div>
-      <div class="field-group">
-        <label class="field-label">Contraseña</label>
-        <input type="password" class="field-input" id="login-password" placeholder="Tu contraseña">
-        <div class="forgot-link"><a href="#" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></div>
-      </div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">Ingresar</button>
-      <div class="divider-or"><hr><span>o</span><hr></div>
-      <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
-      <div class="link-txt"><a href="#" onclick="showScreen('screen-register')">¿No tenés cuenta? Registrate acá</a></div>
-      <div class="profe-note">¿Sos profe? Tu acceso lo habilita el equipo de Ohla Academy</div>
     </div>
   </div>
 
-  <!-- REGISTRO -->
+  <!-- ══ REGISTRO ══ -->
   <div class="screen" id="screen-register">
     <div class="screen-header">
       <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
@@ -149,83 +269,118 @@
       <div class="screen-title">Crear mi cuenta</div>
       <div class="screen-sub">Gratis · Solo toma un momento</div>
     </div>
-    <div class="form-body">
-      <div class="msg msg-error" id="register-error"></div>
-      <div class="msg msg-success" id="register-success"></div>
-      <div class="field-group">
-        <label class="field-label">Nombre completo</label>
-        <input type="text" class="field-input" id="register-name" placeholder="Tu nombre y apellido">
+    <div class="form-wrap">
+      <div class="form-side"></div>
+      <div class="form-body">
+        <div class="msg msg-error" id="register-error"></div>
+        <div class="field-group">
+          <label class="field-label">Nombre completo</label>
+          <input type="text" class="field-input" id="register-name" placeholder="Tu nombre y apellido">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" class="field-input" id="register-email" placeholder="tu@mail.com">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" class="field-input" id="register-password" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Confirmar contraseña</label>
+          <input type="password" class="field-input" id="register-password2" placeholder="Repetí tu contraseña">
+        </div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear mi cuenta</button>
+        <div class="link-txt" style="margin-top:16px;"><a href="#" onclick="showScreen('screen-login')">¿Ya tenés cuenta? Ingresá acá</a></div>
+        <div class="terms-note">Al registrarte aceptás los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Ohla Academy</div>
       </div>
-      <div class="field-group">
-        <label class="field-label">Correo electrónico</label>
-        <input type="email" class="field-input" id="register-email" placeholder="tu@mail.com">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Contraseña</label>
-        <input type="password" class="field-input" id="register-password" placeholder="Mínimo 8 caracteres">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Confirmar contraseña</label>
-        <input type="password" class="field-input" id="register-password2" placeholder="Repetí tu contraseña">
-      </div>
-      <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear mi cuenta</button>
-      <div class="link-txt" style="margin-top:16px;"><a href="#" onclick="showScreen('screen-login')">¿Ya tenés cuenta? Ingresá acá</a></div>
-      <div class="terms-note">Al registrarte aceptás los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Ohla Academy</div>
     </div>
   </div>
 
-  <!-- INICIO (logueada) -->
+  <!-- ══ HOME ══ -->
   <div class="screen" id="screen-home">
-    <div class="home-header">
+    <div class="home-topbar">
       <div class="home-logo"><span>O</span>hla Academy</div>
-      <div class="home-user">
-        <strong id="user-name-display">Bienvenida</strong>
-        <span id="user-email-display"></span>
+      <div class="home-user-info">
+        <div>
+          <div class="home-user-name" id="user-name-display"></div>
+          <div class="home-user-email" id="user-email-display"></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
       </div>
     </div>
-    <div class="home-body">
-      <div class="home-bienvenida" id="home-greeting">¡Hola!</div>
-      <div class="home-sub">¿Por dónde empezamos hoy?</div>
-      <div class="section-title">Elegí tu camino</div>
-
-      <button class="camino-btn c1">
-        <span class="camino-icon">🕯️</span>
-        <div class="camino-info">
-          <div class="camino-name">Mundo de las velas</div>
-          <div class="camino-desc">Molde, contenedor, aromaterapia</div>
-        </div>
-        <span class="camino-badge badge-nuevo">Nuevo</span>
-      </button>
-
-      <button class="camino-btn c2">
-        <span class="camino-icon">🌸</span>
-        <div class="camino-info">
-          <div class="camino-name">Flores de tela</div>
-          <div class="camino-desc">Pequeñas, grandes y gigantes</div>
-        </div>
-        <span class="camino-badge badge-nuevo">Nuevo</span>
-      </button>
-
-      <button class="camino-btn c3">
-        <span class="camino-icon">🪡</span>
-        <div class="camino-info">
-          <div class="camino-name">ABC de costura</div>
-          <div class="camino-desc">Jabones, cremas y más</div>
-        </div>
-        <span class="camino-badge badge-pronto">Pronto</span>
-      </button>
-
-      <div style="text-align:center;margin-top:8px;">
-        <span style="font-size:11px;color:#888780;">✦ Se habilitan 2 cursos nuevos por mes</span>
+    <div class="home-content">
+      <div class="home-sidebar">
+        <div class="sidebar-title">Menú</div>
+        <div class="sidebar-item active" onclick="showTab('tab-cursos')"><span class="si-icon">📚</span> Mis cursos</div>
+        <div class="sidebar-item" onclick="showTab('tab-meetings')"><span class="si-icon">📅</span> Meetings</div>
+        <div class="sidebar-item" onclick="showTab('tab-perfil')"><span class="si-icon">👤</span> Mi perfil</div>
+        <div class="sidebar-item" id="sidebar-admin" style="display:none;" onclick="showTab('tab-admin')"><span class="si-icon">⚙️</span> Administrar <span class="admin-badge">Admin</span></div>
       </div>
+      <div class="home-main">
 
-      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+        <!-- TAB CURSOS -->
+        <div id="tab-cursos">
+          <div class="greeting" id="home-greeting">¡Hola!</div>
+          <div class="greeting-sub">¿Por dónde empezamos hoy?</div>
+          <div class="section-label">Elegí tu camino</div>
+          <div class="caminos-grid" id="caminos-grid">
+            <!-- Se carga dinámicamente -->
+          </div>
+        </div>
+
+        <!-- TAB MEETINGS -->
+        <div id="tab-meetings" style="display:none;">
+          <div class="greeting">📅 Meetings en vivo</div>
+          <div class="greeting-sub">Consultas semanales con Flor y Mery</div>
+          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:14px;padding:24px;margin-top:20px;text-align:center;max-width:500px;">
+            <div style="font-size:36px;margin-bottom:12px;">🔴</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#8B3A1A;">Próximamente</div>
+            <div style="font-size:14px;color:#C4723A;margin-top:8px;">Las clases en vivo se habilitarán pronto</div>
+          </div>
+        </div>
+
+        <!-- TAB PERFIL -->
+        <div id="tab-perfil" style="display:none;">
+          <div class="greeting">👤 Mi perfil</div>
+          <div class="greeting-sub">Tu información en Ohla Academy</div>
+          <div style="background:#fff;border:1px solid var(--borde);border-radius:14px;padding:24px;margin-top:20px;max-width:480px;">
+            <div class="field-group">
+              <label class="field-label">Nombre</label>
+              <div id="perfil-nombre" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div>
+            </div>
+            <div class="field-group" style="margin-top:16px;">
+              <label class="field-label">Correo electrónico</label>
+              <div id="perfil-email" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div>
+            </div>
+            <div style="margin-top:20px;">
+              <button class="logout-btn" style="width:100%;padding:12px;" onclick="doLogout()">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB ADMIN -->
+        <div id="tab-admin" style="display:none;">
+          <div class="greeting">⚙️ Administrar actividades</div>
+          <div class="greeting-sub">Agregá, editá o eliminá los cursos de Ohla Academy</div>
+          <div class="admin-panel" style="margin-top:20px;">
+            <div style="font-size:12px;color:var(--gris-medio);margin-bottom:16px;">Podés cambiar el ícono, nombre, descripción y estado de cada actividad.</div>
+            <div id="activities-editor"></div>
+            <button class="add-activity-btn" onclick="addActivity()">+ Agregar nueva actividad</button>
+            <div style="margin-top:20px;">
+              <button class="btn-small" onclick="saveActivities()">Guardar cambios</button>
+            </div>
+            <div class="msg msg-success" id="admin-ok" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="nav-bar">
-      <div class="nav-item"><div class="nav-icon">⊙</div><div class="nav-label active">Inicio</div></div>
-      <div class="nav-item"><div class="nav-icon">📚</div><div class="nav-label">Cursos</div></div>
-      <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Meetings</div></div>
-      <div class="nav-item"><div class="nav-icon">👤</div><div class="nav-label">Mi perfil</div></div>
+    <!-- Nav mobile -->
+    <div class="mobile-nav">
+      <div class="nav-item" onclick="showTab('tab-cursos')"><div class="nav-icon">📚</div><div class="nav-label active">Cursos</div></div>
+      <div class="nav-item" onclick="showTab('tab-meetings')"><div class="nav-icon">📅</div><div class="nav-label">Meetings</div></div>
+      <div class="nav-item" onclick="showTab('tab-perfil')"><div class="nav-icon">👤</div><div class="nav-label">Perfil</div></div>
+      <div class="nav-item" id="mobile-admin" style="display:none;" onclick="showTab('tab-admin')"><div class="nav-icon">⚙️</div><div class="nav-label">Admin</div></div>
     </div>
   </div>
 
@@ -234,6 +389,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCn5f9zcmVekjTkPAnC2kM1cK2hAuDQDaY",
@@ -241,33 +397,136 @@
     projectId: "ohla-academy",
     storageBucket: "ohla-academy.firebasestorage.app",
     messagingSenderId: "698150315103",
-    appId: "1:698150315103:web:ca37b7db0167a1ad4be7ea",
-    measurementId: "G-5046Z157DX"
+    appId: "1:698150315103:web:ca37b7db0167a1ad4be7ea"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // Detectar si ya hay sesión activa
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      showHomeScreen(user);
+  // Admins autorizadas
+  const ADMINS = ['aguilera.nasser@gmail.com', 'ohlaacademy@gmail.com'];
+
+  // Actividades por defecto
+  const DEFAULT_ACTIVITIES = [
+    { icon: '🕯️', name: 'Mundo de las velas', desc: 'Molde, contenedor, aromaterapia', status: 'nuevo' },
+    { icon: '🌸', name: 'Flores de tela', desc: 'Pequeñas, grandes y gigantes', status: 'nuevo' },
+    { icon: '🪡', name: 'ABC de costura', desc: 'Jabones, cremas y más', status: 'pronto' },
+  ];
+
+  const COLORS = ['c1','c2','c3','c4','c5','c6'];
+
+  let activities = [...DEFAULT_ACTIVITIES];
+  let currentUser = null;
+
+  // Cargar actividades desde Firestore
+  async function loadActivities() {
+    try {
+      const snap = await getDoc(doc(db, 'config', 'activities'));
+      if (snap.exists()) activities = snap.data().list;
+    } catch(e) { /* usa default */ }
+    renderCaminos();
+    renderEditor();
+  }
+
+  function renderCaminos() {
+    const grid = document.getElementById('caminos-grid');
+    if (!grid) return;
+    grid.innerHTML = activities.map((a, i) => `
+      <div class="camino-card ${COLORS[i % COLORS.length]}">
+        <span class="camino-icon">${a.icon}</span>
+        <div class="camino-info">
+          <div class="camino-name">${a.name}</div>
+          <div class="camino-desc">${a.desc}</div>
+        </div>
+        <span class="camino-badge ${a.status === 'nuevo' ? 'badge-nuevo' : 'badge-pronto'}">${a.status === 'nuevo' ? 'Nuevo' : 'Pronto'}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderEditor() {
+    const ed = document.getElementById('activities-editor');
+    if (!ed) return;
+    ed.innerHTML = activities.map((a, i) => `
+      <div class="activity-row" data-index="${i}">
+        <input class="activity-icon-input" value="${a.icon}" placeholder="🌸" data-field="icon" data-index="${i}">
+        <input class="activity-name-input" value="${a.name}" placeholder="Nombre de la actividad" data-field="name" data-index="${i}">
+        <input class="activity-desc-input" value="${a.desc}" placeholder="Descripción breve" data-field="desc" data-index="${i}">
+        <select class="activity-status" data-field="status" data-index="${i}">
+          <option value="nuevo" ${a.status==='nuevo'?'selected':''}>Nuevo</option>
+          <option value="pronto" ${a.status==='pronto'?'selected':''}>Pronto</option>
+        </select>
+        <button class="btn-danger" onclick="removeActivity(${i})">✕</button>
+      </div>
+    `).join('');
+
+    ed.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', e => {
+        activities[e.target.dataset.index][e.target.dataset.field] = e.target.value;
+      });
+      el.addEventListener('change', e => {
+        activities[e.target.dataset.index][e.target.dataset.field] = e.target.value;
+      });
+    });
+  }
+
+  window.addActivity = function() {
+    activities.push({ icon: '✨', name: 'Nueva actividad', desc: 'Descripción', status: 'pronto' });
+    renderEditor();
+    renderCaminos();
+  }
+
+  window.removeActivity = function(i) {
+    if (activities.length <= 1) return;
+    activities.splice(i, 1);
+    renderEditor();
+    renderCaminos();
+  }
+
+  window.saveActivities = async function() {
+    try {
+      await setDoc(doc(db, 'config', 'activities'), { list: activities });
+      renderCaminos();
+      const ok = document.getElementById('admin-ok');
+      ok.textContent = '✦ Cambios guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) {
+      alert('Error al guardar. Verificá tu conexión.');
     }
-  });
+  }
 
   function showHomeScreen(user) {
+    currentUser = user;
     const nombre = user.displayName || user.email.split('@')[0];
     document.getElementById('user-name-display').textContent = nombre;
     document.getElementById('user-email-display').textContent = user.email;
     document.getElementById('home-greeting').textContent = `¡Hola, ${nombre.split(' ')[0]}!`;
+    document.getElementById('perfil-nombre').textContent = nombre;
+    document.getElementById('perfil-email').textContent = user.email;
+
+    const isAdmin = ADMINS.includes(user.email);
+    document.getElementById('sidebar-admin').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
+
+    loadActivities();
     showScreen('screen-home');
   }
+
+  window.showTab = function(id) {
+    ['tab-cursos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
+      const el = document.getElementById(t);
+      if (el) el.style.display = t === id ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  }
+
+  onAuthStateChanged(auth, user => { if (user) showHomeScreen(user); });
 
   window.showScreen = function(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
-    // Limpiar mensajes
     document.querySelectorAll('.msg').forEach(m => m.classList.remove('show'));
   }
 
@@ -276,92 +535,64 @@
     const password = document.getElementById('login-password').value;
     const btn = document.getElementById('btn-login');
     const err = document.getElementById('login-error');
-
-    if (!email || !password) {
-      showMsg(err, '✦ Por favor completá todos los campos');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Ingresando...';
-    err.classList.remove('show');
-
+    if (!email || !password) { showMsg(err, '✦ Completá todos los campos'); return; }
+    btn.disabled = true; btn.textContent = 'Ingresando...'; err.classList.remove('show');
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      showHomeScreen(result.user);
-    } catch (e) {
-      let msg = 'Hubo un error al ingresar. Intentá de nuevo.';
-      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = '✦ Mail o contraseña incorrectos';
-      if (e.code === 'auth/too-many-requests') msg = '✦ Demasiados intentos. Esperá unos minutos.';
-      showMsg(err, msg);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Ingresar';
-    }
+      const r = await signInWithEmailAndPassword(auth, email, password);
+      showHomeScreen(r.user);
+    } catch(e) {
+      let m = 'Error al ingresar. Intentá de nuevo.';
+      if (e.code === 'auth/invalid-credential') m = '✦ Mail o contraseña incorrectos';
+      if (e.code === 'auth/too-many-requests') m = '✦ Demasiados intentos. Esperá unos minutos.';
+      showMsg(err, m);
+    } finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
   }
 
   window.doRegister = async function() {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
-    const password = document.getElementById('register-password').value;
-    const password2 = document.getElementById('register-password2').value;
+    const pass = document.getElementById('register-password').value;
+    const pass2 = document.getElementById('register-password2').value;
     const btn = document.getElementById('btn-register');
     const err = document.getElementById('register-error');
-    const ok = document.getElementById('register-success');
-
-    if (!name || !email || !password || !password2) { showMsg(err, '✦ Por favor completá todos los campos'); return; }
-    if (password.length < 8) { showMsg(err, '✦ La contraseña debe tener al menos 8 caracteres'); return; }
-    if (password !== password2) { showMsg(err, '✦ Las contraseñas no coinciden'); return; }
-
-    btn.disabled = true;
-    btn.textContent = 'Creando tu cuenta...';
-    err.classList.remove('show');
-    ok.classList.remove('show');
-
+    if (!name || !email || !pass || !pass2) { showMsg(err, '✦ Completá todos los campos'); return; }
+    if (pass.length < 8) { showMsg(err, '✦ La contraseña debe tener al menos 8 caracteres'); return; }
+    if (pass !== pass2) { showMsg(err, '✦ Las contraseñas no coinciden'); return; }
+    btn.disabled = true; btn.textContent = 'Creando tu cuenta...';
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(result.user, { displayName: name });
-      showHomeScreen(result.user);
-    } catch (e) {
-      let msg = 'Hubo un error al crear la cuenta.';
-      if (e.code === 'auth/email-already-in-use') msg = '✦ Ese mail ya tiene una cuenta. ¿Querés ingresar?';
-      if (e.code === 'auth/invalid-email') msg = '✦ El mail no es válido';
-      showMsg(err, msg);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Crear mi cuenta';
-    }
+      const r = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(r.user, { displayName: name });
+      showHomeScreen(r.user);
+    } catch(e) {
+      let m = 'Error al crear la cuenta.';
+      if (e.code === 'auth/email-already-in-use') m = '✦ Ese mail ya tiene cuenta. ¿Querés ingresar?';
+      if (e.code === 'auth/invalid-email') m = '✦ El mail no es válido';
+      showMsg(err, m);
+    } finally { btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
   }
 
-  window.doLogout = async function() {
-    await signOut(auth);
-    showScreen('screen-welcome');
-  }
+  window.doLogout = async function() { await signOut(auth); showScreen('screen-welcome'); }
 
   window.resetPassword = async function() {
     const email = document.getElementById('login-email').value.trim();
     const err = document.getElementById('login-error');
-    if (!email) { showMsg(err, '✦ Primero escribí tu mail y luego tocá este link'); return; }
+    if (!email) { showMsg(err, '✦ Primero escribí tu mail'); return; }
     try {
       await sendPasswordResetEmail(auth, email);
       err.classList.remove('show');
+      showMsg({ classList: { add: () => {}, remove: () => {} }, textContent: '' }, '');
       const ok = document.createElement('div');
       ok.className = 'msg msg-success show';
       ok.textContent = '✦ Te mandamos un mail para resetear tu contraseña';
       err.parentNode.insertBefore(ok, err);
       setTimeout(() => ok.remove(), 5000);
-    } catch(e) {
-      showMsg(err, '✦ No encontramos ese mail en nuestro sistema');
-    }
+    } catch(e) { showMsg(err, '✦ No encontramos ese mail'); }
   }
 
-  function showMsg(el, text) {
-    el.textContent = text;
-    el.classList.add('show');
-  }
+  function showMsg(el, text) { el.textContent = text; el.classList.add('show'); }
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
   }
 </script>
 </body>

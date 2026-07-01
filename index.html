@@ -6,291 +6,97 @@
   <meta name="theme-color" content="#F8F8F7">
   <meta name="description" content="Ohla Academy — Aprendé, Creá, Emprendé">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Ohla Academy">
   <title>Ohla Academy</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Lato', sans-serif;
-      background: #F8F8F7;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 420px;
-      min-height: 100vh;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* PANTALLA BIENVENIDA */
+    body { font-family: 'Lato', sans-serif; background: #F8F8F7; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .app { width: 100%; max-width: 420px; min-height: 100vh; background: #fff; display: flex; flex-direction: column; position: relative; overflow: hidden; }
     .screen { display: none; flex-direction: column; flex: 1; }
     .screen.active { display: flex; }
 
-    .welcome-hero {
-      background: #F8F8F7;
-      padding: 60px 32px 40px;
-      text-align: center;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ornament {
-      font-family: 'Cormorant Garamond', serif;
-      color: #C4723A;
-      font-size: 22px;
-      letter-spacing: 6px;
-      opacity: 0.7;
-      margin-bottom: 12px;
-    }
-
-    .logo-main {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 52px;
-      font-weight: 700;
-      color: #5F5E5A;
-      letter-spacing: 4px;
-      line-height: 1;
-    }
-
+    /* BIENVENIDA */
+    .welcome-hero { background: #F8F8F7; padding: 60px 32px 40px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ornament { font-family: 'Cormorant Garamond', serif; color: #C4723A; font-size: 22px; letter-spacing: 6px; opacity: 0.7; margin-bottom: 12px; }
+    .logo-main { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 700; color: #5F5E5A; letter-spacing: 4px; line-height: 1; }
     .logo-main span { color: #C4723A; }
+    .logo-sub { font-family: 'Lato', sans-serif; font-size: 11px; letter-spacing: 8px; color: #C4723A; margin-top: 6px; text-transform: uppercase; }
+    .hero-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, #C4723A, transparent); margin: 24px auto; }
+    .hero-frase { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #5F5E5A; line-height: 1.6; font-style: italic; padding: 0 16px; }
+    .hero-firma { font-size: 12px; color: #888780; margin-top: 8px; letter-spacing: 1px; }
+    .welcome-footer { padding: 32px 28px 48px; background: #fff; border-top: 1px solid #F0EDE8; }
 
-    .logo-sub {
-      font-family: 'Lato', sans-serif;
-      font-size: 11px;
-      letter-spacing: 8px;
-      color: #C4723A;
-      margin-top: 6px;
-      text-transform: uppercase;
-    }
-
-    .hero-divider {
-      width: 80px;
-      height: 1px;
-      background: linear-gradient(to right, transparent, #C4723A, transparent);
-      margin: 24px auto;
-    }
-
-    .hero-frase {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 18px;
-      color: #5F5E5A;
-      line-height: 1.6;
-      font-style: italic;
-      padding: 0 16px;
-    }
-
-    .hero-firma {
-      font-size: 12px;
-      color: #888780;
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-
-    .welcome-footer {
-      padding: 32px 28px 48px;
-      background: #fff;
-      border-top: 1px solid #F0EDE8;
-    }
-
-    .btn-primary {
-      width: 100%;
-      background: #C4723A;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 16px;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 17px;
-      letter-spacing: 2px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    /* BOTONES */
+    .btn-primary { width: 100%; background: #C4723A; color: #fff; border: none; border-radius: 12px; padding: 16px; font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover { background: #A85E2A; }
-
-    .btn-secondary {
-      width: 100%;
-      background: transparent;
-      color: #5F5E5A;
-      border: 1px solid #D0CEC8;
-      border-radius: 12px;
-      padding: 14px;
-      font-family: 'Lato', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 12px;
-      transition: all 0.2s;
-    }
-
+    .btn-primary:disabled { background: #D9A882; cursor: not-allowed; }
+    .btn-secondary { width: 100%; background: transparent; color: #5F5E5A; border: 1px solid #D0CEC8; border-radius: 12px; padding: 14px; font-family: 'Lato', sans-serif; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
     .btn-secondary:hover { border-color: #C4723A; color: #C4723A; }
 
-    /* PANTALLA LOGIN */
-    .login-header {
-      background: #F8F8F7;
-      padding: 48px 28px 28px;
-      text-align: center;
-      border-bottom: 1px solid #F0EDE8;
-    }
-
-    .back-btn {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: none;
-      border: none;
-      color: #C4723A;
-      font-size: 22px;
-      cursor: pointer;
-      padding: 8px;
-    }
-
-    .login-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: #5F5E5A;
-    }
-
-    .login-sub {
-      font-size: 13px;
-      color: #888780;
-      margin-top: 4px;
-    }
-
-    .login-body {
-      padding: 28px 28px 48px;
-      flex: 1;
-      background: #FFFAF8;
-    }
-
+    /* LOGIN / REGISTRO */
+    .screen-header { background: #F8F8F7; padding: 48px 28px 28px; text-align: center; border-bottom: 1px solid #F0EDE8; position: relative; }
+    .back-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: #C4723A; font-size: 22px; cursor: pointer; padding: 8px; }
+    .screen-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: #5F5E5A; margin-top: 16px; }
+    .screen-sub { font-size: 13px; color: #888780; margin-top: 4px; }
+    .form-body { padding: 28px 28px 48px; flex: 1; background: #FFFAF8; overflow-y: auto; }
     .field-group { margin-bottom: 20px; }
-
-    .field-label {
-      font-size: 11px;
-      color: #888780;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .field-input {
-      width: 100%;
-      background: #F8F5F2;
-      border: 1px solid #E0C8B8;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 15px;
-      color: #5F5E5A;
-      font-family: 'Lato', sans-serif;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-
+    .field-label { font-size: 11px; color: #888780; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .field-input { width: 100%; background: #F8F5F2; border: 1px solid #E0C8B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: #5F5E5A; font-family: 'Lato', sans-serif; transition: border-color 0.2s; outline: none; }
     .field-input:focus { border-color: #C4723A; }
     .field-input::placeholder { color: #C0B8B0; }
-
-    .forgot-link {
-      text-align: right;
-      margin-top: 6px;
-    }
-
-    .forgot-link a {
-      font-size: 12px;
-      color: #C4723A;
-      text-decoration: none;
-    }
-
-    .divider-or {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0;
-    }
-
-    .divider-or hr {
-      flex: 1;
-      border: none;
-      border-top: 1px solid #E8E5E0;
-    }
-
-    .divider-or span {
-      font-size: 12px;
-      color: #C0B8B0;
-    }
-
-    .register-link {
-      text-align: center;
-      font-size: 13px;
-      color: #888780;
-      margin-top: 16px;
-    }
-
-    .register-link a {
-      color: #C4723A;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .profe-note {
-      text-align: center;
-      font-size: 11px;
-      color: #B0AEA8;
-      margin-top: 20px;
-      padding: 12px;
-      border-top: 1px solid #F0EDE8;
-    }
-
-    /* PANTALLA REGISTRO */
-    .register-body {
-      padding: 28px 28px 48px;
-      flex: 1;
-      background: #FFFAF8;
-      overflow-y: auto;
-    }
-
-    .success-note {
-      background: #F0FAF5;
-      border: 1px solid #A8DCBC;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #1A6B3A;
-      margin-bottom: 20px;
-    }
-
-    .terms-note {
-      text-align: center;
-      font-size: 11px;
-      color: #B0AEA8;
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-
+    .forgot-link { text-align: right; margin-top: 6px; }
+    .forgot-link a { font-size: 12px; color: #C4723A; text-decoration: none; }
+    .divider-or { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider-or hr { flex: 1; border: none; border-top: 1px solid #E8E5E0; }
+    .divider-or span { font-size: 12px; color: #C0B8B0; }
+    .link-txt { text-align: center; font-size: 13px; color: #888780; margin-top: 16px; }
+    .link-txt a { color: #C4723A; text-decoration: none; font-weight: 700; }
+    .profe-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 20px; padding: 12px; border-top: 1px solid #F0EDE8; }
+    .terms-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 12px; line-height: 1.5; }
     .terms-note a { color: #C4723A; text-decoration: none; }
+
+    /* MENSAJES */
+    .msg { border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .msg.show { display: block; }
+    .msg-error { background: #FFF0EC; border: 1px solid #F0C5A0; color: #8B3A1A; }
+    .msg-success { background: #F0FAF5; border: 1px solid #A8DCBC; color: #1A6B3A; }
+
+    /* PANTALLA INICIO (después de login) */
+    .home-header { background: #F8F8F7; padding: 24px 20px 16px; border-bottom: 1px solid #F0EDE8; display: flex; align-items: center; justify-content: space-between; }
+    .home-logo { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: #5F5E5A; }
+    .home-logo span { color: #C4723A; }
+    .home-user { font-size: 11px; color: #888780; text-align: right; }
+    .home-user strong { display: block; color: #5F5E5A; font-size: 13px; }
+    .home-body { padding: 20px 20px 80px; flex: 1; overflow-y: auto; background: #FFFAF8; }
+    .home-bienvenida { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #5F5E5A; margin-bottom: 4px; }
+    .home-sub { font-size: 13px; color: #888780; margin-bottom: 20px; }
+    .section-title { font-size: 11px; color: #888780; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .camino-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 12px; border: 1px solid; margin-bottom: 10px; background: transparent; cursor: pointer; transition: opacity 0.2s; }
+    .camino-btn:hover { opacity: 0.85; }
+    .c1 { border-color: #F0C5A0; background: #FFF5EC; }
+    .c2 { border-color: #E8C5D8; background: #FFF0F7; }
+    .c3 { border-color: #C8D8B8; background: #F5FAF0; }
+    .camino-icon { font-size: 24px; }
+    .camino-info { flex: 1; }
+    .camino-name { font-size: 14px; font-weight: 700; color: #5F5E5A; }
+    .camino-desc { font-size: 12px; color: #888780; margin-top: 2px; }
+    .camino-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+    .badge-nuevo { background: #FDDECF; color: #8B3A1A; }
+    .badge-pronto { background: #F0F0EC; color: #888780; }
+    .nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; display: flex; justify-content: space-around; padding: 10px 4px 16px; border-top: 1px solid #E0DED8; background: #F8F8F7; z-index: 100; }
+    .nav-item { text-align: center; cursor: pointer; padding: 4px 12px; }
+    .nav-icon { font-size: 18px; }
+    .nav-label { font-size: 9px; color: #888780; margin-top: 2px; }
+    .nav-label.active { color: #C4723A; }
+    .logout-btn { background: none; border: none; font-size: 11px; color: #C4723A; cursor: pointer; margin-top: 16px; display: block; width: 100%; text-align: center; }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- PANTALLA 1: BIENVENIDA -->
+  <!-- BIENVENIDA -->
   <div class="screen active" id="screen-welcome">
     <div class="welcome-hero">
       <div class="ornament">~ ❧ ~</div>
@@ -306,89 +112,256 @@
     </div>
   </div>
 
-  <!-- PANTALLA 2: LOGIN -->
-  <div class="screen" id="screen-login" style="position:relative;">
-    <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
-    <div class="login-header">
+  <!-- LOGIN -->
+  <div class="screen" id="screen-login">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
       <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
       <div class="logo-sub" style="font-size:9px;">Academy</div>
-      <div style="margin-top:16px;">
-        <div class="login-title">Bienvenida de vuelta</div>
-        <div class="login-sub">Ingresá a tu cuenta</div>
-      </div>
+      <div class="screen-title">Bienvenida de vuelta</div>
+      <div class="screen-sub">Ingresá a tu cuenta</div>
     </div>
-    <div class="login-body">
+    <div class="form-body">
+      <div class="msg msg-error" id="login-error"></div>
       <div class="field-group">
         <label class="field-label">Correo electrónico</label>
-        <input type="email" class="field-input" placeholder="tu@mail.com">
+        <input type="email" class="field-input" id="login-email" placeholder="tu@mail.com">
       </div>
       <div class="field-group">
         <label class="field-label">Contraseña</label>
-        <input type="password" class="field-input" placeholder="Tu contraseña">
-        <div class="forgot-link"><a href="#">¿Olvidaste tu contraseña?</a></div>
+        <input type="password" class="field-input" id="login-password" placeholder="Tu contraseña">
+        <div class="forgot-link"><a href="#" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></div>
       </div>
-      <button class="btn-primary">Ingresar</button>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Ingresar</button>
       <div class="divider-or"><hr><span>o</span><hr></div>
       <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
-      <div class="register-link" style="margin-top:16px;">
-        ¿No tenés cuenta? <a href="#" onclick="showScreen('screen-register')">Registrate acá</a>
-      </div>
+      <div class="link-txt"><a href="#" onclick="showScreen('screen-register')">¿No tenés cuenta? Registrate acá</a></div>
       <div class="profe-note">¿Sos profe? Tu acceso lo habilita el equipo de Ohla Academy</div>
     </div>
   </div>
 
-  <!-- PANTALLA 3: REGISTRO -->
-  <div class="screen" id="screen-register" style="position:relative;">
-    <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
-    <div class="login-header">
+  <!-- REGISTRO -->
+  <div class="screen" id="screen-register">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
       <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
       <div class="logo-sub" style="font-size:9px;">Academy</div>
-      <div style="margin-top:16px;">
-        <div class="login-title">Crear mi cuenta</div>
-        <div class="login-sub">Gratis · Solo toma un momento</div>
-      </div>
+      <div class="screen-title">Crear mi cuenta</div>
+      <div class="screen-sub">Gratis · Solo toma un momento</div>
     </div>
-    <div class="register-body">
-      <div class="success-note">✦ Bienvenida a Ohla Academy — completá tus datos para empezar</div>
+    <div class="form-body">
+      <div class="msg msg-error" id="register-error"></div>
+      <div class="msg msg-success" id="register-success"></div>
       <div class="field-group">
         <label class="field-label">Nombre completo</label>
-        <input type="text" class="field-input" placeholder="Tu nombre y apellido">
+        <input type="text" class="field-input" id="register-name" placeholder="Tu nombre y apellido">
       </div>
       <div class="field-group">
         <label class="field-label">Correo electrónico</label>
-        <input type="email" class="field-input" placeholder="tu@mail.com">
+        <input type="email" class="field-input" id="register-email" placeholder="tu@mail.com">
       </div>
       <div class="field-group">
         <label class="field-label">Contraseña</label>
-        <input type="password" class="field-input" placeholder="Mínimo 8 caracteres">
+        <input type="password" class="field-input" id="register-password" placeholder="Mínimo 8 caracteres">
       </div>
       <div class="field-group">
         <label class="field-label">Confirmar contraseña</label>
-        <input type="password" class="field-input" placeholder="Repetí tu contraseña">
+        <input type="password" class="field-input" id="register-password2" placeholder="Repetí tu contraseña">
       </div>
-      <button class="btn-primary">Crear mi cuenta</button>
-      <div class="register-link" style="margin-top:16px;">
-        ¿Ya tenés cuenta? <a href="#" onclick="showScreen('screen-login')">Ingresá acá</a>
+      <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear mi cuenta</button>
+      <div class="link-txt" style="margin-top:16px;"><a href="#" onclick="showScreen('screen-login')">¿Ya tenés cuenta? Ingresá acá</a></div>
+      <div class="terms-note">Al registrarte aceptás los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Ohla Academy</div>
+    </div>
+  </div>
+
+  <!-- INICIO (logueada) -->
+  <div class="screen" id="screen-home">
+    <div class="home-header">
+      <div class="home-logo"><span>O</span>hla Academy</div>
+      <div class="home-user">
+        <strong id="user-name-display">Bienvenida</strong>
+        <span id="user-email-display"></span>
       </div>
-      <div class="terms-note">
-        Al registrarte aceptás los <a href="#">términos y condiciones</a><br>y la <a href="#">política de privacidad</a> de Ohla Academy
+    </div>
+    <div class="home-body">
+      <div class="home-bienvenida" id="home-greeting">¡Hola!</div>
+      <div class="home-sub">¿Por dónde empezamos hoy?</div>
+      <div class="section-title">Elegí tu camino</div>
+
+      <button class="camino-btn c1">
+        <span class="camino-icon">🕯️</span>
+        <div class="camino-info">
+          <div class="camino-name">Mundo de las velas</div>
+          <div class="camino-desc">Molde, contenedor, aromaterapia</div>
+        </div>
+        <span class="camino-badge badge-nuevo">Nuevo</span>
+      </button>
+
+      <button class="camino-btn c2">
+        <span class="camino-icon">🌸</span>
+        <div class="camino-info">
+          <div class="camino-name">Flores de tela</div>
+          <div class="camino-desc">Pequeñas, grandes y gigantes</div>
+        </div>
+        <span class="camino-badge badge-nuevo">Nuevo</span>
+      </button>
+
+      <button class="camino-btn c3">
+        <span class="camino-icon">🪡</span>
+        <div class="camino-info">
+          <div class="camino-name">ABC de costura</div>
+          <div class="camino-desc">Jabones, cremas y más</div>
+        </div>
+        <span class="camino-badge badge-pronto">Pronto</span>
+      </button>
+
+      <div style="text-align:center;margin-top:8px;">
+        <span style="font-size:11px;color:#888780;">✦ Se habilitan 2 cursos nuevos por mes</span>
       </div>
+
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+    <div class="nav-bar">
+      <div class="nav-item"><div class="nav-icon">⊙</div><div class="nav-label active">Inicio</div></div>
+      <div class="nav-item"><div class="nav-icon">📚</div><div class="nav-label">Cursos</div></div>
+      <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">Meetings</div></div>
+      <div class="nav-item"><div class="nav-icon">👤</div><div class="nav-label">Mi perfil</div></div>
     </div>
   </div>
 
 </div>
 
-<script>
-  function showScreen(id) {
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCn5f9zcmVekjTkPAnC2kM1cK2hAuDQDaY",
+    authDomain: "ohla-academy.firebaseapp.com",
+    projectId: "ohla-academy",
+    storageBucket: "ohla-academy.firebasestorage.app",
+    messagingSenderId: "698150315103",
+    appId: "1:698150315103:web:ca37b7db0167a1ad4be7ea",
+    measurementId: "G-5046Z157DX"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Detectar si ya hay sesión activa
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      showHomeScreen(user);
+    }
+  });
+
+  function showHomeScreen(user) {
+    const nombre = user.displayName || user.email.split('@')[0];
+    document.getElementById('user-name-display').textContent = nombre;
+    document.getElementById('user-email-display').textContent = user.email;
+    document.getElementById('home-greeting').textContent = `¡Hola, ${nombre.split(' ')[0]}!`;
+    showScreen('screen-home');
+  }
+
+  window.showScreen = function(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
+    // Limpiar mensajes
+    document.querySelectorAll('.msg').forEach(m => m.classList.remove('show'));
+  }
+
+  window.doLogin = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('btn-login');
+    const err = document.getElementById('login-error');
+
+    if (!email || !password) {
+      showMsg(err, '✦ Por favor completá todos los campos');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Ingresando...';
+    err.classList.remove('show');
+
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      showHomeScreen(result.user);
+    } catch (e) {
+      let msg = 'Hubo un error al ingresar. Intentá de nuevo.';
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = '✦ Mail o contraseña incorrectos';
+      if (e.code === 'auth/too-many-requests') msg = '✦ Demasiados intentos. Esperá unos minutos.';
+      showMsg(err, msg);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Ingresar';
+    }
+  }
+
+  window.doRegister = async function() {
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value;
+    const password2 = document.getElementById('register-password2').value;
+    const btn = document.getElementById('btn-register');
+    const err = document.getElementById('register-error');
+    const ok = document.getElementById('register-success');
+
+    if (!name || !email || !password || !password2) { showMsg(err, '✦ Por favor completá todos los campos'); return; }
+    if (password.length < 8) { showMsg(err, '✦ La contraseña debe tener al menos 8 caracteres'); return; }
+    if (password !== password2) { showMsg(err, '✦ Las contraseñas no coinciden'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Creando tu cuenta...';
+    err.classList.remove('show');
+    ok.classList.remove('show');
+
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(result.user, { displayName: name });
+      showHomeScreen(result.user);
+    } catch (e) {
+      let msg = 'Hubo un error al crear la cuenta.';
+      if (e.code === 'auth/email-already-in-use') msg = '✦ Ese mail ya tiene una cuenta. ¿Querés ingresar?';
+      if (e.code === 'auth/invalid-email') msg = '✦ El mail no es válido';
+      showMsg(err, msg);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Crear mi cuenta';
+    }
+  }
+
+  window.doLogout = async function() {
+    await signOut(auth);
+    showScreen('screen-welcome');
+  }
+
+  window.resetPassword = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const err = document.getElementById('login-error');
+    if (!email) { showMsg(err, '✦ Primero escribí tu mail y luego tocá este link'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      err.classList.remove('show');
+      const ok = document.createElement('div');
+      ok.className = 'msg msg-success show';
+      ok.textContent = '✦ Te mandamos un mail para resetear tu contraseña';
+      err.parentNode.insertBefore(ok, err);
+      setTimeout(() => ok.remove(), 5000);
+    } catch(e) {
+      showMsg(err, '✦ No encontramos ese mail en nuestro sistema');
+    }
+  }
+
+  function showMsg(el, text) {
+    el.textContent = text;
+    el.classList.add('show');
   }
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    });
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
   }
 </script>
 </body>

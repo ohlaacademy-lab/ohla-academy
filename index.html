@@ -512,12 +512,11 @@
     document.getElementById('perfil-nombre').textContent = nombre;
     document.getElementById('perfil-email').textContent = user.email;
 
-    // Registrar usuario en DB si no existe
+    // Registrar usuario en DB solo si no existe — nunca pisar rol existente
     const key = mailToKey(user.email);
     const snap = await get(ref(db, `usuarios/${key}`));
     if (!snap.exists()) await set(ref(db, `usuarios/${key}`), 'alumna');
-
-    currentUserRole = await loadUserRole(user.email);
+    currentUserRole = snap.exists() ? snap.val() : 'alumna';
     document.getElementById('perfil-rol').textContent = currentUserRole === 'admin' ? '👑 Administradora' : currentUserRole === 'profe' ? '🎓 Profesora' : '🌸 Alumna';
 
     const isAdmin = currentUserRole === 'admin';

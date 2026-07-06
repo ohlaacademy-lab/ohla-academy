@@ -22,6 +22,7 @@
     .screen { display: none; flex-direction: column; flex: 1; }
     .screen.active { display: flex; }
 
+    /* BIENVENIDA */
     .welcome-wrap { display: flex; flex: 1; min-height: 100vh; }
     .welcome-left { flex: 1; background: var(--gris-claro); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 48px; text-align: center; }
     .welcome-right { width: 460px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 48px; border-left: 1px solid var(--borde); }
@@ -33,15 +34,18 @@
     .hero-frase { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gris); line-height: 1.6; font-style: italic; max-width: 440px; }
     .hero-firma { font-size: 13px; color: var(--gris-medio); margin-top: 10px; letter-spacing: 1px; }
 
+    /* BOTONES */
     .btn-primary { width: 100%; background: var(--terracota); color: #fff; border: none; border-radius: 12px; padding: 16px; font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover { background: var(--terracota-dark); }
     .btn-primary:disabled { background: #D9A882; cursor: not-allowed; }
     .btn-secondary { width: 100%; background: transparent; color: var(--gris); border: 1px solid #D0CEC8; border-radius: 12px; padding: 14px; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
     .btn-secondary:hover { border-color: var(--terracota); color: var(--terracota); }
-    .btn-danger { background: #fff0f0; color: #c0392b; border: 1px solid #f5c5c5; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
-    .btn-small { background: var(--terracota); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+    .btn-danger { background: #fff0f0; color: #c0392b; border: 1px solid #f5c5c5; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+    .btn-small { background: var(--terracota); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; }
     .btn-small:hover { background: var(--terracota-dark); }
+    .btn-outline { background: transparent; color: var(--terracota); border: 1px solid var(--terracota); border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; }
 
+    /* FORMS */
     .screen-header { background: var(--gris-claro); padding: 40px 48px 28px; text-align: center; border-bottom: 1px solid var(--borde); position: relative; }
     .back-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: var(--terracota); font-size: 22px; cursor: pointer; padding: 8px; }
     .screen-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: var(--gris); margin-top: 16px; }
@@ -69,6 +73,27 @@
     .msg-error { background: #FFF0EC; border: 1px solid #F0C5A0; color: #8B3A1A; }
     .msg-success { background: #F0FAF5; border: 1px solid #A8DCBC; color: #1A6B3A; }
 
+    /* ONBOARDING */
+    .onboarding-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; background: var(--gris-claro); }
+    .onboarding-card { background: #fff; border-radius: 20px; border: 1px solid var(--borde); padding: 40px 36px; width: 100%; max-width: 560px; }
+    .onboarding-step { font-size: 11px; color: var(--terracota); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .onboarding-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gris); margin-bottom: 6px; }
+    .onboarding-sub { font-size: 13px; color: var(--gris-medio); margin-bottom: 28px; line-height: 1.6; }
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .option-card { border: 2px solid var(--borde); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center; background: #fff; }
+    .option-card:hover { border-color: var(--terracota); background: var(--terracota-light); }
+    .option-card.selected { border-color: var(--terracota); background: var(--terracota-light); }
+    .option-card.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .option-icon { font-size: 28px; margin-bottom: 6px; }
+    .option-name { font-size: 13px; font-weight: 700; color: var(--gris); }
+    .option-desc { font-size: 11px; color: var(--gris-medio); margin-top: 2px; }
+    .selection-note { font-size: 12px; color: var(--gris-medio); text-align: center; margin-bottom: 16px; }
+    .progress-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 24px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #E0DED8; }
+    .dot.active { background: var(--terracota); }
+    .dot.done { background: #A8DCBC; }
+
+    /* HOME */
     .home-topbar { background: #fff; padding: 16px 32px; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; }
     .home-logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: var(--gris); }
     .home-logo span { color: var(--terracota); }
@@ -84,30 +109,71 @@
     .greeting { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--gris); margin-bottom: 4px; }
     .greeting-sub { font-size: 14px; color: var(--gris-medio); margin-bottom: 28px; }
     .section-label { font-size: 11px; color: var(--gris-medio); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
-    .caminos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-    .camino-card { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 14px; border: 1px solid; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-    .camino-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+
+    /* FASE BADGE */
+    .fase-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--terracota-light); color: #8B3A1A; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
+
+    /* CURSOS GRID */
+    .cursos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .curso-card { border-radius: 16px; border: 1px solid; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .curso-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .curso-card.locked { opacity: 0.6; cursor: not-allowed; }
+    .curso-card-header { padding: 20px; display: flex; align-items: center; gap: 12px; }
+    .curso-card-icon { font-size: 32px; }
+    .curso-card-info { flex: 1; }
+    .curso-card-name { font-size: 15px; font-weight: 700; color: var(--gris); }
+    .curso-card-cat { font-size: 11px; color: var(--gris-medio); margin-top: 2px; }
+    .curso-card-footer { padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.05); }
+    .curso-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; }
+    .badge-gratis { background: #F0FBF5; color: #1A6B3A; }
+    .badge-membresia { background: var(--terracota-light); color: #8B3A1A; }
+    .badge-bloqueado { background: #F0F0EC; color: var(--gris-medio); }
+    .badge-nuevo { background: var(--terracota-light); color: #8B3A1A; }
     .c1{border-color:#F0C5A0;background:#FFF5EC;} .c2{border-color:#E8C5D8;background:#FFF0F7;}
     .c3{border-color:#C8D8B8;background:#F5FAF0;} .c4{border-color:#C5D8E8;background:#F0F7FF;}
     .c5{border-color:#D8C5E8;background:#F7F0FF;} .c6{border-color:#E8D8C5;background:#FFF8F0;}
-    .camino-icon { font-size: 28px; }
-    .camino-info { flex: 1; }
-    .camino-name { font-size: 15px; font-weight: 700; color: var(--gris); }
-    .camino-desc { font-size: 12px; color: var(--gris-medio); margin-top: 3px; }
-    .camino-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
-    .badge-nuevo { background: var(--terracota-light); color: #8B3A1A; }
-    .badge-pronto { background: #F0F0EC; color: var(--gris-medio); }
 
-    .admin-panel { background: #fff; border-radius: 14px; border: 1px solid var(--borde); padding: 28px; max-width: 800px; margin-bottom: 24px; }
-    .activity-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--borde); flex-wrap: wrap; }
-    .activity-row:last-child { border-bottom: none; }
-    .activity-icon-input { width: 50px; font-size: 22px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px; }
-    .activity-name-input { flex: 1; min-width: 120px; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
-    .activity-name-input:focus, .activity-desc-input:focus { border-color: var(--terracota); }
-    .activity-desc-input { flex: 1.5; min-width: 140px; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--gris-medio); font-family: 'Lato', sans-serif; outline: none; }
-    .activity-status { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
-    .add-activity-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border: 2px dashed #E0DED8; border-radius: 12px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 14px; margin-top: 12px; width: 100%; justify-content: center; transition: all 0.2s; }
-    .add-activity-btn:hover { border-color: var(--terracota); color: var(--terracota); }
+    /* MÓDULOS */
+    .modulos-header { background: #fff; border: 1px solid var(--borde); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+    .modulos-back { color: var(--terracota); font-size: 13px; cursor: pointer; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 4px; }
+    .modulos-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gris); }
+    .modulos-meta { font-size: 13px; color: var(--gris-medio); margin-top: 4px; }
+    .prog-bar-wrap { background: #F0EDE8; border-radius: 4px; height: 6px; margin-top: 16px; }
+    .prog-bar { height: 6px; border-radius: 4px; background: var(--terracota); transition: width 0.4s; }
+    .prog-label { font-size: 11px; color: var(--gris-medio); margin-top: 6px; }
+    .modulo-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 12px; border: 1px solid var(--borde); background: #fff; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; }
+    .modulo-item:hover:not(.locked) { border-color: var(--terracota); background: var(--terracota-light); }
+    .modulo-item.locked { opacity: 0.5; cursor: not-allowed; }
+    .modulo-item.completado { border-color: #A8DCBC; background: #F0FBF5; }
+    .modulo-item.en-curso { border-color: var(--terracota); background: var(--terracota-light); }
+    .modulo-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .num-pending { background: #F0EDE8; color: var(--gris-medio); }
+    .num-active { background: var(--terracota); color: #fff; }
+    .num-done { background: #A8DCBC; color: #1A6B3A; }
+    .modulo-info { flex: 1; }
+    .modulo-name { font-size: 14px; font-weight: 700; color: var(--gris); }
+    .modulo-desc { font-size: 12px; color: var(--gris-medio); margin-top: 2px; }
+    .modulo-status { font-size: 11px; }
+
+    /* ADMIN */
+    .admin-panel { background: #fff; border-radius: 14px; border: 1px solid var(--borde); padding: 28px; margin-bottom: 24px; }
+    .admin-section-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gris); margin-bottom: 6px; }
+    .admin-section-sub { font-size: 12px; color: var(--gris-medio); margin-bottom: 20px; }
+    .cat-block { border: 1px solid var(--borde); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .cat-icon-input { width: 44px; font-size: 20px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px; }
+    .cat-name-input { flex: 1; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 15px; font-weight: 700; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
+    .cat-name-input:focus { border-color: var(--terracota); }
+    .curso-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F5F2EE; flex-wrap: wrap; }
+    .curso-row:last-child { border-bottom: none; }
+    .curso-icon-input { width: 36px; font-size: 16px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 5px; }
+    .curso-name-input { flex: 1; min-width: 140px; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
+    .curso-name-input:focus { border-color: var(--terracota); }
+    .curso-type-select { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 7px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
+    .add-row-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed #E0DED8; border-radius: 8px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 13px; margin-top: 8px; transition: all 0.2s; }
+    .add-row-btn:hover { border-color: var(--terracota); color: var(--terracota); }
+    .add-cat-btn { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border: 2px dashed #E0DED8; border-radius: 12px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 14px; width: 100%; justify-content: center; transition: all 0.2s; }
+    .add-cat-btn:hover { border-color: var(--terracota); color: var(--terracota); }
     .user-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--borde); }
     .user-row:last-child { border-bottom: none; }
     .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--terracota-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -115,15 +181,17 @@
     .user-name { font-size: 14px; color: var(--gris); font-weight: 700; }
     .user-email { font-size: 12px; color: var(--gris-medio); }
     .role-select { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
-    .role-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; }
-    .role-admin { background: var(--terracota-light); color: #8B3A1A; }
-    .role-profe { background: #F5D5E8; color: #8B1A4A; }
-    .role-alumna { background: #F0FBF5; color: #1A6B3A; }
     .admin-badge { background: var(--terracota-light); color: #8B3A1A; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
     .loading { display: flex; align-items: center; padding: 20px 0; color: var(--gris-medio); font-size: 14px; }
     .spinner { width: 18px; height: 18px; border: 2px solid #E0DED8; border-top-color: var(--terracota); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; flex-shrink: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* MEMBRESÍA BANNER */
+    .membresia-banner { background: linear-gradient(135deg, #FFF5EC, #FFF0F7); border: 1px solid #F0C5A0; border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; }
+    .membresia-titulo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #8B3A1A; margin-bottom: 8px; }
+    .membresia-sub { font-size: 13px; color: var(--gris-medio); margin-bottom: 16px; }
+
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       .welcome-left { display: none; }
       .welcome-right { width: 100%; border-left: none; padding: 32px 24px 48px; }
@@ -134,12 +202,12 @@
       .home-topbar { padding: 12px 20px; }
       .home-main { padding: 20px 16px 80px; }
       .greeting { font-size: 26px; }
-      .caminos-grid { grid-template-columns: 1fr; }
+      .cursos-grid { grid-template-columns: 1fr; }
+      .option-grid { grid-template-columns: 1fr 1fr; }
+      .onboarding-card { padding: 28px 20px; }
       .mobile-nav { display: flex !important; }
     }
-    @media (min-width: 769px) {
-      .form-side { display: block; }
-    }
+    @media (min-width: 769px) { .form-side { display: block; } }
     .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; justify-content: space-around; padding: 10px 4px 16px; border-top: 1px solid #E0DED8; background: var(--gris-claro); z-index: 100; }
     .nav-item { text-align: center; cursor: pointer; padding: 4px 12px; }
     .nav-icon { font-size: 20px; }
@@ -243,6 +311,50 @@
     </div>
   </div>
 
+  <!-- ONBOARDING -->
+  <div class="screen" id="screen-onboarding">
+    <div class="onboarding-wrap">
+      <div id="onboarding-intro" class="onboarding-card" style="max-width:580px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:48px;margin-bottom:12px;">🌸</div>
+          <div style="font-family:Cormorant Garamond,serif;font-size:30px;color:var(--gris);margin-bottom:8px;">Bienvenida a Ohla Academy</div>
+          <div style="font-size:14px;color:var(--gris-medio);">Antes de empezar, te contamos cómo funciona</div>
+        </div>
+        <div style="background:var(--gris-claro);border-radius:14px;padding:20px;margin-bottom:20px;">
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">1</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Elegís por dónde empezar</div><div style="font-size:13px;color:var(--gris-medio);">Te hacemos preguntas rápidas para entender qué te apasiona — flores, velas, costura, jabones y mucho más.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">2</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Se te habilitan tus primeros cursos</div><div style="font-size:13px;color:var(--gris-medio);">El primer mes empezás con lo que elegiste. Dentro de cada curso, los módulos se desbloquean uno a uno a medida que avanzás.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">3</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Cada mes se habilita más contenido</div><div style="font-size:13px;color:var(--gris-medio);">El segundo mes se suma tu segunda elección, el tercero la tercera. Al cuarto mes tenés acceso libre a todo el catálogo.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">4</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Meetings en vivo cada semana</div><div style="font-size:13px;color:var(--gris-medio);">Con tu membresía participás de las consultas en vivo con Flor y Mery, y podés ver las grabaciones cuando quieras.</div></div>
+          </div>
+        </div>
+        <div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#1A6B3A;">
+          La encuesta dura menos de 2 minutos. Podés cambiar tus preferencias cuando quieras desde tu perfil.
+        </div>
+        <button class="btn-primary" id="btn-ir-encuesta">Empezar la encuesta →</button>
+      </div>
+      <div id="onboarding-survey" class="onboarding-card" style="display:none;">
+        <div class="progress-dots" id="onboarding-dots"></div>
+        <div class="onboarding-step" id="onboarding-step-label">Paso 1 de 3</div>
+        <div class="onboarding-title" id="onboarding-title">¿Qué te gustaría aprender?</div>
+        <div class="onboarding-sub" id="onboarding-sub">Elegí hasta 3 categorías que más te interesen.</div>
+        <div class="selection-note" id="selection-note" style="font-size:12px;color:var(--gris-medio);margin-bottom:12px;text-align:center;"></div>
+        <div class="option-grid" id="onboarding-options"></div>
+        <button class="btn-primary" id="onboarding-next" style="margin-top:12px;" disabled>Continuar →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HOME -->
   <div class="screen" id="screen-home">
     <div class="home-topbar">
@@ -265,60 +377,72 @@
       </div>
       <div class="home-main">
 
+        <!-- TAB CURSOS -->
         <div id="tab-cursos">
           <div class="greeting" id="home-greeting">¡Hola!</div>
-          <div class="greeting-sub">¿Por dónde empezamos hoy?</div>
-          <div class="section-label">Elegí tu camino</div>
-          <div class="caminos-grid" id="caminos-grid">
-            <div class="loading"><div class="spinner"></div> Cargando...</div>
+          <div class="greeting-sub" id="home-sub">¿Por dónde empezamos hoy?</div>
+          <div id="fase-info"></div>
+          <div id="cursos-content">
+            <div class="loading"><div class="spinner"></div> Cargando tus cursos...</div>
           </div>
         </div>
 
+        <!-- TAB MÓDULOS (dinámico) -->
+        <div id="tab-modulos" style="display:none;">
+          <div class="modulos-back" onclick="showTab('tab-cursos')">← Volver a mis cursos</div>
+          <div class="modulos-header">
+            <div class="modulos-title" id="modulo-curso-titulo"></div>
+            <div class="modulos-meta" id="modulo-curso-meta"></div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="modulo-prog-bar" style="width:0%"></div></div>
+            <div class="prog-label" id="modulo-prog-label"></div>
+          </div>
+          <div id="modulos-lista"></div>
+        </div>
+
+        <!-- TAB MEETINGS -->
         <div id="tab-meetings" style="display:none;">
           <div class="greeting">📅 Meetings en vivo</div>
           <div class="greeting-sub">Consultas semanales con Flor y Mery</div>
-          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:14px;padding:32px;margin-top:20px;text-align:center;max-width:500px;">
+          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:16px;padding:32px;margin-top:20px;text-align:center;max-width:500px;">
             <div style="font-size:40px;margin-bottom:16px;">🔴</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#8B3A1A;">Próximamente</div>
-            <div style="font-size:14px;color:#C4723A;margin-top:8px;">Las clases en vivo se habilitarán pronto</div>
+            <div style="font-size:14px;color:var(--terracota);margin-top:8px;">Las clases en vivo se habilitarán pronto</div>
           </div>
         </div>
 
+        <!-- TAB PERFIL -->
         <div id="tab-perfil" style="display:none;">
           <div class="greeting">👤 Mi perfil</div>
           <div class="greeting-sub">Tu información en Ohla Academy</div>
           <div style="background:#fff;border:1px solid var(--borde);border-radius:14px;padding:28px;margin-top:20px;max-width:480px;">
-            <div style="margin-bottom:16px;">
-              <div class="field-label">Nombre</div>
-              <div id="perfil-nombre" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div>
-            </div>
-            <div style="margin-bottom:16px;">
-              <div class="field-label">Correo electrónico</div>
-              <div id="perfil-email" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div>
-            </div>
-            <div style="margin-bottom:20px;">
-              <div class="field-label">Rol</div>
-              <div id="perfil-rol" style="font-size:14px;color:var(--gris-medio);padding:10px 0;"></div>
-            </div>
+            <div style="margin-bottom:16px;"><div class="field-label">Nombre</div><div id="perfil-nombre" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:16px;"><div class="field-label">Correo</div><div id="perfil-email" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:16px;"><div class="field-label">Rol</div><div id="perfil-rol" style="font-size:14px;color:var(--gris-medio);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:20px;"><div class="field-label">Fase actual</div><div id="perfil-fase" style="font-size:14px;color:var(--gris-medio);padding:10px 0;"></div></div>
             <button class="logout-btn" style="width:100%;padding:12px;" onclick="doLogout()">Cerrar sesión</button>
           </div>
         </div>
 
+        <!-- TAB ADMIN -->
         <div id="tab-admin" style="display:none;">
           <div class="greeting">⚙️ Panel de administración</div>
-          <div class="greeting-sub">Gestioná actividades y usuarios de Ohla Academy</div>
+          <div class="greeting-sub">Gestioná categorías, cursos y usuarias de Ohla Academy</div>
+
           <div class="admin-panel" style="margin-top:20px;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:6px;">📚 Actividades</div>
-            <div style="font-size:12px;color:var(--gris-medio);margin-bottom:16px;">Agregá, editá o eliminá los cursos visibles para las alumnas.</div>
-            <div id="activities-editor"></div>
-            <button class="add-activity-btn" onclick="addActivity()">+ Agregar nueva actividad</button>
-            <div style="margin-top:16px;"><button class="btn-small" onclick="saveActivities()">Guardar cambios</button></div>
+            <div class="admin-section-title">📂 Categorías y cursos</div>
+            <div class="admin-section-sub">Organizá el contenido por categoría. Las alumnas verán esto en su encuesta de bienvenida.</div>
+            <div id="cats-editor"></div>
+            <button class="add-cat-btn" onclick="addCategoria()">+ Agregar nueva categoría</button>
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn-small" onclick="saveCatalogo()">Guardar cambios</button>
+            </div>
             <div class="msg msg-success" id="admin-ok" style="margin-top:12px;"></div>
           </div>
+
           <div class="admin-panel">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:6px;">👥 Usuarios registrados</div>
-            <div style="font-size:12px;color:var(--gris-medio);margin-bottom:16px;">Cambiá el rol de cada persona. Los cambios se guardan al instante.</div>
-            <div id="users-list"><div class="loading"><div class="spinner"></div> Cargando usuarios...</div></div>
+            <div class="admin-section-title">👥 Usuarias registradas</div>
+            <div class="admin-section-sub">Cambiá el rol y gestioná el acceso de cada persona.</div>
+            <div id="users-list"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
           </div>
         </div>
 
@@ -353,144 +477,300 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // Lista de UIDs admin — se completa automáticamente al primer login
-  // Los mails admin hardcodeados como respaldo
-  const ADMIN_EMAILS = ['aguilera.nasser@gmail.com', 'ohlaacademy@gmail.com', 'meriaineslloret18@gmail.com'];
+  const ADMIN_EMAILS = ['aguilera.nasser@gmail.com','ohlaacademy@gmail.com','meriaineslloret18@gmail.com'];
 
-  const COLORS = ['c1','c2','c3','c4','c5','c6'];
-  const DEFAULT_ACTIVITIES = [
-    { icon: '🕯️', name: 'Mundo de las velas', desc: 'Molde, contenedor, aromaterapia', status: 'nuevo' },
-    { icon: '🌸', name: 'Flores de tela', desc: 'Pequeñas, grandes y gigantes', status: 'nuevo' },
-    { icon: '🪡', name: 'ABC de costura', desc: 'Jabones, cremas y más', status: 'pronto' },
+  const DEFAULT_CATALOGO = [
+    { id: 'manualidades', icon: '🌸', nombre: 'Manualidades', cursos: [
+      { id: 'budas', icon: '🗿', nombre: 'Budas de yeso intervenidos', tipo: 'membresia' },
+      { id: 'flores', icon: '🌺', nombre: 'Flores de tela', tipo: 'membresia' }
+    ]},
+    { id: 'costura', icon: '🧵', nombre: 'Costura y tejido', cursos: [
+      { id: 'abc-costura', icon: '🪡', nombre: 'ABC de la costura', tipo: 'gratis' },
+      { id: 'moldes', icon: '✂️', nombre: 'Moldes y progresiones — hacé tu outfit', tipo: 'membresia' },
+      { id: 'crochet', icon: '🧶', nombre: 'Crochet', tipo: 'membresia' },
+      { id: 'bordado', icon: '🪢', nombre: 'Bordado', tipo: 'membresia' }
+    ]},
+    { id: 'belleza', icon: '🧴', nombre: 'Belleza natural', cursos: [
+      { id: 'cremas-corp', icon: '✨', nombre: 'Cremas corporales', tipo: 'membresia' },
+      { id: 'cremas-pelo', icon: '💆', nombre: 'Cremas de pelo y de rostro', tipo: 'membresia' },
+      { id: 'shampoo', icon: '🛁', nombre: 'Shampoo y acondicionador sólido', tipo: 'membresia' },
+      { id: 'jabones', icon: '🧼', nombre: 'Jabones', tipo: 'membresia' }
+    ]},
+    { id: 'deco', icon: '🕯️', nombre: 'Deco y aromas', cursos: [
+      { id: 'bodysplash', icon: '💧', nombre: 'Body splash', tipo: 'membresia' },
+      { id: 'velas', icon: '🕯️', nombre: 'Velas aromáticas', tipo: 'membresia' },
+      { id: 'difusores', icon: '🌿', nombre: 'Difusores', tipo: 'membresia' },
+      { id: 'yeso', icon: '🏺', nombre: 'Contenedores de yeso cerámico', tipo: 'membresia' }
+    ]}
   ];
 
-  let activities = [...DEFAULT_ACTIVITIES];
-  let currentUserRole = 'alumna';
+  const DEFAULT_MODULOS = [
+    { nombre: 'Introducción al curso', desc: 'Bienvenida y materiales necesarios' },
+    { nombre: 'Técnica base', desc: 'Fundamentos y primeros pasos' },
+    { nombre: 'Práctica guiada', desc: 'Ejercicios con Flor y Mery' },
+    { nombre: 'Proyecto final', desc: 'Tu primera creación completa' },
+    { nombre: 'Emprendé con esto', desc: 'Cómo monetizar lo que aprendiste' }
+  ];
 
-  async function showHomeScreen(user) {
-    const nombre = user.displayName || user.email.split('@')[0];
-    document.getElementById('user-name-display').textContent = nombre;
-    document.getElementById('user-email-display').textContent = user.email;
-    document.getElementById('home-greeting').textContent = `¡Hola, ${nombre.split(' ')[0]}!`;
-    document.getElementById('perfil-nombre').textContent = nombre;
-    document.getElementById('perfil-email').textContent = user.email;
+  let catalogo = [];
+  let currentUser = null;
+  let userData = null;
+  let onboardingStep = 0;
+  let onboardingSelections = [[], [], []];
 
-    // Usar UID como clave — único, estable, sin caracteres problemáticos
-    const uid = user.uid;
-    const userRef = ref(db, `usuarios/${uid}`);
-    const snap = await get(userRef);
+  // ── ONBOARDING ──
+  function startOnboarding() {
+    onboardingStep = 0;
+    onboardingSelections = [[], [], []];
+    const intro = document.getElementById('onboarding-intro');
+    const survey = document.getElementById('onboarding-survey');
+    if (intro) intro.style.display = 'block';
+    if (survey) survey.style.display = 'none';
+    showScreen('screen-onboarding');
+    setTimeout(() => {
+      const btnIr = document.getElementById('btn-ir-encuesta');
+      if (btnIr) btnIr.onclick = () => {
+        intro.style.display = 'none';
+        survey.style.display = 'block';
+        renderOnboardingStep();
+      };
+      const btnNext = document.getElementById('onboarding-next');
+      if (btnNext) btnNext.onclick = onboardingNext;
+    }, 100);
+  }
 
-    if (!snap.exists()) {
-      // Usuario nuevo — determinar rol inicial
-      const rolInicial = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'alumna';
-      await set(userRef, { rol: rolInicial, email: user.email, nombre: nombre });
-      currentUserRole = rolInicial;
-    } else {
-      const data = snap.val();
-      // Si es admin por email pero la DB dice alumna, corregir
-      if (ADMIN_EMAILS.includes(user.email) && data.rol !== 'admin') {
-        await set(userRef, { ...data, rol: 'admin' });
-        currentUserRole = 'admin';
-      } else {
-        currentUserRole = data.rol || 'alumna';
-      }
+  function renderOnboardingStep() {
+    const steps = [
+      { label: 'Paso 1 de 3', title: '¿Qué te gustaría aprender?', sub: 'Elegí hasta 3 categorías. Empezarás con la primera que elijas y cada mes se irá habilitando la siguiente.', max: 3, items: catalogo.map(c => ({ id: c.id, icon: c.icon, name: c.nombre, desc: `${c.cursos.length} cursos disponibles` })) },
+      { label: 'Paso 2 de 3', title: '¿Por dónde querés empezar?', sub: 'De la primera categoría que elegiste, ¿qué preferís hacer primero? Elegí hasta 3 opciones.', max: 3, items: [] },
+      { label: 'Paso 3 de 3', title: '¿Qué más te gustaría explorar?', sub: 'Cuando termines los primeros cursos, ¿qué te gustaría aprender después?', max: 3, items: [] }
+    ];
+
+    if (onboardingStep === 1) {
+      const cat1 = catalogo.find(c => onboardingSelections[0][0] === c.id);
+      if (cat1) steps[1].items = cat1.cursos.map(c => ({ id: c.id, icon: c.icon, name: c.nombre, desc: c.tipo === 'gratis' ? 'Gratis' : 'Con membresía' }));
+    }
+    if (onboardingStep === 2) {
+      const otrosCursos = catalogo.filter(c => !onboardingSelections[0].includes(c.id)).flatMap(c => c.cursos.map(cu => ({ id: cu.id, icon: cu.icon, name: cu.nombre, desc: c.nombre })));
+      steps[2].items = otrosCursos;
     }
 
-    const rolTexto = currentUserRole === 'admin' ? '👑 Administradora' : currentUserRole === 'profe' ? '🎓 Profesora' : '🌸 Alumna';
-    document.getElementById('perfil-rol').textContent = rolTexto;
+    const step = steps[onboardingStep];
+    document.getElementById('onboarding-step-label').textContent = step.label;
+    document.getElementById('onboarding-title').textContent = step.title;
+    document.getElementById('onboarding-sub').textContent = step.sub;
 
-    const isAdmin = currentUserRole === 'admin';
-    document.getElementById('sidebar-admin').style.display = isAdmin ? 'flex' : 'none';
-    document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
+    const dots = document.getElementById('onboarding-dots');
+    dots.innerHTML = [0,1,2].map(i => `<div class="dot ${i < onboardingStep ? 'done' : i === onboardingStep ? 'active' : ''}"></div>`).join('');
 
-    await loadActivities();
-    if (isAdmin) loadUsers();
-    showScreen('screen-home');
-  }
-
-  async function loadActivities() {
-    try {
-      const snap = await get(ref(db, 'actividades'));
-      activities = snap.exists() ? snap.val() : [...DEFAULT_ACTIVITIES];
-    } catch(e) { activities = [...DEFAULT_ACTIVITIES]; }
-    renderCaminos();
-    renderEditor();
-  }
-
-  async function loadUsers() {
-    const list = document.getElementById('users-list');
-    try {
-      const snap = await get(ref(db, 'usuarios'));
-      if (!snap.exists()) { list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);">No hay usuarios aún.</div>'; return; }
-      const data = snap.val();
-      list.innerHTML = Object.entries(data).map(([uid, info]) => {
-        const rol = typeof info === 'object' ? (info.rol || 'alumna') : info;
-        const email = typeof info === 'object' ? (info.email || uid) : uid;
-        const nombre = typeof info === 'object' ? (info.nombre || email) : email;
-        const avatar = rol === 'admin' ? '👑' : rol === 'profe' ? '🎓' : '🌸';
-        return `<div class="user-row">
-          <div class="user-avatar">${avatar}</div>
-          <div class="user-info">
-            <div class="user-name">${nombre}</div>
-            <div class="user-email">${email}</div>
-          </div>
-          <select class="role-select" onchange="changeUserRole('${uid}', this.value)">
-            <option value="alumna" ${rol==='alumna'?'selected':''}>🌸 Alumna</option>
-            <option value="profe" ${rol==='profe'?'selected':''}>🎓 Profe</option>
-            <option value="admin" ${rol==='admin'?'selected':''}>👑 Admin</option>
-          </select>
-        </div>`;
-      }).join('');
-    } catch(e) { list.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar usuarios.</div>'; }
-  }
-
-  window.changeUserRole = async function(uid, newRole) {
-    try {
-      const snap = await get(ref(db, `usuarios/${uid}`));
-      const data = snap.val();
-      await set(ref(db, `usuarios/${uid}`), { ...data, rol: newRole });
-    } catch(e) { alert('Error al cambiar el rol.'); }
-  }
-
-  function renderCaminos() {
-    const grid = document.getElementById('caminos-grid');
-    if (!grid) return;
-    grid.innerHTML = activities.map((a, i) => `
-      <div class="camino-card ${COLORS[i % COLORS.length]}">
-        <span class="camino-icon">${a.icon}</span>
-        <div class="camino-info">
-          <div class="camino-name">${a.name}</div>
-          <div class="camino-desc">${a.desc}</div>
-        </div>
-        <span class="camino-badge ${a.status==='nuevo'?'badge-nuevo':'badge-pronto'}">${a.status==='nuevo'?'Nuevo':'Pronto'}</span>
+    const grid = document.getElementById('onboarding-options');
+    const sel = onboardingSelections[onboardingStep];
+    grid.innerHTML = step.items.map(item => `
+      <div class="option-card ${sel.includes(item.id) ? 'selected' : ''}" data-id="${item.id}" data-max="${step.max}">
+        <div class="option-icon">${item.icon}</div>
+        <div class="option-name">${item.name}</div>
+        <div class="option-desc">${item.desc}</div>
       </div>`).join('');
-  }
 
-  function renderEditor() {
-    const ed = document.getElementById('activities-editor');
-    if (!ed) return;
-    ed.innerHTML = activities.map((a, i) => `
-      <div class="activity-row">
-        <input class="activity-icon-input" value="${a.icon}" data-field="icon" data-index="${i}">
-        <input class="activity-name-input" value="${a.name}" placeholder="Nombre" data-field="name" data-index="${i}">
-        <input class="activity-desc-input" value="${a.desc}" placeholder="Descripción" data-field="desc" data-index="${i}">
-        <select class="activity-status" data-field="status" data-index="${i}">
-          <option value="nuevo" ${a.status==='nuevo'?'selected':''}>Nuevo</option>
-          <option value="pronto" ${a.status==='pronto'?'selected':''}>Pronto</option>
-        </select>
-        <button class="btn-danger" onclick="removeActivity(${i})">✕</button>
-      </div>`).join('');
-    ed.querySelectorAll('input,select').forEach(el => {
-      el.addEventListener('input', e => { activities[+e.target.dataset.index][e.target.dataset.field] = e.target.value; renderCaminos(); });
-      el.addEventListener('change', e => { activities[+e.target.dataset.index][e.target.dataset.field] = e.target.value; renderCaminos(); });
+    grid.querySelectorAll('.option-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const max = parseInt(card.dataset.max);
+        const sel2 = onboardingSelections[onboardingStep];
+        const idx = sel2.indexOf(id);
+        if (idx >= 0) sel2.splice(idx, 1);
+        else if (sel2.length < max) sel2.push(id);
+        renderOnboardingStep();
+      });
     });
+
+    updateOnboardingNote(step.max);
   }
 
-  window.addActivity = () => { activities.push({ icon: '✨', name: 'Nueva actividad', desc: 'Descripción', status: 'pronto' }); renderEditor(); renderCaminos(); }
-  window.removeActivity = i => { if (activities.length > 1) { activities.splice(i, 1); renderEditor(); renderCaminos(); } }
-  window.saveActivities = async () => {
+
+
+  function updateOnboardingNote(max) {
+    const sel = onboardingSelections[onboardingStep];
+    const note = document.getElementById('selection-note');
+    const btn = document.getElementById('onboarding-next');
+    if (note) note.textContent = sel.length > 0 ? `${sel.length} de ${max} seleccionadas` : 'Seleccioná al menos 1 opción';
+    if (btn) btn.disabled = sel.length === 0;
+  }
+
+  window.onboardingNext = async function() {
+    if (onboardingStep < 2) {
+      onboardingStep++;
+      renderOnboardingStep();
+    } else {
+      // Guardar preferencias y empezar
+      const prefs = {
+        categorias: onboardingSelections[0],
+        cursosInicio: onboardingSelections[1],
+        cursosExtra: onboardingSelections[2],
+        fase: 1,
+        fechaInicio: new Date().toISOString(),
+        onboardingCompleto: true
+      };
+      await set(ref(db, `usuarios/${currentUser.uid}/preferencias`), prefs);
+      userData.preferencias = prefs;
+      showScreen('screen-home');
+      renderCursos();
+    }
+  }
+
+  // ── CURSOS ──
+  function renderCursos() {
+    const container = document.getElementById('cursos-content');
+    const faseInfo = document.getElementById('fase-info');
+    if (!userData?.preferencias?.onboardingCompleto) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;"><div style="font-size:40px;margin-bottom:12px;">🌸</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">¡Bienvenida a Ohla Academy!</div><div style="font-size:14px;color:var(--gris-medio);margin-bottom:20px;">Respondé unas preguntas rápidas para personalizar tu experiencia</div><button class="btn-primary" style="max-width:300px;margin:0 auto;display:block;" onclick="startOnboarding()">Empezar mi encuesta →</button></div>`;
+      return;
+    }
+
+    const fase = userData.preferencias.fase || 1;
+    const fechaInicio = new Date(userData.preferencias.fechaInicio);
+    const hoy = new Date();
+    const mesesTranscurridos = Math.floor((hoy - fechaInicio) / (1000 * 60 * 60 * 24 * 30));
+    const faseActual = Math.min(mesesTranscurridos + 1, 4);
+
+    if (faseActual > fase) {
+      set(ref(db, `usuarios/${currentUser.uid}/preferencias/fase`), faseActual);
+      userData.preferencias.fase = faseActual;
+    }
+
+    const faseTxt = faseActual >= 4 ? '✦ Acceso completo — ¡Explorá todo!' : `✦ Fase ${faseActual} de 3 — ${faseActual === 1 ? 'Tus primeros cursos' : faseActual === 2 ? 'Se habilitó tu segunda elección' : 'Se habilitó tu tercera elección'}`;
+    faseInfo.innerHTML = `<div class="fase-badge">${faseTxt}</div>`;
+    document.getElementById('perfil-fase').textContent = faseTxt;
+
+    const categoriasElegidas = userData.preferencias.categorias || [];
+    const cursosInicio = userData.preferencias.cursosInicio || [];
+
+    let html = '';
+    catalogo.forEach(cat => {
+      const catHabilitada = faseActual >= 4 || categoriasElegidas.includes(cat.id);
+      const cursosVisibles = cat.cursos.filter(c => c.tipo === 'gratis' || catHabilitada);
+      if (cursosVisibles.length === 0) return;
+
+      html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
+      cursosVisibles.forEach((curso, i) => {
+        const esPrioritario = cursosInicio.includes(curso.id);
+        const bloqueado = curso.tipo === 'membresia' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
+        const colorIdx = i % 6;
+        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" onclick="${bloqueado ? 'showMembresiaBanner()' : `abrirCurso('${curso.id}','${cat.id}')`}">
+          <div class="curso-card-header">
+            <span class="curso-card-icon">${curso.icon}</span>
+            <div class="curso-card-info">
+              <div class="curso-card-name">${curso.nombre}</div>
+              <div class="curso-card-cat">${cat.nombre}</div>
+            </div>
+          </div>
+          <div class="curso-card-footer">
+            <span class="curso-badge ${bloqueado ? 'badge-bloqueado' : curso.tipo === 'gratis' ? 'badge-gratis' : 'badge-membresia'}">${bloqueado ? '🔒 Membresía' : curso.tipo === 'gratis' ? '✓ Gratis' : esPrioritario ? '⭐ Tu elección' : '✦ Membresía'}</span>
+            <span style="font-size:12px;color:var(--gris-medio);">${bloqueado ? '' : '→'}</span>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    if (!html) html = '<div style="font-size:13px;color:var(--gris-medio);padding:20px 0;">No hay cursos disponibles aún.</div>';
+    container.innerHTML = html;
+  }
+
+  window.showMembresiaBanner = function() {
+    document.getElementById('cursos-content').insertAdjacentHTML('afterbegin', `
+      <div class="membresia-banner">
+        <div class="membresia-titulo">🌸 Este curso es parte de la membresía</div>
+        <div class="membresia-sub">Accedé a todos los cursos, meetings en vivo y contenido exclusivo con tu membresía mensual.</div>
+        <button class="btn-small">Quiero mi membresía →</button>
+      </div>`);
+    setTimeout(() => document.querySelector('.membresia-banner')?.remove(), 5000);
+  }
+
+  window.abrirCurso = async function(cursoId, catId) {
+    const cat = catalogo.find(c => c.id === catId);
+    const curso = cat?.cursos.find(c => c.id === cursoId);
+    if (!curso) return;
+
+    document.getElementById('modulo-curso-titulo').textContent = `${curso.icon} ${curso.nombre}`;
+    document.getElementById('modulo-curso-meta').textContent = `${cat.nombre} · Con Flor y Mery`;
+
+    // Cargar progreso
+    const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`));
+    const prog = progSnap.exists() ? progSnap.val() : { completados: [] };
+
+    const modulos = DEFAULT_MODULOS;
+    const completados = prog.completados || [];
+    const total = modulos.length;
+    const hecho = completados.length;
+    const pct = Math.round((hecho / total) * 100);
+
+    document.getElementById('modulo-prog-bar').style.width = pct + '%';
+    document.getElementById('modulo-prog-label').textContent = `${hecho} de ${total} módulos completados`;
+
+    const lista = document.getElementById('modulos-lista');
+    lista.innerHTML = modulos.map((m, i) => {
+      const done = completados.includes(i);
+      const active = !done && (i === 0 || completados.includes(i - 1));
+      const locked = !done && !active;
+      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${locked ? '' : `marcarModulo('${cursoId}',${i},${done})`}">
+        <div class="modulo-num ${done ? 'num-done' : active ? 'num-active' : 'num-pending'}">${done ? '✓' : i + 1}</div>
+        <div class="modulo-info">
+          <div class="modulo-name">${m.nombre}</div>
+          <div class="modulo-desc">${m.desc}</div>
+        </div>
+        <div class="modulo-status">${done ? '✅' : active ? '▶' : '🔒'}</div>
+      </div>`;
+    }).join('');
+
+    showTab('tab-modulos');
+  }
+
+  window.marcarModulo = async function(cursoId, idx, estabaDone) {
+    const progRef = ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`);
+    const snap = await get(progRef);
+    const prog = snap.exists() ? snap.val() : { completados: [] };
+    const completados = prog.completados || [];
+    if (estabaDone) completados.splice(completados.indexOf(idx), 1);
+    else if (!completados.includes(idx)) completados.push(idx);
+    await set(progRef, { completados });
+    abrirCurso(cursoId, catalogo.find(c => c.cursos.some(cu => cu.id === cursoId))?.id);
+  }
+
+  // ── ADMIN CATÁLOGO ──
+  function renderCatsEditor() {
+    const ed = document.getElementById('cats-editor');
+    ed.innerHTML = catalogo.map((cat, ci) => `
+      <div class="cat-block">
+        <div class="cat-header">
+          <input class="cat-icon-input" value="${cat.icon}" oninput="catalogo[${ci}].icon=this.value">
+          <input class="cat-name-input" value="${cat.nombre}" oninput="catalogo[${ci}].nombre=this.value">
+          <button class="btn-danger" onclick="removeCat(${ci})">✕ Categoría</button>
+        </div>
+        <div id="cursos-cat-${ci}">
+          ${cat.cursos.map((c, coi) => `
+            <div class="curso-row">
+              <input class="curso-icon-input" value="${c.icon}" oninput="catalogo[${ci}].cursos[${coi}].icon=this.value">
+              <input class="curso-name-input" value="${c.nombre}" oninput="catalogo[${ci}].cursos[${coi}].nombre=this.value">
+              <select class="curso-type-select" onchange="catalogo[${ci}].cursos[${coi}].tipo=this.value">
+                <option value="gratis" ${c.tipo==='gratis'?'selected':''}>✓ Gratis</option>
+                <option value="membresia" ${c.tipo==='membresia'?'selected':''}>✦ Membresía</option>
+              </select>
+              <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕</button>
+            </div>`).join('')}
+        </div>
+        <button class="add-row-btn" onclick="addCurso(${ci})">+ Agregar curso</button>
+      </div>`).join('');
+  }
+
+  window.addCategoria = () => { catalogo.push({ id: `cat-${Date.now()}`, icon: '✨', nombre: 'Nueva categoría', cursos: [] }); renderCatsEditor(); }
+  window.removeCat = i => { catalogo.splice(i, 1); renderCatsEditor(); }
+  window.addCurso = ci => { catalogo[ci].cursos.push({ id: `curso-${Date.now()}`, icon: '📖', nombre: 'Nuevo curso', tipo: 'membresia' }); renderCatsEditor(); }
+  window.removeCurso = (ci, coi) => { catalogo[ci].cursos.splice(coi, 1); renderCatsEditor(); }
+
+  window.saveCatalogo = async () => {
     try {
-      await set(ref(db, 'actividades'), activities);
+      await set(ref(db, 'catalogo'), catalogo);
       const ok = document.getElementById('admin-ok');
       ok.textContent = '✦ Cambios guardados correctamente';
       ok.classList.add('show');
@@ -498,8 +778,99 @@
     } catch(e) { alert('Error al guardar.'); }
   }
 
+  async function loadCatalogo() {
+    try {
+      const snap = await get(ref(db, 'catalogo'));
+      catalogo = snap.exists() ? snap.val() : [...DEFAULT_CATALOGO];
+    } catch(e) { catalogo = [...DEFAULT_CATALOGO]; }
+  }
+
+  async function loadUsers() {
+    const list = document.getElementById('users-list');
+    try {
+      const snap = await get(ref(db, 'usuarios'));
+      if (!snap.exists()) { list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);">No hay usuarias aún.</div>'; return; }
+      const data = snap.val();
+      list.innerHTML = Object.entries(data).map(([uid, info]) => {
+        const rol = typeof info === 'object' ? (info.rol || 'alumna') : info;
+        const email = typeof info === 'object' ? (info.email || '') : '';
+        const nombre = typeof info === 'object' ? (info.nombre || email) : email;
+        const membresia = typeof info === 'object' ? !!info.membresia : false;
+        const avatar = rol === 'admin' ? '👑' : rol === 'profe' ? '🎓' : '🌸';
+        return `<div class="user-row">
+          <div class="user-avatar">${avatar}</div>
+          <div class="user-info"><div class="user-name">${nombre}</div><div class="user-email">${email}</div></div>
+          <select class="role-select" onchange="changeUserRole('${uid}',this.value)">
+            <option value="alumna" ${rol==='alumna'?'selected':''}>🌸 Alumna</option>
+            <option value="profe" ${rol==='profe'?'selected':''}>🎓 Profe</option>
+            <option value="admin" ${rol==='admin'?'selected':''}>👑 Admin</option>
+          </select>
+          <button class="${membresia?'btn-danger':'btn-small'}" onclick="toggleMembresia('${uid}',${membresia})">${membresia?'Quitar membresía':'+ Membresía'}</button>
+        </div>`;
+      }).join('');
+    } catch(e) { list.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar.</div>'; }
+  }
+
+  window.changeUserRole = async (uid, rol) => {
+    const snap = await get(ref(db, `usuarios/${uid}`));
+    const data = snap.val();
+    await set(ref(db, `usuarios/${uid}`), { ...data, rol });
+  }
+
+  window.toggleMembresia = async (uid, tenia) => {
+    const snap = await get(ref(db, `usuarios/${uid}`));
+    const data = snap.val();
+    await set(ref(db, `usuarios/${uid}`), { ...data, membresia: !tenia });
+    loadUsers();
+  }
+
+  // ── AUTH ──
+  async function showHomeScreen(user) {
+    currentUser = user;
+    const nombre = user.displayName || user.email.split('@')[0];
+    document.getElementById('user-name-display').textContent = nombre;
+    document.getElementById('user-email-display').textContent = user.email;
+    document.getElementById('home-greeting').textContent = `¡Hola, ${nombre.split(' ')[0]}!`;
+    document.getElementById('perfil-nombre').textContent = nombre;
+    document.getElementById('perfil-email').textContent = user.email;
+
+    const uid = user.uid;
+    const userRef = ref(db, `usuarios/${uid}`);
+    const snap = await get(userRef);
+
+    if (!snap.exists()) {
+      const rolInicial = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'alumna';
+      await set(userRef, { rol: rolInicial, email: user.email, nombre });
+      userData = { rol: rolInicial, email: user.email, nombre };
+    } else {
+      userData = snap.val();
+      if (ADMIN_EMAILS.includes(user.email) && userData.rol !== 'admin') {
+        await set(ref(db, `usuarios/${uid}/rol`), 'admin');
+        userData.rol = 'admin';
+      }
+    }
+
+    const rolTexto = userData.rol === 'admin' ? '👑 Administradora' : userData.rol === 'profe' ? '🎓 Profesora' : '🌸 Alumna';
+    document.getElementById('perfil-rol').textContent = rolTexto;
+
+    const isAdmin = userData.rol === 'admin';
+    document.getElementById('sidebar-admin').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
+
+    await loadCatalogo();
+    if (isAdmin) { renderCatsEditor(); loadUsers(); }
+
+    showScreen('screen-home');
+
+    if (!userData?.preferencias?.onboardingCompleto && userData.rol === 'alumna') {
+      startOnboarding();
+    } else {
+      renderCursos();
+    }
+  }
+
   window.showTab = id => {
-    ['tab-cursos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
+    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
@@ -526,14 +897,14 @@
     const remember = document.getElementById('remember-me').checked;
     const btn = document.getElementById('btn-login');
     const err = document.getElementById('login-error');
-    if (!email || !password) { showMsg(err, '✦ Completá todos los campos'); return; }
+    if (!email||!password) { showMsg(err,'✦ Completá todos los campos'); return; }
     btn.disabled = true; btn.textContent = 'Ingresando...';
     try {
       await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
       const r = await signInWithEmailAndPassword(auth, email, password);
       showHomeScreen(r.user);
     } catch(e) {
-      showMsg(err, e.code === 'auth/invalid-credential' ? '✦ Mail o contraseña incorrectos' : e.code === 'auth/too-many-requests' ? '✦ Demasiados intentos. Esperá unos minutos.' : '✦ Error al ingresar. Intentá de nuevo.');
+      showMsg(err, e.code==='auth/invalid-credential' ? '✦ Mail o contraseña incorrectos' : e.code==='auth/too-many-requests' ? '✦ Demasiados intentos. Esperá.' : '✦ Error al ingresar.');
     } finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
   }
 
@@ -545,15 +916,15 @@
     const btn = document.getElementById('btn-register');
     const err = document.getElementById('register-error');
     if (!name||!email||!pass||!pass2) { showMsg(err,'✦ Completá todos los campos'); return; }
-    if (pass.length < 8) { showMsg(err,'✦ La contraseña debe tener al menos 8 caracteres'); return; }
-    if (pass !== pass2) { showMsg(err,'✦ Las contraseñas no coinciden'); return; }
+    if (pass.length<8) { showMsg(err,'✦ Mínimo 8 caracteres'); return; }
+    if (pass!==pass2) { showMsg(err,'✦ Las contraseñas no coinciden'); return; }
     btn.disabled = true; btn.textContent = 'Creando tu cuenta...';
     try {
       const r = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(r.user, { displayName: name });
       showHomeScreen(r.user);
     } catch(e) {
-      showMsg(err, e.code === 'auth/email-already-in-use' ? '✦ Ese mail ya tiene cuenta. ¿Querés ingresar?' : '✦ Error al crear la cuenta.');
+      showMsg(err, e.code==='auth/email-already-in-use' ? '✦ Ese mail ya tiene cuenta' : '✦ Error al crear la cuenta.');
     } finally { btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
   }
 
@@ -562,7 +933,7 @@
   window.resetPassword = async () => {
     const email = document.getElementById('login-email').value.trim();
     const err = document.getElementById('login-error');
-    if (!email) { showMsg(err, '✦ Primero escribí tu mail'); return; }
+    if (!email) { showMsg(err,'✦ Primero escribí tu mail'); return; }
     try {
       await sendPasswordResetEmail(auth, email);
       const ok = document.createElement('div');
@@ -570,7 +941,7 @@
       ok.textContent = '✦ Te mandamos un mail para resetear tu contraseña';
       err.parentNode.insertBefore(ok, err);
       setTimeout(() => ok.remove(), 5000);
-    } catch(e) { showMsg(err, '✦ No encontramos ese mail'); }
+    } catch(e) { showMsg(err,'✦ No encontramos ese mail'); }
   }
 
   function showMsg(el, text) { el.textContent = text; el.classList.add('show'); }

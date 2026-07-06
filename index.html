@@ -1186,8 +1186,8 @@
   }
 
   // ── DAILY.CO API KEY ──
-  const DAILY_API_KEY = '1666aa688d0be3a0de05ecc1fd1d113fae1ff65714569bdc4eb7c1dc56e8e17c';
-  const DAILY_DOMAIN = 'ohlaacademy'; // cambiá esto por tu dominio en Daily.co
+
+
 
   let meetingsData = [];
 
@@ -1479,7 +1479,7 @@
           <input type="number" class="content-input" value="${m.duracion||60}" min="15" max="240" oninput="meetingsEdit[${i}].duracion=parseInt(this.value)">
         </div>
         <div style="flex:1;min-width:160px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link sala Daily.co</div>
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">ID de sala (ej: consultas-ohla)</div>
           <input class="content-input" value="${m.roomUrl||''}" placeholder="https://ohlaacademy.daily.co/sala" oninput="meetingsEdit[${i}].roomUrl=this.value">
         </div>
         <div style="flex:1;min-width:160px;">

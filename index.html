@@ -188,6 +188,45 @@
 
     /* MEMBRESÍA BANNER */
     .membresia-banner { background: linear-gradient(135deg, #FFF5EC, #FFF0F7); border: 1px solid #F0C5A0; border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; }
+
+    /* VISOR DE MÓDULO */
+    .visor-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .visor-card { background:#fff;border-radius:20px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column; }
+    .visor-header { padding:20px 24px 16px;border-bottom:1px solid var(--borde);display:flex;align-items:flex-start;justify-content:space-between;gap:12px; }
+    .visor-titulo { font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);font-weight:700; }
+    .visor-close { background:none;border:none;font-size:22px;color:var(--gris-medio);cursor:pointer;padding:4px;flex-shrink:0; }
+    .visor-body { padding:24px;flex:1; }
+    .visor-video { position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;background:#000;margin-bottom:20px; }
+    .visor-video iframe { position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px; }
+    .visor-texto { font-size:15px;color:var(--gris);line-height:1.8;margin-bottom:20px;white-space:pre-wrap; }
+    .visor-archivo { display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--borde);border-radius:10px;margin-bottom:10px;background:var(--gris-claro); }
+    .visor-archivo-icon { font-size:24px;flex-shrink:0; }
+    .visor-archivo-info { flex:1; }
+    .visor-archivo-name { font-size:14px;font-weight:700;color:var(--gris); }
+    .visor-archivo-tipo { font-size:11px;color:var(--gris-medio);margin-top:2px; }
+    .visor-archivo-btn { background:var(--terracota);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap; }
+    .visor-archivo-btn.solo-lectura { background:var(--gris-claro);color:var(--gris-medio);border:1px solid #E0DED8;cursor:not-allowed; }
+    .visor-footer { padding:16px 24px;border-top:1px solid var(--borde);display:flex;gap:10px;justify-content:flex-end; }
+    .btn-completar { background:var(--terracota);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:1px; }
+    .btn-completar.ya-completo { background:#A8DCBC;color:#1A6B3A; }
+
+    /* EDITOR DE MÓDULOS ADMIN */
+    .mod-editor-block { border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--gris-claro); }
+    .mod-editor-header { display:flex;align-items:center;gap:10px;margin-bottom:12px; }
+    .mod-num-badge { width:28px;height:28px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0; }
+    .mod-name-input { flex:1;background:#fff;border:1px solid #E0DED8;border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--gris);font-family:'Lato',sans-serif;outline:none; }
+    .mod-name-input:focus { border-color:var(--terracota); }
+    .mod-desc-input { width:100%;background:#fff;border:1px solid #E0DED8;border-radius:8px;padding:7px 12px;font-size:13px;color:var(--gris-medio);font-family:'Lato',sans-serif;outline:none;margin-bottom:10px; }
+    .content-section { background:#fff;border:1px solid #E0DED8;border-radius:10px;padding:12px;margin-bottom:8px; }
+    .content-section-title { font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px; }
+    .content-input { width:100%;background:var(--gris-claro);border:1px solid #E0DED8;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--gris);font-family:'Lato',sans-serif;outline:none;margin-bottom:6px; }
+    .content-input:focus { border-color:var(--terracota); }
+    .content-textarea { width:100%;background:var(--gris-claro);border:1px solid #E0DED8;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--gris);font-family:'Lato',sans-serif;outline:none;min-height:80px;resize:vertical; }
+    .content-textarea:focus { border-color:var(--terracota); }
+    .archivo-row { display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F5F2EE;flex-wrap:wrap; }
+    .archivo-row:last-child { border-bottom:none; }
+    .toggle-descarga { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);cursor:pointer; }
+    .toggle-descarga input { accent-color:var(--terracota);width:15px;height:15px; }
     .membresia-titulo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #8B3A1A; margin-bottom: 8px; }
     .membresia-sub { font-size: 13px; color: var(--gris-medio); margin-bottom: 16px; }
 
@@ -399,6 +438,24 @@
           <div id="modulos-lista"></div>
         </div>
 
+        <!-- VISOR DE CONTENIDO (overlay) -->
+        <div id="visor-overlay" class="visor-overlay" style="display:none;">
+          <div class="visor-card">
+            <div class="visor-header">
+              <div>
+                <div style="font-size:11px;color:var(--terracota);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;" id="visor-modulo-num"></div>
+                <div class="visor-titulo" id="visor-titulo"></div>
+              </div>
+              <button class="visor-close" onclick="cerrarVisor()">✕</button>
+            </div>
+            <div class="visor-body" id="visor-body"></div>
+            <div class="visor-footer">
+              <button class="btn-outline" onclick="cerrarVisor()">Volver a módulos</button>
+              <button class="btn-completar" id="btn-completar" onclick="completarDesdeVisor()">Marcar como completado ✓</button>
+            </div>
+          </div>
+        </div>
+
         <!-- TAB MEETINGS -->
         <div id="tab-meetings" style="display:none;">
           <div class="greeting">📅 Meetings en vivo</div>
@@ -437,6 +494,17 @@
               <button class="btn-small" onclick="saveCatalogo()">Guardar cambios</button>
             </div>
             <div class="msg msg-success" id="admin-ok" style="margin-top:12px;"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📚 Editor de módulos</div>
+            <div class="admin-section-sub">Seleccioná un curso para editar sus módulos, agregar videos, textos y archivos.</div>
+            <div style="margin-bottom:16px;">
+              <select id="curso-selector" class="curso-type-select" style="width:100%;padding:10px;font-size:14px;" onchange="cargarEditorModulos(this.value)">
+                <option value="">— Seleccioná un curso —</option>
+              </select>
+            </div>
+            <div id="modulos-editor-container"></div>
           </div>
 
           <div class="admin-panel">
@@ -690,23 +758,37 @@
     setTimeout(() => document.querySelector('.membresia-banner')?.remove(), 5000);
   }
 
+  let cursoActivo = null;
+  let moduloActivo = null;
+  let modulosActivos = [];
+
+  function youtubeId(url) {
+    if (!url) return null;
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/);
+    return m ? m[1] : null;
+  }
+
   window.abrirCurso = async function(cursoId, catId) {
     const cat = catalogo.find(c => c.id === catId);
     const curso = cat?.cursos.find(c => c.id === cursoId);
     if (!curso) return;
+    cursoActivo = { cursoId, catId };
 
     document.getElementById('modulo-curso-titulo').textContent = `${curso.icon} ${curso.nombre}`;
     document.getElementById('modulo-curso-meta').textContent = `${cat.nombre} · Con Flor y Mery`;
 
-    // Cargar progreso
     const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`));
     const prog = progSnap.exists() ? progSnap.val() : { completados: [] };
-
-    const modulos = DEFAULT_MODULOS;
     const completados = prog.completados || [];
+
+    // Cargar módulos desde Firebase o usar defaults
+    const modSnap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+    modulosActivos = modulos;
+
     const total = modulos.length;
     const hecho = completados.length;
-    const pct = Math.round((hecho / total) * 100);
+    const pct = total > 0 ? Math.round((hecho / total) * 100) : 0;
 
     document.getElementById('modulo-prog-bar').style.width = pct + '%';
     document.getElementById('modulo-prog-label').textContent = `${hecho} de ${total} módulos completados`;
@@ -716,17 +798,98 @@
       const done = completados.includes(i);
       const active = !done && (i === 0 || completados.includes(i - 1));
       const locked = !done && !active;
-      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${locked ? '' : `marcarModulo('${cursoId}',${i},${done})`}">
+      const tieneVideo = !!(m.videoUrl && youtubeId(m.videoUrl));
+      const tieneTexto = !!(m.texto && m.texto.trim());
+      const tieneArchivos = !!(m.archivos && m.archivos.length > 0);
+      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${locked ? '' : `abrirVisor(${i})`}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
         <div class="modulo-num ${done ? 'num-done' : active ? 'num-active' : 'num-pending'}">${done ? '✓' : i + 1}</div>
         <div class="modulo-info">
           <div class="modulo-name">${m.nombre}</div>
-          <div class="modulo-desc">${m.desc}</div>
+          <div class="modulo-desc">${m.desc || ''}${tieneVideo?' · 📹':''}${tieneTexto?' · 📝':''}${tieneArchivos?' · 📎':''}</div>
         </div>
         <div class="modulo-status">${done ? '✅' : active ? '▶' : '🔒'}</div>
       </div>`;
     }).join('');
 
     showTab('tab-modulos');
+  }
+
+  window.abrirVisor = function(idx) {
+    const m = modulosActivos[idx];
+    if (!m) return;
+    moduloActivo = idx;
+
+    document.getElementById('visor-modulo-num').textContent = `Módulo ${idx + 1} de ${modulosActivos.length}`;
+    document.getElementById('visor-titulo').textContent = m.nombre;
+
+    let html = '';
+
+    // Video YouTube
+    if (m.videoUrl) {
+      const vid = youtubeId(m.videoUrl);
+      if (vid) {
+        html += `<div class="visor-video"><iframe src="https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;
+      }
+    }
+
+    // Texto
+    if (m.texto && m.texto.trim()) {
+      html += `<div class="visor-texto">${m.texto}</div>`;
+    }
+
+    // Archivos
+    if (m.archivos && m.archivos.length > 0) {
+      html += `<div style="margin-top:8px;"><div style="font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">📎 Archivos del módulo</div>`;
+      m.archivos.forEach(a => {
+        const icono = a.tipo === 'molde' ? '📐' : a.tipo === 'pdf' ? '📄' : '📁';
+        const puedeDescargar = a.descargable;
+        html += `<div class="visor-archivo">
+          <div class="visor-archivo-icon">${icono}</div>
+          <div class="visor-archivo-info">
+            <div class="visor-archivo-name">${a.nombre}</div>
+            <div class="visor-archivo-tipo">${a.tipo === 'molde' ? 'Molde descargable' : a.tipo === 'pdf' ? 'Documento PDF' : 'Archivo'} ${puedeDescargar ? '· Descargable' : '· Solo lectura'}</div>
+          </div>
+          ${puedeDescargar && a.url
+            ? `<a href="${a.url}" target="_blank" download><button class="visor-archivo-btn">⬇ Descargar</button></a>`
+            : `<button class="visor-archivo-btn solo-lectura">🔒 Solo lectura</button>`}
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (!html) html = '<div style="text-align:center;padding:40px 0;color:var(--gris-medio);">Este módulo no tiene contenido cargado aún.</div>';
+
+    document.getElementById('visor-body').innerHTML = html;
+
+    // Estado del botón completar
+    const progRef = get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoActivo.cursoId}`));
+    progRef.then(snap => {
+      const prog = snap.exists() ? snap.val() : { completados: [] };
+      const done = (prog.completados || []).includes(idx);
+      const btn = document.getElementById('btn-completar');
+      btn.textContent = done ? '✓ Completado' : 'Marcar como completado ✓';
+      btn.className = done ? 'btn-completar ya-completo' : 'btn-completar';
+    });
+
+    document.getElementById('visor-overlay').style.display = 'flex';
+  }
+
+  window.cerrarVisor = function() {
+    document.getElementById('visor-overlay').style.display = 'none';
+    document.getElementById('visor-body').innerHTML = '';
+  }
+
+  window.completarDesdeVisor = async function() {
+    const idx = moduloActivo;
+    const cursoId = cursoActivo.cursoId;
+    const progRef = ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`);
+    const snap = await get(progRef);
+    const prog = snap.exists() ? snap.val() : { completados: [] };
+    const completados = prog.completados || [];
+    if (!completados.includes(idx)) completados.push(idx);
+    await set(progRef, { completados });
+    cerrarVisor();
+    abrirCurso(cursoId, cursoActivo.catId);
   }
 
   window.marcarModulo = async function(cursoId, idx, estabaDone) {
@@ -737,7 +900,7 @@
     if (estabaDone) completados.splice(completados.indexOf(idx), 1);
     else if (!completados.includes(idx)) completados.push(idx);
     await set(progRef, { completados });
-    abrirCurso(cursoId, catalogo.find(c => c.cursos.some(cu => cu.id === cursoId))?.id);
+    abrirCurso(cursoId, cursoActivo?.catId || catalogo.find(c => c.cursos.some(cu => cu.id === cursoId))?.id);
   }
 
   // ── ADMIN CATÁLOGO ──
@@ -800,9 +963,121 @@
   window.addCurso = ci => { catalogo[ci].cursos.push({ id: `curso-${Date.now()}`, icon: '📖', nombre: 'Nuevo curso', tipo: 'membresia' }); renderCatsEditor(); }
   window.removeCurso = (ci, coi) => { catalogo[ci].cursos.splice(coi, 1); renderCatsEditor(); }
 
+  // ── EDITOR DE MÓDULOS ADMIN ──
+  function poblarSelectorCursos() {
+    const sel = document.getElementById('curso-selector');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Seleccioná un curso —</option>';
+    catalogo.forEach(cat => {
+      cat.cursos.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${cat.icon} ${cat.nombre} → ${c.icon} ${c.nombre}`;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  window.cargarEditorModulos = async function(cursoId) {
+    const container = document.getElementById('modulos-editor-container');
+    if (!cursoId) { container.innerHTML = ''; return; }
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando módulos...</div>';
+    const snap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = snap.exists() ? snap.val() : [...DEFAULT_MODULOS];
+    renderEditorModulos(cursoId, modulos);
+  }
+
+  function renderEditorModulos(cursoId, modulos) {
+    const container = document.getElementById('modulos-editor-container');
+    let html = modulos.map((m, i) => `
+      <div class="mod-editor-block" id="mod-block-${i}">
+        <div class="mod-editor-header">
+          <div class="mod-num-badge">${i+1}</div>
+          <input class="mod-name-input" value="${m.nombre||''}" placeholder="Nombre del módulo" oninput="modulos_edit[${i}].nombre=this.value">
+          <button class="btn-danger" onclick="eliminarModulo(${i},'${cursoId}')">✕</button>
+        </div>
+        <input class="mod-desc-input" value="${m.desc||''}" placeholder="Descripción breve del módulo" oninput="modulos_edit[${i}].desc=this.value">
+
+        <div class="content-section">
+          <div class="content-section-title">📹 Video de YouTube</div>
+          <input class="content-input" value="${m.videoUrl||''}" placeholder="https://www.youtube.com/watch?v=..." oninput="modulos_edit[${i}].videoUrl=this.value">
+          <div style="font-size:11px;color:var(--gris-medio);">Pegá el link del video. Puede ser público, no listado o privado con permiso de embed.</div>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title">📝 Texto del módulo</div>
+          <textarea class="content-textarea" placeholder="Escribí el contenido de texto de este módulo..." oninput="modulos_edit[${i}].texto=this.value">${m.texto||''}</textarea>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title">📎 Archivos (PDFs, moldes, documentos)</div>
+          <div id="archivos-mod-${i}">
+            ${(m.archivos||[]).map((a, ai) => `
+              <div class="archivo-row">
+                <select style="background:var(--gris-claro);border:1px solid #E0DED8;border-radius:6px;padding:5px;font-size:12px;outline:none;" onchange="modulos_edit[${i}].archivos[${ai}].tipo=this.value">
+                  <option value="pdf" ${a.tipo==='pdf'?'selected':''}>📄 PDF</option>
+                  <option value="molde" ${a.tipo==='molde'?'selected':''}>📐 Molde</option>
+                  <option value="otro" ${a.tipo==='otro'?'selected':''}>📁 Otro</option>
+                </select>
+                <input class="content-input" style="flex:1;margin:0;" value="${a.nombre||''}" placeholder="Nombre del archivo" oninput="modulos_edit[${i}].archivos[${ai}].nombre=this.value">
+                <input class="content-input" style="flex:2;margin:0;" value="${a.url||''}" placeholder="URL del archivo (Google Drive, Dropbox...)" oninput="modulos_edit[${i}].archivos[${ai}].url=this.value">
+                <label class="toggle-descarga"><input type="checkbox" ${a.descargable?'checked':''} onchange="modulos_edit[${i}].archivos[${ai}].descargable=this.checked"> Descargable</label>
+                <button class="btn-danger" onclick="eliminarArchivo(${i},${ai},'${cursoId}')">✕</button>
+              </div>`).join('')}
+          </div>
+          <button class="add-row-btn" style="margin-top:6px;" onclick="agregarArchivo(${i},'${cursoId}')">+ Agregar archivo</button>
+        </div>
+      </div>`).join('');
+
+    html += `<div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="add-cat-btn" style="flex:1;" onclick="agregarModulo('${cursoId}')">+ Agregar módulo</button>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;">
+      <button class="btn-small" onclick="guardarModulos('${cursoId}')">Guardar módulos</button>
+    </div>
+    <div class="msg msg-success" id="modulos-ok" style="margin-top:10px;"></div>`;
+
+    container.innerHTML = html;
+    window.modulos_edit = JSON.parse(JSON.stringify(modulos));
+  }
+
+  window.agregarModulo = function(cursoId) {
+    window.modulos_edit = window.modulos_edit || [];
+    window.modulos_edit.push({ nombre: 'Nuevo módulo', desc: '', videoUrl: '', texto: '', archivos: [] });
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.eliminarModulo = function(idx, cursoId) {
+    if (window.modulos_edit.length <= 1) return;
+    window.modulos_edit.splice(idx, 1);
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.agregarArchivo = function(modIdx, cursoId) {
+    if (!window.modulos_edit[modIdx].archivos) window.modulos_edit[modIdx].archivos = [];
+    window.modulos_edit[modIdx].archivos.push({ tipo: 'pdf', nombre: '', url: '', descargable: false });
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.eliminarArchivo = function(modIdx, archivoIdx, cursoId) {
+    window.modulos_edit[modIdx].archivos.splice(archivoIdx, 1);
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.guardarModulos = async function(cursoId) {
+    try {
+      await set(ref(db, `modulos/${cursoId}`), window.modulos_edit);
+      const ok = document.getElementById('modulos-ok');
+      ok.textContent = '✦ Módulos guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar módulos.'); }
+  }
+
   window.saveCatalogo = async () => {
     try {
       await set(ref(db, 'catalogo'), catalogo);
+      poblarSelectorCursos();
       const ok = document.getElementById('admin-ok');
       ok.textContent = '✦ Cambios guardados correctamente';
       ok.classList.add('show');
@@ -890,7 +1165,7 @@
     document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
 
     await loadCatalogo();
-    if (isAdmin) { renderCatsEditor(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadUsers(); }
 
     showScreen('screen-home');
 

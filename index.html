@@ -187,6 +187,28 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* MEMBRESÍA BANNER */
+    /* MEETINGS */
+    .meeting-card { background:#fff;border:1px solid var(--borde);border-radius:16px;overflow:hidden;margin-bottom:16px;max-width:600px; }
+    .meeting-card-header { padding:20px;display:flex;align-items:flex-start;gap:14px; }
+    .meeting-live-dot { width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;margin-top:5px;animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+    .meeting-card-info { flex:1; }
+    .meeting-titulo { font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gris);font-weight:700; }
+    .meeting-fecha { font-size:13px;color:var(--gris-medio);margin-top:4px; }
+    .meeting-card-footer { padding:12px 20px;border-top:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;background:var(--gris-claro); }
+    .meeting-estado { font-size:12px;font-weight:700; }
+    .estado-vivo { color:#e74c3c; }
+    .estado-proximo { color:var(--terracota); }
+    .estado-grabado { color:var(--gris-medio); }
+    .btn-entrar { background:var(--terracota);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:1px; }
+    .btn-entrar:hover { background:var(--terracota-dark); }
+    .btn-grabacion { background:transparent;color:var(--terracota);border:1px solid var(--terracota);border-radius:10px;padding:8px 16px;font-size:13px;cursor:pointer; }
+    .countdown { font-size:13px;color:var(--gris-medio);font-family:monospace; }
+
+    /* ADMIN MEETINGS */
+    .meeting-admin-row { display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap; }
+    .meeting-admin-row:last-child { border-bottom:none; }
+
     .membresia-banner { background: linear-gradient(135deg, #FFF5EC, #FFF0F7); border: 1px solid #F0C5A0; border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; }
 
     /* VISOR DE MÓDULO */
@@ -460,11 +482,21 @@
         <div id="tab-meetings" style="display:none;">
           <div class="greeting">📅 Meetings en vivo</div>
           <div class="greeting-sub">Consultas semanales con Flor y Mery</div>
-          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:16px;padding:32px;margin-top:20px;text-align:center;max-width:500px;">
-            <div style="font-size:40px;margin-bottom:16px;">🔴</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#8B3A1A;">Próximamente</div>
-            <div style="font-size:14px;color:var(--terracota);margin-top:8px;">Las clases en vivo se habilitarán pronto</div>
+          <div id="meetings-content">
+            <div class="loading"><div class="spinner"></div> Cargando meetings...</div>
           </div>
+        </div>
+
+        <!-- SALA DE MEETING (overlay) -->
+        <div id="sala-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:2000;flex-direction:column;">
+          <div style="background:#1a1a1a;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#fff;" id="sala-titulo">Meeting en vivo</div>
+              <div style="font-size:12px;color:#888;margin-top:2px;" id="sala-sub">Ohla Academy</div>
+            </div>
+            <button onclick="cerrarSala()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">✕ Salir de la sala</button>
+          </div>
+          <iframe id="sala-iframe" allow="camera;microphone;fullscreen;display-capture" style="flex:1;border:none;width:100%;height:100%;"></iframe>
         </div>
 
         <!-- TAB PERFIL -->
@@ -505,6 +537,15 @@
               </select>
             </div>
             <div id="modulos-editor-container"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📅 Meetings en vivo</div>
+            <div class="admin-section-sub">Programá las reuniones semanales. Las alumnas con membresía las verán automáticamente.</div>
+            <div id="meetings-admin-list"></div>
+            <button class="add-cat-btn" style="margin-top:12px;" onclick="agregarMeeting()">+ Programar nuevo meeting</button>
+            <div style="margin-top:12px;"><button class="btn-small" onclick="guardarMeetings()">Guardar meetings</button></div>
+            <div class="msg msg-success" id="meetings-ok" style="margin-top:10px;"></div>
           </div>
 
           <div class="admin-panel">
@@ -1092,6 +1133,174 @@
     } catch(e) { catalogo = [...DEFAULT_CATALOGO]; }
   }
 
+  // ── DAILY.CO API KEY ──
+  const DAILY_API_KEY = '1666aa688d0be3a0de05ecc1fd1d113fae1ff65714569bdc4eb7c1dc56e8e17c';
+  const DAILY_DOMAIN = 'ohlaacademy'; // cambiá esto por tu dominio en Daily.co
+
+  let meetingsData = [];
+
+  // ── CARGAR MEETINGS (alumnas) ──
+  async function loadMeetings() {
+    const container = document.getElementById('meetings-content');
+    if (!container) return;
+    try {
+      const snap = await get(ref(db, 'meetings'));
+      const data = snap.exists() ? Object.values(snap.val()) : [];
+      meetingsData = data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      renderMeetings();
+    } catch(e) {
+      if (container) container.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar meetings.</div>';
+    }
+  }
+
+  function renderMeetings() {
+    const container = document.getElementById('meetings-content');
+    if (!container) return;
+    const ahora = new Date();
+    const tieneMem = userData?.membresia || userData?.rol === 'admin' || ADMIN_EMAILS.includes(currentUser?.email);
+
+    if (!tieneMem) {
+      container.innerHTML = `<div class="membresia-banner" style="max-width:500px;">
+        <div class="membresia-titulo">📅 Meetings exclusivos para miembros</div>
+        <div class="membresia-sub">Con tu membresía podés participar de las consultas en vivo semanales con Flor y Mery, y ver todas las grabaciones.</div>
+        <button class="btn-small">Quiero mi membresía →</button>
+      </div>`;
+      return;
+    }
+
+    if (meetingsData.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;">
+        <div style="font-size:40px;margin-bottom:12px;">📅</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">No hay meetings programados</div>
+        <div style="font-size:14px;color:var(--gris-medio);">Pronto se publicarán las fechas de las próximas consultas en vivo.</div>
+      </div>`;
+      return;
+    }
+
+    let html = '';
+    meetingsData.forEach(m => {
+      const fecha = new Date(m.fecha);
+      const fin = new Date(fecha.getTime() + (m.duracion || 60) * 60000);
+      const estaVivo = ahora >= fecha && ahora <= fin;
+      const esProximo = fecha > ahora;
+      const yaTermino = ahora > fin;
+
+      const fechaStr = fecha.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
+      const horaStr = fecha.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+
+      html += `<div class="meeting-card">
+        <div class="meeting-card-header">
+          ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
+          <div class="meeting-card-info">
+            <div class="meeting-titulo">${m.titulo}</div>
+            <div class="meeting-fecha">${fechaStr} · ${horaStr} hs · ${m.duracion || 60} min · Con Flor y Mery</div>
+            ${m.descripcion ? `<div style="font-size:13px;color:var(--gris-medio);margin-top:6px;">${m.descripcion}</div>` : ''}
+          </div>
+        </div>
+        <div class="meeting-card-footer">
+          <div class="meeting-estado ${estaVivo ? 'estado-vivo' : esProximo ? 'estado-proximo' : 'estado-grabado'}">
+            ${estaVivo ? '🔴 En vivo ahora' : esProximo ? `⏰ En ${tiempoHasta(fecha)}` : '📼 Finalizado'}
+          </div>
+          <div style="display:flex;gap:8px;">
+            ${(estaVivo || esProximo) && m.roomUrl ? `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl}','${m.titulo}')">${estaVivo ? '🔴 Entrar ahora' : '📅 Unirme'}</button>` : ''}
+            ${yaTermino && m.grabacionUrl ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>` : ''}
+            ${yaTermino && !m.grabacionUrl ? `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function tiempoHasta(fecha) {
+    const diff = fecha - new Date();
+    if (diff <= 0) return 'ahora';
+    const dias = Math.floor(diff / 86400000);
+    const hs = Math.floor((diff % 86400000) / 3600000);
+    const min = Math.floor((diff % 3600000) / 60000);
+    if (dias > 0) return `${dias}d ${hs}h`;
+    if (hs > 0) return `${hs}h ${min}min`;
+    return `${min} minutos`;
+  }
+
+  window.entrarSala = function(roomUrl, titulo) {
+    document.getElementById('sala-titulo').textContent = titulo;
+    document.getElementById('sala-iframe').src = roomUrl;
+    const overlay = document.getElementById('sala-overlay');
+    overlay.style.display = 'flex';
+  }
+
+  window.cerrarSala = function() {
+    document.getElementById('sala-iframe').src = '';
+    document.getElementById('sala-overlay').style.display = 'none';
+  }
+
+  // ── ADMIN MEETINGS ──
+  let meetingsEdit = [];
+
+  async function loadMeetingsAdmin() {
+    const snap = await get(ref(db, 'meetings'));
+    meetingsEdit = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key: k})) : [];
+    renderMeetingsAdmin();
+  }
+
+  function renderMeetingsAdmin() {
+    const list = document.getElementById('meetings-admin-list');
+    if (!list) return;
+    if (meetingsEdit.length === 0) {
+      list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">No hay meetings programados aún.</div>';
+      return;
+    }
+    list.innerHTML = meetingsEdit.map((m, i) => `
+      <div class="meeting-admin-row">
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Título</div>
+          <input class="content-input" value="${m.titulo||''}" placeholder="Ej: Consultas semana 1" oninput="meetingsEdit[${i}].titulo=this.value">
+        </div>
+        <div style="min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Fecha y hora</div>
+          <input type="datetime-local" class="content-input" value="${m.fecha ? new Date(m.fecha).toISOString().slice(0,16) : ''}" oninput="meetingsEdit[${i}].fecha=new Date(this.value).toISOString()">
+        </div>
+        <div style="width:80px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Duración (min)</div>
+          <input type="number" class="content-input" value="${m.duracion||60}" min="15" max="240" oninput="meetingsEdit[${i}].duracion=parseInt(this.value)">
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link sala Daily.co</div>
+          <input class="content-input" value="${m.roomUrl||''}" placeholder="https://ohlaacademy.daily.co/sala" oninput="meetingsEdit[${i}].roomUrl=this.value">
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link grabación (opcional)</div>
+          <input class="content-input" value="${m.grabacionUrl||''}" placeholder="Link de YouTube o Drive" oninput="meetingsEdit[${i}].grabacionUrl=this.value">
+        </div>
+        <button class="btn-danger" style="align-self:flex-end;" onclick="eliminarMeeting(${i})">✕</button>
+      </div>`).join('');
+  }
+
+  window.agregarMeeting = function() {
+    meetingsEdit.push({ titulo: 'Consultas en vivo', fecha: new Date().toISOString(), duracion: 60, roomUrl: '', grabacionUrl: '' });
+    renderMeetingsAdmin();
+  }
+
+  window.eliminarMeeting = function(i) {
+    meetingsEdit.splice(i, 1);
+    renderMeetingsAdmin();
+  }
+
+  window.guardarMeetings = async function() {
+    try {
+      const obj = {};
+      meetingsEdit.forEach((m, i) => { obj[m._key || `meeting_${Date.now()}_${i}`] = m; });
+      await set(ref(db, 'meetings'), obj);
+      loadMeetings();
+      const ok = document.getElementById('meetings-ok');
+      ok.textContent = '✦ Meetings guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar.'); }
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -1165,7 +1374,7 @@
     document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
 
     await loadCatalogo();
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadMeetingsAdmin(); loadUsers(); }
 
     showScreen('screen-home');
 

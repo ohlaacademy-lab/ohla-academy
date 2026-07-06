@@ -1201,13 +1201,14 @@
   async function loadMeetings() {
     const container = document.getElementById('meetings-content');
     if (!container) return;
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando meetings...</div>';
     try {
       const snap = await get(ref(db, 'meetings'));
       const data = snap.exists() ? Object.values(snap.val()) : [];
       meetingsData = data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       renderMeetings();
     } catch(e) {
-      if (container) container.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar meetings.</div>';
+      container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">Error al cargar meetings. Verificá tu conexión.</div>';
     }
   }
 
@@ -1480,7 +1481,7 @@
         </div>
         <div style="flex:1;min-width:160px;">
           <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">ID de sala (ej: consultas-ohla)</div>
-          <input class="content-input" value="${m.roomUrl||''}" placeholder="https://ohlaacademy.daily.co/sala" oninput="meetingsEdit[${i}].roomUrl=this.value">
+          <input class="content-input" value="${m.roomUrl||''}" placeholder="consultas-ohla" oninput="meetingsEdit[${i}].roomUrl=this.value">
         </div>
         <div style="flex:1;min-width:160px;">
           <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link grabación (opcional)</div>

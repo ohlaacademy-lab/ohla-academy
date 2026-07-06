@@ -487,16 +487,68 @@
           </div>
         </div>
 
-        <!-- SALA DE MEETING (overlay) -->
-        <div id="sala-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:2000;flex-direction:column;">
-          <div style="background:#1a1a1a;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#fff;" id="sala-titulo">Meeting en vivo</div>
-              <div style="font-size:12px;color:#888;margin-top:2px;" id="sala-sub">Ohla Academy</div>
+        <!-- SALA DE MEETING PROPIA -->
+        <div id="sala-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#1a1a1a;z-index:2000;flex-direction:column;">
+          <!-- Header -->
+          <div style="background:#111;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #333;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#e74c3c;animation:pulse 1.5s infinite;"></div>
+              <div>
+                <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#fff;" id="sala-titulo">Meeting en vivo</div>
+                <div style="font-size:11px;color:#888;" id="sala-participantes">Conectando...</div>
+              </div>
             </div>
-            <button onclick="cerrarSala()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">✕ Salir de la sala</button>
+            <div style="display:flex;gap:8px;">
+              <button id="btn-mic" onclick="toggleMic()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">🎤 Mic</button>
+              <button id="btn-cam" onclick="toggleCam()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">📷 Cám</button>
+              <button onclick="cerrarSala()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">✕ Salir</button>
+            </div>
           </div>
-          <iframe id="sala-iframe" allow="camera;microphone;fullscreen;display-capture" style="flex:1;border:none;width:100%;height:100%;"></iframe>
+
+          <!-- Contenido principal -->
+          <div style="display:flex;flex:1;overflow:hidden;">
+
+            <!-- Videos -->
+            <div style="flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;overflow:hidden;">
+              <!-- Video local -->
+              <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;flex:1;">
+                <video id="video-local" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+                <div style="position:absolute;bottom:10px;left:12px;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px;" id="label-local">Vos</div>
+                <div id="mic-off-indicator" style="display:none;position:absolute;top:10px;right:10px;background:rgba(231,76,60,0.8);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;">🔇 Mic apagado</div>
+              </div>
+              <!-- Videos remotos -->
+              <div id="videos-remotos" style="display:flex;gap:8px;max-height:160px;overflow-x:auto;"></div>
+            </div>
+
+            <!-- Panel lateral: chat + participantes -->
+            <div style="width:300px;background:#111;border-left:1px solid #333;display:flex;flex-direction:column;">
+
+              <!-- Tabs -->
+              <div style="display:flex;border-bottom:1px solid #333;">
+                <button onclick="salaTab('chat')" id="tab-chat-btn" style="flex:1;padding:10px;background:transparent;border:none;color:#C4723A;font-size:13px;cursor:pointer;border-bottom:2px solid #C4723A;">💬 Chat</button>
+                <button onclick="salaTab('participantes')" id="tab-part-btn" style="flex:1;padding:10px;background:transparent;border:none;color:#888;font-size:13px;cursor:pointer;">👥 Participantes</button>
+              </div>
+
+              <!-- Chat -->
+              <div id="panel-chat" style="flex:1;display:flex;flex-direction:column;">
+                <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+                <div style="padding:10px;border-top:1px solid #333;">
+                  <!-- Pedir palabra -->
+                  <button id="btn-pedir-palabra" onclick="pedirPalabra()" style="width:100%;background:#2C2C2A;color:#C4723A;border:1px solid #C4723A;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;margin-bottom:8px;">✋ Pedir la palabra</button>
+                  <div style="display:flex;gap:6px;">
+                    <input id="chat-input" type="text" placeholder="Escribí un mensaje..." style="flex:1;background:#222;border:1px solid #333;border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter')enviarMensaje()">
+                    <button onclick="enviarMensaje()" style="background:#C4723A;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">→</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Participantes -->
+              <div id="panel-participantes" style="display:none;flex:1;overflow-y:auto;padding:12px;">
+                <div id="lista-participantes" style="display:flex;flex-direction:column;gap:8px;"></div>
+              </div>
+
+            </div>
+          </div>
         </div>
 
         <!-- TAB PERFIL -->
@@ -1140,6 +1192,12 @@
   let meetingsData = [];
 
   // ── CARGAR MEETINGS (alumnas) ──
+  function toLocalInput(date) {
+    const offset = -3 * 60; // Argentina UTC-3
+    const local = new Date(date.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
   async function loadMeetings() {
     const container = document.getElementById('meetings-content');
     if (!container) return;
@@ -1202,7 +1260,7 @@
             ${estaVivo ? '🔴 En vivo ahora' : esProximo ? `⏰ En ${tiempoHasta(fecha)}` : '📼 Finalizado'}
           </div>
           <div style="display:flex;gap:8px;">
-            ${(estaVivo || esProximo) && m.roomUrl ? `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl}','${m.titulo}')">${estaVivo ? '🔴 Entrar ahora' : '📅 Unirme'}</button>` : ''}
+            ${(estaVivo || esProximo) ? `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'ohla-sala'}','${m.titulo}')">${estaVivo ? '🔴 Entrar ahora' : '📅 Unirme'}</button>` : ''}
             ${yaTermino && m.grabacionUrl ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>` : ''}
             ${yaTermino && !m.grabacionUrl ? `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>` : ''}
           </div>
@@ -1224,16 +1282,170 @@
     return `${min} minutos`;
   }
 
-  window.entrarSala = function(roomUrl, titulo) {
+  // ── SALA DE MEETINGS PROPIA WebRTC + Firebase ──
+  let localStream = null;
+  let micActivo = true;
+  let camActiva = true;
+  let peerConnections = {};
+  let salaId = null;
+  let mensajesRef = null;
+  let participantesRef = null;
+  let unsubMensajes = null;
+  let unsubParticipantes = null;
+
+  window.entrarSala = async function(roomUrl, titulo) {
+    // Extraer ID de sala del URL o usar un ID fijo
+    salaId = roomUrl.split('/').pop() || 'ohla-sala';
     document.getElementById('sala-titulo').textContent = titulo;
-    document.getElementById('sala-iframe').src = roomUrl;
-    const overlay = document.getElementById('sala-overlay');
-    overlay.style.display = 'flex';
+    document.getElementById('sala-overlay').style.display = 'flex';
+
+    // Pedir cámara y micrófono
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      document.getElementById('video-local').srcObject = localStream;
+      document.getElementById('label-local').textContent = userData?.nombre || currentUser?.email?.split('@')[0] || 'Vos';
+    } catch(e) {
+      agregarMensajeSistema('No se pudo acceder a la cámara o micrófono. Verificá los permisos del navegador.');
+    }
+
+    // Registrar participante en Firebase
+    const partRef = ref(db, `salas/${salaId}/participantes/${currentUser.uid}`);
+    await set(partRef, {
+      nombre: userData?.nombre || currentUser.email,
+      uid: currentUser.uid,
+      esHost: userData?.rol === 'admin' || ADMIN_EMAILS.includes(currentUser.email),
+      pidePalabra: false,
+      ingreso: new Date().toISOString()
+    });
+
+    // Escuchar mensajes del chat
+    const { onValue: onVal } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    mensajesRef = ref(db, `salas/${salaId}/mensajes`);
+    unsubMensajes = onVal(mensajesRef, snap => {
+      const chatDiv = document.getElementById('chat-mensajes');
+      if (!snap.exists()) { chatDiv.innerHTML = ''; return; }
+      const msgs = Object.values(snap.val()).sort((a,b) => new Date(a.ts) - new Date(b.ts));
+      chatDiv.innerHTML = msgs.map(m => {
+        const esPropio = m.uid === currentUser.uid;
+        const esSistema = m.tipo === 'sistema';
+        const esPalabra = m.tipo === 'palabra';
+        if (esSistema) return `<div style="text-align:center;font-size:11px;color:#666;padding:4px 0;">${m.texto}</div>`;
+        if (esPalabra) return `<div style="background:#2C2C2A;border:1px solid #C4723A;border-radius:8px;padding:8px 10px;font-size:12px;color:#C4723A;">✋ <strong>${m.nombre}</strong> pide la palabra</div>`;
+        return `<div style="display:flex;flex-direction:column;align-items:${esPropio?'flex-end':'flex-start'};">
+          <div style="font-size:10px;color:#666;margin-bottom:2px;">${esPropio?'Vos':m.nombre}</div>
+          <div style="background:${esPropio?'#C4723A':'#2C2C2A'};color:#fff;border-radius:${esPropio?'12px 12px 0 12px':'12px 12px 12px 0'};padding:8px 12px;font-size:13px;max-width:200px;word-wrap:break-word;">${m.texto}</div>
+        </div>`;
+      }).join('');
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+
+    // Escuchar participantes
+    participantesRef = ref(db, `salas/${salaId}/participantes`);
+    unsubParticipantes = onVal(participantesRef, snap => {
+      const lista = document.getElementById('lista-participantes');
+      const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+      document.getElementById('sala-participantes').textContent = `${count} participante${count!==1?'s':''} conectado${count!==1?'s':''}`;
+      if (!snap.exists()) { lista.innerHTML = ''; return; }
+      const parts = Object.values(snap.val());
+      lista.innerHTML = parts.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#1a1a1a;border-radius:8px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#C4723A;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${p.esHost?'👑':'🌸'}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:#fff;font-weight:${p.esHost?'700':'400'};">${p.nombre}${p.esHost?' (Host)':''}</div>
+            ${p.pidePalabra?'<div style="font-size:11px;color:#C4723A;">✋ Pide la palabra</div>':''}
+          </div>
+        </div>`).join('');
+    });
+
+    agregarMensajeSistema('Entraste a la sala');
   }
 
-  window.cerrarSala = function() {
-    document.getElementById('sala-iframe').src = '';
+  window.cerrarSala = async function() {
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if (unsubMensajes) unsubMensajes();
+    if (unsubParticipantes) unsubParticipantes();
+    // Quitar participante
+    if (salaId && currentUser) {
+      await set(ref(db, `salas/${salaId}/participantes/${currentUser.uid}`), null);
+      agregarMensajeSistemaDB('Salió de la sala');
+    }
     document.getElementById('sala-overlay').style.display = 'none';
+    document.getElementById('video-local').srcObject = null;
+    document.getElementById('chat-mensajes').innerHTML = '';
+    document.getElementById('videos-remotos').innerHTML = '';
+    peerConnections = {};
+    salaId = null;
+  }
+
+  window.toggleMic = function() {
+    if (!localStream) return;
+    micActivo = !micActivo;
+    localStream.getAudioTracks().forEach(t => t.enabled = micActivo);
+    document.getElementById('btn-mic').style.background = micActivo ? '#333' : '#c0392b';
+    document.getElementById('btn-mic').textContent = micActivo ? '🎤 Mic' : '🔇 Mic';
+    document.getElementById('mic-off-indicator').style.display = micActivo ? 'none' : 'block';
+  }
+
+  window.toggleCam = function() {
+    if (!localStream) return;
+    camActiva = !camActiva;
+    localStream.getVideoTracks().forEach(t => t.enabled = camActiva);
+    document.getElementById('btn-cam').style.background = camActiva ? '#333' : '#c0392b';
+    document.getElementById('btn-cam').textContent = camActiva ? '📷 Cám' : '📷 Off';
+  }
+
+  window.enviarMensaje = async function() {
+    const input = document.getElementById('chat-input');
+    const texto = input.value.trim();
+    if (!texto || !salaId) return;
+    input.value = '';
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, {
+      texto, uid: currentUser.uid,
+      nombre: userData?.nombre || currentUser.email,
+      ts: new Date().toISOString(),
+      tipo: 'chat'
+    });
+  }
+
+  window.pedirPalabra = async function() {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, {
+      texto: 'pide la palabra',
+      uid: currentUser.uid,
+      nombre: userData?.nombre || currentUser.email,
+      ts: new Date().toISOString(),
+      tipo: 'palabra'
+    });
+    await set(ref(db, `salas/${salaId}/participantes/${currentUser.uid}/pidePalabra`), true);
+    document.getElementById('btn-pedir-palabra').textContent = '✋ Pedido enviado';
+    document.getElementById('btn-pedir-palabra').disabled = true;
+    setTimeout(() => {
+      const btn = document.getElementById('btn-pedir-palabra');
+      if (btn) { btn.textContent = '✋ Pedir la palabra'; btn.disabled = false; }
+    }, 10000);
+  }
+
+  async function agregarMensajeSistema(texto) {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, { texto, tipo: 'sistema', ts: new Date().toISOString() });
+  }
+
+  async function agregarMensajeSistemaDB(texto) {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}_out`);
+    await set(msgRef, { texto: `${userData?.nombre || ''} ${texto}`, tipo: 'sistema', ts: new Date().toISOString() });
+  }
+
+  window.salaTab = function(tab) {
+    document.getElementById('panel-chat').style.display = tab === 'chat' ? 'flex' : 'none';
+    document.getElementById('panel-participantes').style.display = tab === 'participantes' ? 'block' : 'none';
+    document.getElementById('tab-chat-btn').style.color = tab === 'chat' ? '#C4723A' : '#888';
+    document.getElementById('tab-chat-btn').style.borderBottom = tab === 'chat' ? '2px solid #C4723A' : 'none';
+    document.getElementById('tab-part-btn').style.color = tab === 'participantes' ? '#C4723A' : '#888';
+    document.getElementById('tab-part-btn').style.borderBottom = tab === 'participantes' ? '2px solid #C4723A' : 'none';
   }
 
   // ── ADMIN MEETINGS ──
@@ -1260,7 +1472,7 @@
         </div>
         <div style="min-width:160px;">
           <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Fecha y hora</div>
-          <input type="datetime-local" class="content-input" value="${m.fecha ? new Date(m.fecha).toISOString().slice(0,16) : ''}" oninput="meetingsEdit[${i}].fecha=new Date(this.value).toISOString()">
+          <input type="datetime-local" class="content-input" value="${m.fecha ? toLocalInput(new Date(m.fecha)) : ''}" oninput="meetingsEdit[${i}].fecha=new Date(this.value + ':00-03:00').toISOString()">
         </div>
         <div style="width:80px;">
           <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Duración (min)</div>

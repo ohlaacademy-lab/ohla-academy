@@ -654,7 +654,10 @@
       html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
       cursosVisibles.forEach((curso, i) => {
         const esPrioritario = cursosInicio.includes(curso.id);
-        const bloqueado = curso.tipo === 'membresia' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
+        const hoy2 = new Date().toISOString().split('T')[0];
+        const esTempActivo = curso.tipo === 'gratis-temporal' && curso.gratisDesde && curso.gratisHasta && hoy2 >= curso.gratisDesde && hoy2 <= curso.gratisHasta;
+        const esGratisReal = curso.tipo === 'gratis' || esTempActivo;
+        const bloqueado = !esGratisReal && curso.tipo !== 'gratis' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
         const colorIdx = i % 6;
         html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" onclick="${bloqueado ? 'showMembresiaBanner()' : `abrirCurso('${curso.id}','${cat.id}')`}">
           <div class="curso-card-header">
@@ -665,7 +668,7 @@
             </div>
           </div>
           <div class="curso-card-footer">
-            <span class="curso-badge ${bloqueado ? 'badge-bloqueado' : curso.tipo === 'gratis' ? 'badge-gratis' : 'badge-membresia'}">${bloqueado ? '🔒 Membresía' : curso.tipo === 'gratis' ? '✓ Gratis' : esPrioritario ? '⭐ Tu elección' : '✦ Membresía'}</span>
+            <span class="curso-badge ${bloqueado ? 'badge-bloqueado' : curso.tipo === 'gratis' ? 'badge-gratis' : 'badge-membresia'}">${bloqueado ? '🔒 Membresía' : esGratisReal ? (curso.tipo === 'gratis-temporal' ? '⏰ Gratis por tiempo' : '✓ Gratis') : esPrioritario ? '⭐ Tu elección' : '✦ Membresía'}</span>
             <span style="font-size:12px;color:var(--gris-medio);">${bloqueado ? '' : '→'}</span>
           </div>
         </div>`;
@@ -738,6 +741,44 @@
   }
 
   // ── ADMIN CATÁLOGO ──
+  function gratisRow(c, ci, coi) {
+    const esGratisTemporal = c.tipo === 'gratis-temporal';
+    const esGratis = c.tipo === 'gratis' || esGratisTemporal;
+    const hoy = new Date().toISOString().split('T')[0];
+    const vencido = esGratisTemporal && c.gratisHasta && c.gratisHasta < hoy;
+    return `
+      <div class="curso-row" style="flex-direction:column;align-items:stretch;gap:8px;background:${esGratis?'#F5FBF8':'#fff'};padding:10px;border-radius:10px;border:1px solid ${esGratis?'#A8DCBC':'var(--borde)'};">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input class="curso-icon-input" value="${c.icon}" oninput="catalogo[${ci}].cursos[${coi}].icon=this.value">
+          <input class="curso-name-input" value="${c.nombre}" oninput="catalogo[${ci}].cursos[${coi}].nombre=this.value">
+          <select class="curso-type-select" onchange="changeTipo(${ci},${coi},this.value)">
+            <option value="membresia" ${c.tipo==='membresia'?'selected':''}>✦ Membresía</option>
+            <option value="gratis" ${c.tipo==='gratis'?'selected':''}>✓ Gratis permanente</option>
+            <option value="gratis-temporal" ${esGratisTemporal?'selected':''}>⏰ Gratis por tiempo limitado</option>
+          </select>
+          <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕</button>
+        </div>
+        ${esGratisTemporal ? `
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 4px;border-top:1px solid #E0DED8;">
+          <span style="font-size:12px;color:var(--gris-medio);">⏰ Gratis desde:</span>
+          <input type="date" value="${c.gratisDesde||''}" style="border:1px solid #E0DED8;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;" onchange="catalogo[${ci}].cursos[${coi}].gratisDesde=this.value">
+          <span style="font-size:12px;color:var(--gris-medio);">hasta:</span>
+          <input type="date" value="${c.gratisHasta||''}" style="border:1px solid #E0DED8;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;${vencido?'border-color:#c0392b;':''}" onchange="catalogo[${ci}].cursos[${coi}].gratisHasta=this.value">
+          ${vencido ? '<span style="font-size:11px;color:#c0392b;font-weight:700;">⚠ Vencido — volvió a ser de membresía</span>' : ''}
+          ${!vencido && c.gratisHasta ? '<span style="font-size:11px;color:#1A6B3A;">✓ Activo</span>' : ''}
+        </div>` : ''}
+      </div>`;
+  }
+
+  window.changeTipo = (ci, coi, val) => {
+    catalogo[ci].cursos[coi].tipo = val;
+    if (val !== 'gratis-temporal') {
+      delete catalogo[ci].cursos[coi].gratisDesde;
+      delete catalogo[ci].cursos[coi].gratisHasta;
+    }
+    renderCatsEditor();
+  }
+
   function renderCatsEditor() {
     const ed = document.getElementById('cats-editor');
     ed.innerHTML = catalogo.map((cat, ci) => `
@@ -748,16 +789,7 @@
           <button class="btn-danger" onclick="removeCat(${ci})">✕ Categoría</button>
         </div>
         <div id="cursos-cat-${ci}">
-          ${cat.cursos.map((c, coi) => `
-            <div class="curso-row">
-              <input class="curso-icon-input" value="${c.icon}" oninput="catalogo[${ci}].cursos[${coi}].icon=this.value">
-              <input class="curso-name-input" value="${c.nombre}" oninput="catalogo[${ci}].cursos[${coi}].nombre=this.value">
-              <select class="curso-type-select" onchange="catalogo[${ci}].cursos[${coi}].tipo=this.value">
-                <option value="gratis" ${c.tipo==='gratis'?'selected':''}>✓ Gratis</option>
-                <option value="membresia" ${c.tipo==='membresia'?'selected':''}>✦ Membresía</option>
-              </select>
-              <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕</button>
-            </div>`).join('')}
+          ${cat.cursos.map((c, coi) => gratisRow(c, ci, coi)).join('')}
         </div>
         <button class="add-row-btn" onclick="addCurso(${ci})">+ Agregar curso</button>
       </div>`).join('');

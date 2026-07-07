@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="Ohla Academy">
   <title>Ohla Academy</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>emailjs.init("JB2jvzNMExOGF-5yx");</script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -187,6 +189,19 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* MEMBRESÍA BANNER */
+    /* CERTIFICADO */
+    .cert-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .cert-card { background:#fff;border-radius:20px;width:100%;max-width:560px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+    .cert-header { background:linear-gradient(135deg,#F8F8F7,#FFF5EC);padding:32px;text-align:center;border-bottom:1px solid var(--borde); }
+    .cert-emoji { font-size:52px;margin-bottom:12px; }
+    .cert-titulo { font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gris);font-weight:700; }
+    .cert-sub { font-size:14px;color:var(--gris-medio);margin-top:6px; }
+    .cert-body { padding:28px;text-align:center; }
+    .cert-nombre { font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px; }
+    .cert-curso { font-size:15px;color:var(--terracota);font-weight:700;margin-bottom:16px; }
+    .cert-msg { font-size:13px;color:var(--gris-medio);line-height:1.7;margin-bottom:24px; }
+    .cert-footer { padding:16px 28px 28px;display:flex;gap:10px;justify-content:center; }
+
     /* MEETINGS */
     .meeting-card { background:#fff;border:1px solid var(--borde);border-radius:16px;overflow:hidden;margin-bottom:16px;max-width:600px; }
     .meeting-card-header { padding:20px;display:flex;align-items:flex-start;gap:14px; }
@@ -487,7 +502,28 @@
           </div>
         </div>
 
-        <!-- SALA DE MEETING PROPIA -->
+        <!-- CERTIFICADO POPUP -->
+  <div id="cert-overlay" class="cert-overlay" style="display:none;">
+    <div class="cert-card">
+      <div class="cert-header">
+        <div class="cert-emoji">🎓</div>
+        <div class="cert-titulo" id="cert-titulo">¡Felicitaciones!</div>
+        <div class="cert-sub" id="cert-sub">Completaste el curso</div>
+      </div>
+      <div class="cert-body">
+        <div class="cert-nombre" id="cert-nombre"></div>
+        <div class="cert-curso" id="cert-curso"></div>
+        <div class="cert-msg" id="cert-msg"></div>
+        <div id="cert-estado" style="font-size:13px;color:var(--terracota);margin-bottom:16px;"></div>
+      </div>
+      <div class="cert-footer">
+        <button class="btn-outline" onclick="cerrarCertificado()">Cerrar</button>
+        <button class="btn-small" id="cert-btn-reenviar" onclick="reenviarCertificado()" style="display:none;">📧 Reenviar mail</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALA DE MEETING PROPIA -->
         <div id="sala-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#1a1a1a;z-index:2000;flex-direction:column;">
           <!-- Header -->
           <div style="background:#111;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #333;flex-shrink:0;">
@@ -975,6 +1011,7 @@
   window.completarDesdeVisor = async function() {
     const idx = moduloActivo;
     const cursoId = cursoActivo.cursoId;
+    const catId = cursoActivo.catId;
     const progRef = ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`);
     const snap = await get(progRef);
     const prog = snap.exists() ? snap.val() : { completados: [] };
@@ -982,7 +1019,9 @@
     if (!completados.includes(idx)) completados.push(idx);
     await set(progRef, { completados });
     cerrarVisor();
-    abrirCurso(cursoId, cursoActivo.catId);
+    await abrirCurso(cursoId, catId);
+    // Verificar si completó el curso y enviar certificado
+    await verificarCertificado(cursoId, catId);
   }
 
   window.marcarModulo = async function(cursoId, idx, estabaDone) {
@@ -1558,6 +1597,166 @@
       ok.classList.add('show');
       setTimeout(() => ok.classList.remove('show'), 3000);
     } catch(e) { alert('Error al guardar.'); }
+  }
+
+  // ── SISTEMA DE CERTIFICADOS ──
+  const EMAILJS_SERVICE = 'service_zc4scd9';
+  const EMAILJS_TEMPLATE_CURSO = 'template_a1459rq';
+  let certActual = null;
+
+  async function verificarCertificado(cursoId, catId) {
+    const cat = catalogo.find(c => c.id === catId);
+    const curso = cat?.cursos.find(c => c.id === cursoId);
+    if (!curso || !cat) return;
+
+    // Cargar módulos del curso
+    const modSnap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+    const total = modulos.length;
+
+    // Cargar progreso
+    const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`));
+    const completados = progSnap.exists() ? (progSnap.val().completados || []) : [];
+
+    if (completados.length >= total && total > 0) {
+      // Verificar si ya se envió el certificado de este curso
+      const certSnap = await get(ref(db, `usuarios/${currentUser.uid}/certificados/${cursoId}`));
+      if (!certSnap.exists()) {
+        await enviarCertificadoCurso(curso, cat);
+      }
+
+      // Verificar si completó todos los cursos de la categoría
+      await verificarCertificadoCategoria(cat);
+    }
+  }
+
+  async function enviarCertificadoCurso(curso, cat) {
+    const nombre = userData?.nombre || currentUser.email;
+    const fecha = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+        alumna_nombre: nombre,
+        curso_nombre: curso.nombre,
+        categoria_nombre: cat.nombre,
+        fecha_emision: fecha,
+        to_email: currentUser.email,
+        mensaje: `Completaste todos los módulos del curso "${curso.nombre}" de la categoría "${cat.nombre}". ¡Seguí creando!`
+      });
+
+      // Marcar certificado como enviado
+      await set(ref(db, `usuarios/${currentUser.uid}/certificados/${curso.id}`), {
+        tipo: 'curso',
+        cursoId: curso.id,
+        cursoNombre: curso.nombre,
+        categoriaNombre: cat.nombre,
+        fecha,
+        email: currentUser.email
+      });
+
+      mostrarPopupCertificado({
+        titulo: '¡Felicitaciones! 🎓',
+        sub: 'Completaste el curso',
+        nombre,
+        curso: curso.nombre,
+        msg: `Terminaste todos los módulos de "${curso.nombre}". Tu certificado fue enviado a ${currentUser.email}.`,
+        tipo: 'curso'
+      });
+
+    } catch(e) {
+      console.error('Error enviando certificado:', e);
+    }
+  }
+
+  async function verificarCertificadoCategoria(cat) {
+    // Verificar si completó todos los cursos de la categoría
+    let todosCompletos = true;
+    for (const curso of cat.cursos) {
+      const modSnap = await get(ref(db, `modulos/${curso.id}`));
+      const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+      const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${curso.id}`));
+      const completados = progSnap.exists() ? (progSnap.val().completados || []) : [];
+      if (completados.length < modulos.length) { todosCompletos = false; break; }
+    }
+
+    if (todosCompletos) {
+      const certCatSnap = await get(ref(db, `usuarios/${currentUser.uid}/certificados/cat_${cat.id}`));
+      if (!certCatSnap.exists()) {
+        const nombre = userData?.nombre || currentUser.email;
+        const fecha = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+
+        try {
+          await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+            alumna_nombre: nombre,
+            curso_nombre: `Categoría completa: ${cat.nombre}`,
+            categoria_nombre: cat.nombre,
+            fecha_emision: fecha,
+            to_email: currentUser.email,
+            mensaje: `¡Completaste TODOS los cursos de la categoría "${cat.nombre}"! Este es tu certificado de categoría completa. ¡Sos una experta!`
+          });
+
+          await set(ref(db, `usuarios/${currentUser.uid}/certificados/cat_${cat.id}`), {
+            tipo: 'categoria',
+            categoriaId: cat.id,
+            categoriaNombre: cat.nombre,
+            fecha,
+            email: currentUser.email
+          });
+
+          setTimeout(() => {
+            mostrarPopupCertificado({
+              titulo: '🏆 ¡Categoría completada!',
+              sub: 'Completaste todos los cursos de',
+              nombre,
+              curso: cat.nombre,
+              msg: `¡Sos una experta en "${cat.nombre}"! Completaste todos los cursos. Tu certificado especial fue enviado a ${currentUser.email}.`,
+              tipo: 'categoria'
+            });
+          }, 3000);
+
+        } catch(e) {
+          console.error('Error certificado categoría:', e);
+        }
+      }
+    }
+  }
+
+  function mostrarPopupCertificado({ titulo, sub, nombre, curso, msg, tipo }) {
+    certActual = { titulo, sub, nombre, curso, msg, tipo };
+    document.getElementById('cert-titulo').textContent = titulo;
+    document.getElementById('cert-sub').textContent = sub;
+    document.getElementById('cert-nombre').textContent = nombre;
+    document.getElementById('cert-curso').textContent = curso;
+    document.getElementById('cert-msg').textContent = msg;
+    document.getElementById('cert-estado').textContent = '📧 Certificado enviado a tu mail';
+    document.getElementById('cert-btn-reenviar').style.display = 'inline-block';
+    document.getElementById('cert-overlay').style.display = 'flex';
+  }
+
+  window.cerrarCertificado = () => {
+    document.getElementById('cert-overlay').style.display = 'none';
+  }
+
+  window.reenviarCertificado = async () => {
+    if (!certActual) return;
+    const btn = document.getElementById('cert-btn-reenviar');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    try {
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+        alumna_nombre: certActual.nombre,
+        curso_nombre: certActual.curso,
+        fecha_emision: new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' }),
+        to_email: currentUser.email,
+        mensaje: 'Reenvío de tu certificado de Ohla Academy.'
+      });
+      document.getElementById('cert-estado').textContent = '✅ Mail reenviado correctamente';
+    } catch(e) {
+      document.getElementById('cert-estado').textContent = '❌ Error al reenviar. Intentá de nuevo.';
+    } finally {
+      btn.textContent = '📧 Reenviar mail';
+      btn.disabled = false;
+    }
   }
 
   async function loadUsers() {

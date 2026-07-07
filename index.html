@@ -1247,6 +1247,23 @@
       const fechaStr = fecha.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
       const horaStr = fecha.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
 
+      // Calcular botonHtml según rol y tiempo
+      const esHost2 = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email);
+      const msAntes2 = fecha - ahora;
+      const minAntes2 = msAntes2 / 60000;
+      let botonHtml = '';
+      if (yaTermino) {
+        botonHtml = m.grabacionUrl
+          ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>`
+          : `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>`;
+      } else if (esHost2 && minAntes2 <= 10) {
+        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',true)">${estaVivo ? '🔴 Iniciar clase' : '⚙️ Preparar sala'}</button>`;
+      } else if (!esHost2 && estaVivo) {
+        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',false)">🔴 Entrar ahora</button>`;
+      } else if (esProximo) {
+        botonHtml = `<div style="text-align:right;"><div style="font-size:12px;color:var(--terracota);font-weight:700;">⏰ En ${tiempoHasta(fecha)}</div></div>`;
+      }
+
       html += `<div class="meeting-card">
         <div class="meeting-card-header">
           ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
@@ -1261,7 +1278,7 @@
             ${estaVivo ? '🔴 En vivo ahora' : esProximo ? `⏰ En ${tiempoHasta(fecha)}` : '📼 Finalizado'}
           </div>
           <div style="display:flex;gap:8px;">
-            ${(estaVivo || esProximo) ? `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'ohla-sala'}','${m.titulo}')">${estaVivo ? '🔴 Entrar ahora' : '📅 Unirme'}</button>` : ''}
+            ${botonHtml}
             ${yaTermino && m.grabacionUrl ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>` : ''}
             ${yaTermino && !m.grabacionUrl ? `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>` : ''}
           </div>
@@ -1294,7 +1311,7 @@
   let unsubMensajes = null;
   let unsubParticipantes = null;
 
-  window.entrarSala = async function(roomUrl, titulo) {
+  window.entrarSala = async function(roomUrl, titulo, esHostSala = false) {
     // Extraer ID de sala del URL o usar un ID fijo
     salaId = roomUrl.split('/').pop() || 'ohla-sala';
     document.getElementById('sala-titulo').textContent = titulo;

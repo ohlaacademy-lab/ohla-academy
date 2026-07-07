@@ -1208,7 +1208,12 @@
       meetingsData = data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       renderMeetings();
     } catch(e) {
-      container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">Error al cargar meetings. Verificá tu conexión.</div>';
+      console.error('Error meetings:', e.code, e.message);
+      if (e.code === 'PERMISSION_DENIED') {
+        container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">⚠ Error de permisos en Firebase. Las reglas de seguridad están bloqueando la lectura.</div>';
+      } else {
+        container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">Error: ' + e.message + '</div>';
+      }
     }
   }
 
@@ -1644,8 +1649,8 @@
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
-    if (id === 'tab-meetings') loadMeetings();
-    if (id === 'tab-admin') { loadMeetingsAdmin(); loadUsers(); }
+    if (id === 'tab-meetings' && currentUser) loadMeetings();
+    if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadUsers(); }
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-label').forEach(s => s.classList.remove('active'));
     const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin'};

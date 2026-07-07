@@ -819,28 +819,35 @@
   function renderCursos() {
     const container = document.getElementById('cursos-content');
     const faseInfo = document.getElementById('fase-info');
-    if (!userData?.preferencias?.onboardingCompleto) {
+    const esAdminOProfe = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email);
+    if (!esAdminOProfe && !userData?.preferencias?.onboardingCompleto) {
       container.innerHTML = `<div style="text-align:center;padding:40px 0;"><div style="font-size:40px;margin-bottom:12px;">🌸</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">¡Bienvenida a Ohla Academy!</div><div style="font-size:14px;color:var(--gris-medio);margin-bottom:20px;">Respondé unas preguntas rápidas para personalizar tu experiencia</div><button class="btn-primary" style="max-width:300px;margin:0 auto;display:block;" onclick="startOnboarding()">Empezar mi encuesta →</button></div>`;
       return;
     }
 
-    const fase = userData.preferencias.fase || 1;
-    const fechaInicio = new Date(userData.preferencias.fechaInicio);
-    const hoy = new Date();
-    const mesesTranscurridos = Math.floor((hoy - fechaInicio) / (1000 * 60 * 60 * 24 * 30));
-    const faseActual = Math.min(mesesTranscurridos + 1, 4);
+    let faseActual = 4;
+    let categoriasElegidas = catalogo.map(c => c.id);
+    let cursosInicio = [];
 
-    if (faseActual > fase) {
-      set(ref(db, `usuarios/${currentUser.uid}/preferencias/fase`), faseActual);
-      userData.preferencias.fase = faseActual;
+    if (esAdminOProfe) {
+      faseInfo.innerHTML = '<div class="fase-badge">👑 Vista de administradora — Acceso completo</div>';
+      document.getElementById('perfil-fase').textContent = '👑 Administradora — acceso completo';
+    } else {
+      const fase = userData.preferencias?.fase || 1;
+      const fechaInicio = new Date(userData.preferencias?.fechaInicio || new Date());
+      const hoy = new Date();
+      const mesesTranscurridos = Math.floor((hoy - fechaInicio) / (1000 * 60 * 60 * 24 * 30));
+      faseActual = Math.min(mesesTranscurridos + 1, 4);
+      if (faseActual > fase) {
+        set(ref(db, `usuarios/${currentUser.uid}/preferencias/fase`), faseActual);
+        userData.preferencias.fase = faseActual;
+      }
+      categoriasElegidas = userData.preferencias?.categorias || [];
+      cursosInicio = userData.preferencias?.cursosInicio || [];
+      const faseTxt = faseActual >= 4 ? '✦ Acceso completo — ¡Explorá todo!' : `✦ Fase ${faseActual} de 3 — ${faseActual === 1 ? 'Tus primeros cursos' : faseActual === 2 ? 'Se habilitó tu segunda elección' : 'Se habilitó tu tercera elección'}`;
+      faseInfo.innerHTML = `<div class="fase-badge">${faseTxt}</div>`;
+      document.getElementById('perfil-fase').textContent = faseTxt;
     }
-
-    const faseTxt = faseActual >= 4 ? '✦ Acceso completo — ¡Explorá todo!' : `✦ Fase ${faseActual} de 3 — ${faseActual === 1 ? 'Tus primeros cursos' : faseActual === 2 ? 'Se habilitó tu segunda elección' : 'Se habilitó tu tercera elección'}`;
-    faseInfo.innerHTML = `<div class="fase-badge">${faseTxt}</div>`;
-    document.getElementById('perfil-fase').textContent = faseTxt;
-
-    const categoriasElegidas = userData.preferencias.categorias || [];
-    const cursosInicio = userData.preferencias.cursosInicio || [];
 
     let html = '';
     catalogo.forEach(cat => {
@@ -856,7 +863,8 @@
         const esGratisReal = curso.tipo === 'gratis' || esTempActivo;
         const bloqueado = !esGratisReal && curso.tipo !== 'gratis' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
         const colorIdx = i % 6;
-        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" onclick="${bloqueado ? 'showMembresiaBanner()' : `abrirCurso('${curso.id}','${cat.id}')`}">
+        const onclickCurso = bloqueado ? 'showMembresiaBanner()' : `abrirCurso("${curso.id}","${cat.id}")`;
+        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" onclick="${onclickCurso}">
           <div class="curso-card-header">
             <span class="curso-card-icon">${curso.icon}</span>
             <div class="curso-card-info">
@@ -930,7 +938,8 @@
       const tieneVideo = !!(m.videoUrl && youtubeId(m.videoUrl));
       const tieneTexto = !!(m.texto && m.texto.trim());
       const tieneArchivos = !!(m.archivos && m.archivos.length > 0);
-      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${locked ? '' : `abrirVisor(${i})`}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
+      const onclickVisor = locked ? '' : 'abrirVisor(' + i + ')';
+      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${onclickVisor}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
         <div class="modulo-num ${done ? 'num-done' : active ? 'num-active' : 'num-pending'}">${done ? '✓' : i + 1}</div>
         <div class="modulo-info">
           <div class="modulo-name">${m.nombre}</div>

@@ -1644,6 +1644,8 @@
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
+    if (id === 'tab-meetings') loadMeetings();
+    if (id === 'tab-admin') { loadMeetingsAdmin(); loadUsers(); }
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-label').forEach(s => s.classList.remove('active'));
     const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin'};

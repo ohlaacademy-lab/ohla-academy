@@ -820,7 +820,6 @@
     const container = document.getElementById('cursos-content');
     const faseInfo = document.getElementById('fase-info');
     const esAdminOProfe = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email) || ADMIN_EMAILS.includes(userData?.email);
-    console.log('DEBUG renderCursos:', {rol: userData?.rol, email: currentUser?.email, esAdminOProfe, onboarding: userData?.preferencias?.onboardingCompleto});
     if (!esAdminOProfe && !userData?.preferencias?.onboardingCompleto) {
       container.innerHTML = `<div style="text-align:center;padding:40px 0;"><div style="font-size:40px;margin-bottom:12px;">🌸</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">¡Bienvenida a Ohla Academy!</div><div style="font-size:14px;color:var(--gris-medio);margin-bottom:20px;">Respondé unas preguntas rápidas para personalizar tu experiencia</div><button class="btn-primary" style="max-width:300px;margin:0 auto;display:block;" onclick="startOnboarding()">Empezar mi encuesta →</button></div>`;
       return;
@@ -864,8 +863,7 @@
         const esGratisReal = curso.tipo === 'gratis' || esTempActivo;
         const bloqueado = !esGratisReal && curso.tipo !== 'gratis' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
         const colorIdx = i % 6;
-        const onclickCurso = bloqueado ? 'showMembresiaBanner()' : `abrirCurso("${curso.id}","${cat.id}")`;
-        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" onclick="${onclickCurso}">
+        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" data-curso="${curso.id}" data-cat="${cat.id}" data-bloqueado="${bloqueado}">
           <div class="curso-card-header">
             <span class="curso-card-icon">${curso.icon}</span>
             <div class="curso-card-info">
@@ -884,6 +882,17 @@
 
     if (!html) html = '<div style="font-size:13px;color:var(--gris-medio);padding:20px 0;">No hay cursos disponibles aún.</div>';
     container.innerHTML = html;
+
+    // Agregar event listeners a las cards de cursos
+    container.querySelectorAll('.curso-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const bloqueado = card.dataset.bloqueado === 'true';
+        const cursoId = card.dataset.curso;
+        const catId = card.dataset.cat;
+        if (bloqueado) showMembresiaBanner();
+        else abrirCurso(cursoId, catId);
+      });
+    });
   }
 
   window.showMembresiaBanner = function() {
@@ -939,8 +948,7 @@
       const tieneVideo = !!(m.videoUrl && youtubeId(m.videoUrl));
       const tieneTexto = !!(m.texto && m.texto.trim());
       const tieneArchivos = !!(m.archivos && m.archivos.length > 0);
-      const onclickVisor = locked ? '' : 'abrirVisor(' + i + ')';
-      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" onclick="${onclickVisor}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
+      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" data-modulo="${i}" data-locked="${locked}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
         <div class="modulo-num ${done ? 'num-done' : active ? 'num-active' : 'num-pending'}">${done ? '✓' : i + 1}</div>
         <div class="modulo-info">
           <div class="modulo-name">${m.nombre}</div>
@@ -949,6 +957,14 @@
         <div class="modulo-status">${done ? '✅' : active ? '▶' : '🔒'}</div>
       </div>`;
     }).join('');
+
+    // Event listeners en módulos
+    document.querySelectorAll('.modulo-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (item.dataset.locked === 'true') return;
+        abrirVisor(parseInt(item.dataset.modulo));
+      });
+    });
 
     showTab('tab-modulos');
   }

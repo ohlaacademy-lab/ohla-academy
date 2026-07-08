@@ -889,6 +889,8 @@
         const bloqueado = card.dataset.bloqueado === 'true';
         const cursoId = card.dataset.curso;
         const catId = card.dataset.cat;
+        console.log('Click curso:', cursoId, catId, 'bloqueado:', bloqueado);
+        console.log('Catalogo IDs:', catalogo.map(c => c.id));
         if (bloqueado) showMembresiaBanner();
         else abrirCurso(cursoId, catId);
       });

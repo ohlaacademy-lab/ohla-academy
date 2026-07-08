@@ -819,7 +819,8 @@
   function renderCursos() {
     const container = document.getElementById('cursos-content');
     const faseInfo = document.getElementById('fase-info');
-    const esAdminOProfe = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email);
+    const esAdminOProfe = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email) || ADMIN_EMAILS.includes(userData?.email);
+    console.log('DEBUG renderCursos:', {rol: userData?.rol, email: currentUser?.email, esAdminOProfe, onboarding: userData?.preferencias?.onboardingCompleto});
     if (!esAdminOProfe && !userData?.preferencias?.onboardingCompleto) {
       container.innerHTML = `<div style="text-align:center;padding:40px 0;"><div style="font-size:40px;margin-bottom:12px;">🌸</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">¡Bienvenida a Ohla Academy!</div><div style="font-size:14px;color:var(--gris-medio);margin-bottom:20px;">Respondé unas preguntas rápidas para personalizar tu experiencia</div><button class="btn-primary" style="max-width:300px;margin:0 auto;display:block;" onclick="startOnboarding()">Empezar mi encuesta →</button></div>`;
       return;

@@ -666,6 +666,29 @@
 
 </div>
 
+<script>
+  // Wrapper para funciones que se llaman desde HTML antes de que cargue el módulo
+  function showScreen(id) { window._pendingScreen = id; if(window._showScreen) window._showScreen(id); }
+  function showTab(id) { if(window._showTab) window._showTab(id); }
+  function startOnboarding() { if(window._startOnboarding) window._startOnboarding(); }
+  function onboardingNext() { if(window._onboardingNext) window._onboardingNext(); }
+  function toggleOnboardingOption(id, max) { if(window._toggleOnboardingOption) window._toggleOnboardingOption(id, max); }
+  function doLogin() { if(window._doLogin) window._doLogin(); }
+  function doRegister() { if(window._doRegister) window._doRegister(); }
+  function doLogout() { if(window._doLogout) window._doLogout(); }
+  function resetPassword() { if(window._resetPassword) window._resetPassword(); }
+  function cerrarVisor() { if(window._cerrarVisor) window._cerrarVisor(); }
+  function cerrarSala() { if(window._cerrarSala) window._cerrarSala(); }
+  function cerrarCertificado() { if(window._cerrarCertificado) window._cerrarCertificado(); }
+  function enviarMensaje() { if(window._enviarMensaje) window._enviarMensaje(); }
+  function pedirPalabra() { if(window._pedirPalabra) window._pedirPalabra(); }
+  function salaTab(t) { if(window._salaTab) window._salaTab(t); }
+  function toggleMic() { if(window._toggleMic) window._toggleMic(); }
+  function toggleCam() { if(window._toggleCam) window._toggleCam(); }
+  function completarDesdeVisor() { if(window._completarDesdeVisor) window._completarDesdeVisor(); }
+  function reenviarCertificado() { if(window._reenviarCertificado) window._reenviarCertificado(); }
+  function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
+</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -727,7 +750,7 @@
   let onboardingSelections = [[], [], []];
 
   // ── ONBOARDING ──
-  window.startOnboarding = function() {
+  window._startOnboarding = window.startOnboarding = function() {
     onboardingStep = 0;
     onboardingSelections = [[], [], []];
     const intro = document.getElementById('onboarding-intro');
@@ -805,7 +828,7 @@
     if (btn) btn.disabled = sel.length === 0;
   }
 
-  window.onboardingNext = async function() {
+  window._onboardingNext = window.onboardingNext = async function() {
     if (onboardingStep < 2) {
       onboardingStep++;
       renderOnboardingStep();
@@ -910,7 +933,7 @@
     });
   }
 
-  window.showMembresiaBanner = function() {
+  window._showMembresiaBanner = window.showMembresiaBanner = function() {
     document.getElementById('cursos-content').insertAdjacentHTML('afterbegin', `
       <div class="membresia-banner">
         <div class="membresia-titulo">🌸 Este curso es parte de la membresía</div>
@@ -1044,12 +1067,12 @@
     document.getElementById('visor-overlay').style.display = 'flex';
   }
 
-  window.cerrarVisor = function() {
+  window._cerrarVisor = window.cerrarVisor = function() {
     document.getElementById('visor-overlay').style.display = 'none';
     document.getElementById('visor-body').innerHTML = '';
   }
 
-  window.completarDesdeVisor = async function() {
+  window._completarDesdeVisor = window.completarDesdeVisor = async function() {
     const idx = moduloActivo;
     const cursoId = cursoActivo.cursoId;
     const catId = cursoActivo.catId;
@@ -1487,7 +1510,7 @@
     agregarMensajeSistema('Entraste a la sala');
   }
 
-  window.cerrarSala = async function() {
+  window._cerrarSala = window.cerrarSala = async function() {
     if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
     if (unsubMensajes) unsubMensajes();
     if (unsubParticipantes) unsubParticipantes();
@@ -1504,7 +1527,7 @@
     salaId = null;
   }
 
-  window.toggleMic = function() {
+  window._toggleMic = window.toggleMic = function() {
     if (!localStream) return;
     micActivo = !micActivo;
     localStream.getAudioTracks().forEach(t => t.enabled = micActivo);
@@ -1513,7 +1536,7 @@
     document.getElementById('mic-off-indicator').style.display = micActivo ? 'none' : 'block';
   }
 
-  window.toggleCam = function() {
+  window._toggleCam = window.toggleCam = function() {
     if (!localStream) return;
     camActiva = !camActiva;
     localStream.getVideoTracks().forEach(t => t.enabled = camActiva);
@@ -1521,7 +1544,7 @@
     document.getElementById('btn-cam').textContent = camActiva ? '📷 Cám' : '📷 Off';
   }
 
-  window.enviarMensaje = async function() {
+  window._enviarMensaje = window.enviarMensaje = async function() {
     const input = document.getElementById('chat-input');
     const texto = input.value.trim();
     if (!texto || !salaId) return;
@@ -1535,7 +1558,7 @@
     });
   }
 
-  window.pedirPalabra = async function() {
+  window._pedirPalabra = window.pedirPalabra = async function() {
     if (!salaId) return;
     const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
     await set(msgRef, {
@@ -1566,7 +1589,7 @@
     await set(msgRef, { texto: `${userData?.nombre || ''} ${texto}`, tipo: 'sistema', ts: new Date().toISOString() });
   }
 
-  window.salaTab = function(tab) {
+  window._salaTab = window.salaTab = function(tab) {
     document.getElementById('panel-chat').style.display = tab === 'chat' ? 'flex' : 'none';
     document.getElementById('panel-participantes').style.display = tab === 'participantes' ? 'block' : 'none';
     document.getElementById('tab-chat-btn').style.color = tab === 'chat' ? '#C4723A' : '#888';
@@ -1865,11 +1888,11 @@
     document.getElementById('cert-overlay').style.display = 'flex';
   }
 
-  window.cerrarCertificado = () => {
+  window._cerrarCertificado = window.cerrarCertificado = () => {
     document.getElementById('cert-overlay').style.display = 'none';
   }
 
-  window.reenviarCertificado = async () => {
+  window._reenviarCertificado = window.reenviarCertificado = async () => {
     if (!certActual) return;
     const btn = document.getElementById('cert-btn-reenviar');
     btn.textContent = 'Enviando...';
@@ -1975,7 +1998,7 @@
     }
   }
 
-  window.showTab = id => {
+  window._showTab = window.showTab = id => {
     ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
@@ -1992,14 +2015,14 @@
 
   onAuthStateChanged(auth, user => { if (user) showHomeScreen(user); });
 
-  window.showScreen = id => {
+  window._showScreen = window.showScreen = id => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
     document.querySelectorAll('.msg').forEach(m => m.classList.remove('show'));
   }
 
-  window.doLogin = async () => {
+  window._doLogin = window.doLogin = async () => {
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     const remember = document.getElementById('remember-me').checked;
@@ -2016,7 +2039,7 @@
     } finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
   }
 
-  window.doRegister = async () => {
+  window._doRegister = window.doRegister = async () => {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const pass = document.getElementById('register-password').value;
@@ -2036,9 +2059,9 @@
     } finally { btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
   }
 
-  window.doLogout = async () => { await signOut(auth); showScreen('screen-welcome'); }
+  window._doLogout = window.doLogout = async () => { await signOut(auth); showScreen('screen-welcome'); }
 
-  window.resetPassword = async () => {
+  window._resetPassword = window.resetPassword = async () => {
     const email = document.getElementById('login-email').value.trim();
     const err = document.getElementById('login-error');
     if (!email) { showMsg(err,'✦ Primero escribí tu mail'); return; }

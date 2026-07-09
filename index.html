@@ -504,7 +504,7 @@
 
         <!-- CERTIFICADO POPUP -->
   <div id="cert-overlay" class="cert-overlay" style="display:none;">
-    <div class="cert-card">
+    <div class="cert-card" style="max-width:720px;">
       <div class="cert-header">
         <div class="cert-emoji">🎓</div>
         <div class="cert-titulo" id="cert-titulo">¡Felicitaciones!</div>
@@ -515,9 +515,12 @@
         <div class="cert-curso" id="cert-curso"></div>
         <div class="cert-msg" id="cert-msg"></div>
         <div id="cert-estado" style="font-size:13px;color:var(--terracota);margin-bottom:16px;"></div>
+        <!-- Preview del certificado -->
+        <div id="cert-body-visual" style="display:none;border:1px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px;"></div>
       </div>
       <div class="cert-footer">
         <button class="btn-outline" onclick="cerrarCertificado()">Cerrar</button>
+        <button class="btn-small" id="cert-btn-descargar" style="display:none;">⬇ Descargar certificado</button>
         <button class="btn-small" id="cert-btn-reenviar" onclick="reenviarCertificado()" style="display:none;">📧 Reenviar mail</button>
       </div>
     </div>
@@ -1660,28 +1663,88 @@
     }
   }
 
+  function generarCertificadoSVG(nombreAlumna, nombreCurso, nombreCat, fecha) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 460" width="680" height="460">
+      <rect x="0" y="0" width="680" height="460" fill="#FDFAF5" rx="12"/>
+      <rect x="12" y="12" width="656" height="436" fill="none" stroke="#C4723A" stroke-width="1.5" rx="8"/>
+      <rect x="22" y="22" width="636" height="416" fill="none" stroke="#C4723A" stroke-width="0.5" rx="6"/>
+      <path d="M12,40 L12,12 L40,12" fill="none" stroke="#C4723A" stroke-width="2"/>
+      <path d="M640,12 L668,12 L668,40" fill="none" stroke="#C4723A" stroke-width="2"/>
+      <path d="M12,420 L12,448 L40,448" fill="none" stroke="#C4723A" stroke-width="2"/>
+      <path d="M640,448 L668,448 L668,420" fill="none" stroke="#C4723A" stroke-width="2"/>
+      <text x="340" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#C4723A" opacity="0.7">~ ❧ ~</text>
+      <text x="340" y="105" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#5F5E5A" letter-spacing="4"><tspan fill="#C4723A">O</tspan>hla</text>
+      <text x="340" y="124" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#C4723A" letter-spacing="8">ACADEMY</text>
+      <line x1="240" y1="138" x2="440" y2="138" stroke="#C4723A" stroke-width="0.5" opacity="0.6"/>
+      <text x="340" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#888780" letter-spacing="3">CERTIFICADO DE FINALIZACIÓN</text>
+      <text x="340" y="198" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#888780" font-style="italic">Este certificado se otorga a</text>
+      <text x="340" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="700" fill="#5F5E5A">\${nombreAlumna}</text>
+      <line x1="180" y1="250" x2="500" y2="250" stroke="#C4723A" stroke-width="0.5" opacity="0.4"/>
+      <text x="340" y="278" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#888780" font-style="italic">por haber completado satisfactoriamente el curso</text>
+      <text x="340" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="700" fill="#C4723A">\${nombreCurso}</text>
+      <text x="340" y="330" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#888780">Categoría: \${nombreCat} · Ohla Academy</text>
+      <text x="340" y="358" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#888780">\${fecha}</text>
+      <line x1="120" y1="400" x2="280" y2="400" stroke="#5F5E5A" stroke-width="0.5"/>
+      <text x="200" y="416" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#5F5E5A">Florencia Aguilera</text>
+      <text x="200" y="430" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888780">Directora</text>
+      <line x1="400" y1="400" x2="560" y2="400" stroke="#5F5E5A" stroke-width="0.5"/>
+      <text x="480" y="416" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#5F5E5A">María Inés Lloret</text>
+      <text x="480" y="430" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888780">Directora</text>
+      <text x="340" y="448" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#C4723A" opacity="0.5">✦</text>
+    </svg>`;
+  }
+
+  function svgToDataUrl(svgString) {
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    return URL.createObjectURL(blob);
+  }
+
+  async function svgToPngBase64(svgString) {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 680;
+      canvas.height = 460;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        ctx.fillStyle = '#FDFAF5';
+        ctx.fillRect(0, 0, 680, 460);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.src = url;
+    });
+  }
+
   async function enviarCertificadoCurso(curso, cat) {
     const nombre = userData?.nombre || currentUser.email;
     const fecha = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
 
     try {
+      // Generar SVG del certificado
+      const svgString = generarCertificadoSVG(nombre, curso.nombre, cat.nombre, fecha);
+      const pngDataUrl = await svgToPngBase64(svgString);
+
       await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
         alumna_nombre: nombre,
         curso_nombre: curso.nombre,
         categoria_nombre: cat.nombre,
         fecha_emision: fecha,
         to_email: currentUser.email,
-        mensaje: `Completaste todos los módulos del curso "${curso.nombre}" de la categoría "${cat.nombre}". ¡Seguí creando!`
+        mensaje: `¡Felicitaciones! Completaste todos los módulos del curso "${curso.nombre}". Tu certificado está adjunto.`
       });
 
-      // Marcar certificado como enviado
       await set(ref(db, `usuarios/${currentUser.uid}/certificados/${curso.id}`), {
         tipo: 'curso',
         cursoId: curso.id,
         cursoNombre: curso.nombre,
         categoriaNombre: cat.nombre,
         fecha,
-        email: currentUser.email
+        email: currentUser.email,
+        svgUrl: pngDataUrl
       });
 
       mostrarPopupCertificado({
@@ -1690,7 +1753,8 @@
         nombre,
         curso: curso.nombre,
         msg: `Terminaste todos los módulos de "${curso.nombre}". Tu certificado fue enviado a ${currentUser.email}.`,
-        tipo: 'curso'
+        tipo: 'curso',
+        svgString
       });
 
     } catch(e) {
@@ -1751,8 +1815,8 @@
     }
   }
 
-  function mostrarPopupCertificado({ titulo, sub, nombre, curso, msg, tipo }) {
-    certActual = { titulo, sub, nombre, curso, msg, tipo };
+  function mostrarPopupCertificado({ titulo, sub, nombre, curso, msg, tipo, svgString }) {
+    certActual = { titulo, sub, nombre, curso, msg, tipo, svgString };
     document.getElementById('cert-titulo').textContent = titulo;
     document.getElementById('cert-sub').textContent = sub;
     document.getElementById('cert-nombre').textContent = nombre;
@@ -1760,6 +1824,29 @@
     document.getElementById('cert-msg').textContent = msg;
     document.getElementById('cert-estado').textContent = '📧 Certificado enviado a tu mail';
     document.getElementById('cert-btn-reenviar').style.display = 'inline-block';
+
+    // Mostrar el certificado visual en el popup
+    const certBody = document.getElementById('cert-body-visual');
+    if (certBody && svgString) {
+      certBody.innerHTML = svgString;
+      certBody.style.display = 'block';
+
+      // Botón de descarga
+      const btnDesc = document.getElementById('cert-btn-descargar');
+      if (btnDesc) {
+        btnDesc.style.display = 'inline-block';
+        btnDesc.onclick = () => {
+          const blob = new Blob([svgString], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Certificado_${curso.replace(/\s+/g,'_')}_OhlaAcademy.svg`;
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+      }
+    }
+
     document.getElementById('cert-overlay').style.display = 'flex';
   }
 

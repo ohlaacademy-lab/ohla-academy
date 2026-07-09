@@ -682,18 +682,18 @@
       { id: 'flores', icon: '🌺', nombre: 'Flores de tela', tipo: 'membresia' }
     ]},
     { id: 'costura', icon: '🧵', nombre: 'Costura y tejido', cursos: [
-      { id: 'abc-costura', icon: '🪡', nombre: 'ABC de la costura', tipo: 'gratis' },
+      { id: 'abccostura', icon: '🪡', nombre: 'ABC de la costura', tipo: 'gratis' },
       { id: 'moldes', icon: '✂️', nombre: 'Moldes y progresiones — hacé tu outfit', tipo: 'membresia' },
       { id: 'crochet', icon: '🧶', nombre: 'Crochet', tipo: 'membresia' },
       { id: 'bordado', icon: '🪢', nombre: 'Bordado', tipo: 'membresia' }
     ]},
     { id: 'belleza', icon: '🧴', nombre: 'Belleza natural', cursos: [
-      { id: 'cremas-corp', icon: '✨', nombre: 'Cremas corporales', tipo: 'membresia' },
-      { id: 'cremas-pelo', icon: '💆', nombre: 'Cremas de pelo y de rostro', tipo: 'membresia' },
+      { id: 'cremascorp', icon: '✨', nombre: 'Cremas corporales', tipo: 'membresia' },
+      { id: 'cremaspelo', icon: '💆', nombre: 'Cremas de pelo y de rostro', tipo: 'membresia' },
       { id: 'shampoo', icon: '🛁', nombre: 'Shampoo y acondicionador sólido', tipo: 'membresia' },
       { id: 'jabones', icon: '🧼', nombre: 'Jabones', tipo: 'membresia' }
     ]},
-    { id: 'deco', icon: '🕯️', nombre: 'Deco y aromas', cursos: [
+    { id: 'deco', icon: '🕯', nombre: 'Deco y aromas', cursos: [
       { id: 'bodysplash', icon: '💧', nombre: 'Body splash', tipo: 'membresia' },
       { id: 'velas', icon: '🕯️', nombre: 'Velas aromáticas', tipo: 'membresia' },
       { id: 'difusores', icon: '🌿', nombre: 'Difusores', tipo: 'membresia' },
@@ -863,7 +863,9 @@
         const esGratisReal = curso.tipo === 'gratis' || esTempActivo;
         const bloqueado = !esGratisReal && curso.tipo !== 'gratis' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
         const colorIdx = i % 6;
-        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" data-curso="${curso.id}" data-cat="${cat.id}" data-bloqueado="${bloqueado}">
+        const safeId = encodeURIComponent(curso.id);
+        const safeCat = encodeURIComponent(cat.id);
+        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" data-curso="${safeId}" data-cat="${safeCat}" data-bloqueado="${bloqueado}">
           <div class="curso-card-header">
             <span class="curso-card-icon">${curso.icon}</span>
             <div class="curso-card-info">
@@ -887,8 +889,8 @@
     container.querySelectorAll('.curso-card').forEach(card => {
       card.addEventListener('click', () => {
         const bloqueado = card.dataset.bloqueado === 'true';
-        const cursoId = card.dataset.curso;
-        const catId = card.dataset.cat;
+        const cursoId = decodeURIComponent(card.dataset.curso);
+        const catId = decodeURIComponent(card.dataset.cat);
         console.log('Click curso:', cursoId, catId, 'bloqueado:', bloqueado);
         console.log('Catalogo IDs:', catalogo.map(c => c.id));
         if (bloqueado) showMembresiaBanner();

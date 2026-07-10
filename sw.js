@@ -1,35 +1,2508 @@
-const CACHE_NAME = 'ohla-academy-v10';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#F8F8F7">
+  <meta name="description" content="Ohla Academy — Aprendé, Creá, Emprendé">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Ohla Academy">
+  <title>Ohla Academy</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script>emailjs.init("JB2jvzNMExOGF-5yx");</script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --terracota: #C4723A; --terracota-dark: #A85E2A; --terracota-light: #FDDECF;
+      --gris: #5F5E5A; --gris-medio: #888780; --gris-claro: #F8F8F7;
+      --borde: #F0EDE8; --fondo-form: #FFFAF8;
+    }
+    body { font-family: 'Lato', sans-serif; background: var(--gris-claro); min-height: 100vh; }
+    .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+    .screen { display: none; flex-direction: column; flex: 1; }
+    .screen.active { display: flex; }
 
-// Al instalar — guardar assets en caché nueva
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(c => c.addAll(ASSETS))
-  );
-  self.skipWaiting(); // Activar inmediatamente sin esperar
-});
+    /* BIENVENIDA */
+    .welcome-wrap { display: flex; flex: 1; min-height: 100vh; }
+    .welcome-left { flex: 1; background: var(--gris-claro); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 48px; text-align: center; }
+    .welcome-right { width: 460px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 48px; border-left: 1px solid var(--borde); }
+    .ornament { font-family: 'Cormorant Garamond', serif; color: var(--terracota); font-size: 22px; letter-spacing: 6px; opacity: 0.7; margin-bottom: 12px; }
+    .logo-main { font-family: 'Cormorant Garamond', serif; font-size: 64px; font-weight: 700; color: var(--gris); letter-spacing: 4px; line-height: 1; }
+    .logo-main span { color: var(--terracota); }
+    .logo-sub { font-size: 11px; letter-spacing: 8px; color: var(--terracota); margin-top: 6px; text-transform: uppercase; }
+    .hero-divider { width: 80px; height: 1px; background: linear-gradient(to right, transparent, var(--terracota), transparent); margin: 28px auto; }
+    .hero-frase { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gris); line-height: 1.6; font-style: italic; max-width: 440px; }
+    .hero-firma { font-size: 13px; color: var(--gris-medio); margin-top: 10px; letter-spacing: 1px; }
 
-// Al activar — borrar cachés viejas
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim()) // Tomar control de todas las pestañas
-  );
-});
+    /* BOTONES */
+    .btn-primary { width: 100%; background: var(--terracota); color: #fff; border: none; border-radius: 12px; padding: 16px; font-family: 'Cormorant Garamond', serif; font-size: 17px; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--terracota-dark); }
+    .btn-primary:disabled { background: #D9A882; cursor: not-allowed; }
+    .btn-secondary { width: 100%; background: transparent; color: var(--gris); border: 1px solid #D0CEC8; border-radius: 12px; padding: 14px; font-size: 14px; cursor: pointer; margin-top: 12px; transition: all 0.2s; }
+    .btn-secondary:hover { border-color: var(--terracota); color: var(--terracota); }
+    .btn-danger { background: #fff0f0; color: #c0392b; border: 1px solid #f5c5c5; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+    .btn-small { background: var(--terracota); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; }
+    .btn-small:hover { background: var(--terracota-dark); }
+    .btn-outline { background: transparent; color: var(--terracota); border: 1px solid var(--terracota); border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; }
 
-// Al hacer fetch — red primero, caché como respaldo
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    fetch(e.request)
-      .then(response => {
-        // Guardar copia fresca en caché
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(e.request))
-  );
-});
+    /* FORMS */
+    .screen-header { background: var(--gris-claro); padding: 40px 48px 28px; text-align: center; border-bottom: 1px solid var(--borde); position: relative; }
+    .back-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: var(--terracota); font-size: 22px; cursor: pointer; padding: 8px; }
+    .screen-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: var(--gris); margin-top: 16px; }
+    .screen-sub { font-size: 13px; color: var(--gris-medio); margin-top: 4px; }
+    .form-wrap { display: flex; flex: 1; }
+    .form-side { flex: 1; background: var(--gris-claro); }
+    .form-body { width: 100%; max-width: 480px; padding: 40px 48px 60px; background: var(--fondo-form); overflow-y: auto; margin: 0 auto; }
+    .field-group { margin-bottom: 20px; }
+    .field-label { font-size: 11px; color: var(--gris-medio); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .field-input { width: 100%; background: #F8F5F2; border: 1px solid #E0C8B8; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: var(--gris); font-family: 'Lato', sans-serif; transition: border-color 0.2s; outline: none; }
+    .field-input:focus { border-color: var(--terracota); }
+    .field-input::placeholder { color: #C0B8B0; }
+    .forgot-link { text-align: right; margin-top: 6px; }
+    .forgot-link a { font-size: 12px; color: var(--terracota); text-decoration: none; }
+    .divider-or { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider-or hr { flex: 1; border: none; border-top: 1px solid #E8E5E0; }
+    .divider-or span { font-size: 12px; color: #C0B8B0; }
+    .link-txt { text-align: center; font-size: 13px; color: var(--gris-medio); margin-top: 16px; }
+    .link-txt a { color: var(--terracota); text-decoration: none; font-weight: 700; }
+    .profe-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 20px; padding: 12px; border-top: 1px solid var(--borde); }
+    .terms-note { text-align: center; font-size: 11px; color: #B0AEA8; margin-top: 12px; line-height: 1.5; }
+    .terms-note a { color: var(--terracota); text-decoration: none; }
+    .msg { border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+    .msg.show { display: block; }
+    .msg-error { background: #FFF0EC; border: 1px solid #F0C5A0; color: #8B3A1A; }
+    .msg-success { background: #F0FAF5; border: 1px solid #A8DCBC; color: #1A6B3A; }
+
+    /* ONBOARDING */
+    .onboarding-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; background: var(--gris-claro); }
+    .onboarding-card { background: #fff; border-radius: 20px; border: 1px solid var(--borde); padding: 40px 36px; width: 100%; max-width: 560px; }
+    .onboarding-step { font-size: 11px; color: var(--terracota); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+    .onboarding-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gris); margin-bottom: 6px; }
+    .onboarding-sub { font-size: 13px; color: var(--gris-medio); margin-bottom: 28px; line-height: 1.6; }
+    .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .option-card { border: 2px solid var(--borde); border-radius: 14px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center; background: #fff; }
+    .option-card:hover { border-color: var(--terracota); background: var(--terracota-light); }
+    .option-card.selected { border-color: var(--terracota); background: var(--terracota-light); }
+    .option-card.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+    .option-icon { font-size: 28px; margin-bottom: 6px; }
+    .option-name { font-size: 13px; font-weight: 700; color: var(--gris); }
+    .option-desc { font-size: 11px; color: var(--gris-medio); margin-top: 2px; }
+    .selection-note { font-size: 12px; color: var(--gris-medio); text-align: center; margin-bottom: 16px; }
+    .progress-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 24px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #E0DED8; }
+    .dot.active { background: var(--terracota); }
+    .dot.done { background: #A8DCBC; }
+
+    /* HOME */
+    .home-topbar { background: #fff; padding: 16px 32px; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; }
+    .home-logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: var(--gris); }
+    .home-logo span { color: var(--terracota); }
+    .home-user-info { display: flex; align-items: center; gap: 16px; }
+    .logout-btn { background: none; border: 1px solid #E0DED8; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: var(--gris-medio); cursor: pointer; }
+    .logout-btn:hover { color: var(--terracota); border-color: var(--terracota); }
+    .home-content { display: flex; flex: 1; }
+    .home-sidebar { width: 240px; background: var(--gris-claro); border-right: 1px solid var(--borde); padding: 28px 20px; flex-shrink: 0; }
+    .sidebar-title { font-size: 10px; color: var(--gris-medio); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; font-size: 14px; color: var(--gris); transition: background 0.15s; }
+    .sidebar-item:hover, .sidebar-item.active { background: var(--terracota-light); color: var(--terracota); }
+    .home-main { flex: 1; padding: 32px 40px; overflow-y: auto; }
+    .greeting { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--gris); margin-bottom: 4px; }
+    .greeting-sub { font-size: 14px; color: var(--gris-medio); margin-bottom: 28px; }
+    .section-label { font-size: 11px; color: var(--gris-medio); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+
+    /* FASE BADGE */
+    .fase-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--terracota-light); color: #8B3A1A; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
+
+    /* CURSOS GRID */
+    .cursos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .curso-card { border-radius: 16px; border: 1px solid; overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .curso-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .curso-card.locked { opacity: 0.6; cursor: not-allowed; }
+    .curso-card-header { padding: 20px; display: flex; align-items: center; gap: 12px; }
+    .curso-card-icon { font-size: 32px; }
+    .curso-card-info { flex: 1; }
+    .curso-card-name { font-size: 15px; font-weight: 700; color: var(--gris); }
+    .curso-card-cat { font-size: 11px; color: var(--gris-medio); margin-top: 2px; }
+    .curso-card-footer { padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.05); }
+    .curso-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; }
+    .badge-gratis { background: #F0FBF5; color: #1A6B3A; }
+    .badge-membresia { background: var(--terracota-light); color: #8B3A1A; }
+    .badge-bloqueado { background: #F0F0EC; color: var(--gris-medio); }
+    .badge-nuevo { background: var(--terracota-light); color: #8B3A1A; }
+    .c1{border-color:#F0C5A0;background:#FFF5EC;} .c2{border-color:#E8C5D8;background:#FFF0F7;}
+    .c3{border-color:#C8D8B8;background:#F5FAF0;} .c4{border-color:#C5D8E8;background:#F0F7FF;}
+    .c5{border-color:#D8C5E8;background:#F7F0FF;} .c6{border-color:#E8D8C5;background:#FFF8F0;}
+
+    /* MÓDULOS */
+    .modulos-header { background: #fff; border: 1px solid var(--borde); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+    .modulos-back { color: var(--terracota); font-size: 13px; cursor: pointer; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 4px; }
+    .modulos-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gris); }
+    .modulos-meta { font-size: 13px; color: var(--gris-medio); margin-top: 4px; }
+    .prog-bar-wrap { background: #F0EDE8; border-radius: 4px; height: 6px; margin-top: 16px; }
+    .prog-bar { height: 6px; border-radius: 4px; background: var(--terracota); transition: width 0.4s; }
+    .prog-label { font-size: 11px; color: var(--gris-medio); margin-top: 6px; }
+    .modulo-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 12px; border: 1px solid var(--borde); background: #fff; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; }
+    .modulo-item:hover:not(.locked) { border-color: var(--terracota); background: var(--terracota-light); }
+    .modulo-item.locked { opacity: 0.5; cursor: not-allowed; }
+    .modulo-item.completado { border-color: #A8DCBC; background: #F0FBF5; }
+    .modulo-item.en-curso { border-color: var(--terracota); background: var(--terracota-light); }
+    .modulo-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .num-pending { background: #F0EDE8; color: var(--gris-medio); }
+    .num-active { background: var(--terracota); color: #fff; }
+    .num-done { background: #A8DCBC; color: #1A6B3A; }
+    .modulo-info { flex: 1; }
+    .modulo-name { font-size: 14px; font-weight: 700; color: var(--gris); }
+    .modulo-desc { font-size: 12px; color: var(--gris-medio); margin-top: 2px; }
+    .modulo-status { font-size: 11px; }
+
+    /* ADMIN */
+    .admin-panel { background: #fff; border-radius: 14px; border: 1px solid var(--borde); padding: 28px; margin-bottom: 24px; }
+    .admin-section-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gris); margin-bottom: 6px; }
+    .admin-section-sub { font-size: 12px; color: var(--gris-medio); margin-bottom: 20px; }
+    .cat-block { border: 1px solid var(--borde); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .cat-icon-input { width: 44px; font-size: 20px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px; }
+    .cat-name-input { flex: 1; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 8px 12px; font-size: 15px; font-weight: 700; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
+    .cat-name-input:focus { border-color: var(--terracota); }
+    .curso-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F5F2EE; flex-wrap: wrap; }
+    .curso-row:last-child { border-bottom: none; }
+    .curso-icon-input { width: 36px; font-size: 16px; text-align: center; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 5px; }
+    .curso-name-input { flex: 1; min-width: 140px; background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 7px 10px; font-size: 13px; color: var(--gris); font-family: 'Lato', sans-serif; outline: none; }
+    .curso-name-input:focus { border-color: var(--terracota); }
+    .curso-type-select { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 6px; padding: 7px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
+    .add-row-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed #E0DED8; border-radius: 8px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 13px; margin-top: 8px; transition: all 0.2s; }
+    .add-row-btn:hover { border-color: var(--terracota); color: var(--terracota); }
+    .add-cat-btn { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border: 2px dashed #E0DED8; border-radius: 12px; background: transparent; cursor: pointer; color: var(--gris-medio); font-size: 14px; width: 100%; justify-content: center; transition: all 0.2s; }
+    .add-cat-btn:hover { border-color: var(--terracota); color: var(--terracota); }
+    .user-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--borde); }
+    .user-row:last-child { border-bottom: none; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--terracota-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .user-info { flex: 1; }
+    .user-name { font-size: 14px; color: var(--gris); font-weight: 700; }
+    .user-email { font-size: 12px; color: var(--gris-medio); }
+    .role-select { background: var(--gris-claro); border: 1px solid #E0DED8; border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--gris); outline: none; cursor: pointer; }
+    .admin-badge { background: var(--terracota-light); color: #8B3A1A; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .loading { display: flex; align-items: center; padding: 20px 0; color: var(--gris-medio); font-size: 14px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid #E0DED8; border-top-color: var(--terracota); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* MEMBRESÍA BANNER */
+    /* PAGOS */
+    .pagos-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:4000;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .pagos-card { background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:95vh;overflow-y:auto; }
+    .pagos-header { background:linear-gradient(135deg,#F8F8F7,#FFF5EC);padding:24px;text-align:center;border-bottom:1px solid var(--borde); }
+    .pagos-titulo { font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gris);font-weight:700; }
+    .pagos-sub { font-size:13px;color:var(--gris-medio);margin-top:4px; }
+    .pagos-body { padding:24px; }
+    .plan-card { border:2px solid var(--borde);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;position:relative; }
+    .plan-card:hover { border-color:var(--terracota); }
+    .plan-card.selected { border-color:var(--terracota);background:var(--terracota-light); }
+    .plan-card.recommended::before { content:'Más popular';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--terracota);color:#fff;font-size:10px;padding:2px 12px;border-radius:10px;white-space:nowrap; }
+    .plan-nombre { font-size:15px;font-weight:700;color:var(--gris);margin-bottom:4px; }
+    .plan-precio { font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--terracota);font-weight:700; }
+    .plan-precio-original { font-size:14px;color:var(--gris-medio);text-decoration:line-through;margin-left:8px; }
+    .plan-desc { font-size:12px;color:var(--gris-medio);margin-top:4px; }
+    .plan-descuento { display:inline-block;background:#F0FBF5;color:#1A6B3A;font-size:11px;padding:2px 8px;border-radius:8px;margin-top:4px; }
+    .nacimiento-field { background:var(--gris-claro);border:1px solid #E0C8B8;border-radius:10px;padding:12px 16px;font-size:15px;color:var(--gris);font-family:'Lato',sans-serif;outline:none;width:100%;margin-bottom:8px; }
+    .nacimiento-field:focus { border-color:var(--terracota); }
+    .descuento-aviso { background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:10px 14px;font-size:13px;color:#1A6B3A;margin-bottom:12px;display:none; }
+    .pagos-footer { padding:16px 24px 24px;border-top:1px solid var(--borde);display:flex;gap:10px;justify-content:flex-end; }
+    #mp-brick-container { margin-top:16px; }
+
+    /* CERTIFICADO */
+    @media (max-width: 768px) {
+      .cert-card { border-radius: 16px !important; }
+      .cert-header { padding: 20px 16px 14px !important; }
+      .cert-body { padding: 16px !important; }
+      .cert-footer { padding: 12px 16px 20px !important; flex-wrap: wrap; }
+      .cert-emoji { font-size: 36px !important; }
+      .cert-titulo { font-size: 20px !important; }
+    }
+    .cert-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .cert-card { background:#fff;border-radius:20px;width:100%;max-width:560px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+    .cert-header { background:linear-gradient(135deg,#F8F8F7,#FFF5EC);padding:32px;text-align:center;border-bottom:1px solid var(--borde); }
+    .cert-emoji { font-size:52px;margin-bottom:12px; }
+    .cert-titulo { font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gris);font-weight:700; }
+    .cert-sub { font-size:14px;color:var(--gris-medio);margin-top:6px; }
+    .cert-body { padding:28px;text-align:center; }
+    .cert-nombre { font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px; }
+    .cert-curso { font-size:15px;color:var(--terracota);font-weight:700;margin-bottom:16px; }
+    .cert-msg { font-size:13px;color:var(--gris-medio);line-height:1.7;margin-bottom:24px; }
+    .cert-footer { padding:16px 28px 28px;display:flex;gap:10px;justify-content:center; }
+
+    /* MEETINGS */
+    .meeting-card { background:#fff;border:1px solid var(--borde);border-radius:16px;overflow:hidden;margin-bottom:16px;max-width:600px; }
+    .meeting-card-header { padding:20px;display:flex;align-items:flex-start;gap:14px; }
+    .meeting-live-dot { width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0;margin-top:5px;animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+    .meeting-card-info { flex:1; }
+    .meeting-titulo { font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gris);font-weight:700; }
+    .meeting-fecha { font-size:13px;color:var(--gris-medio);margin-top:4px; }
+    .meeting-card-footer { padding:12px 20px;border-top:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;background:var(--gris-claro); }
+    .meeting-estado { font-size:12px;font-weight:700; }
+    .estado-vivo { color:#e74c3c; }
+    .estado-proximo { color:var(--terracota); }
+    .estado-grabado { color:var(--gris-medio); }
+    .btn-entrar { background:var(--terracota);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:1px; }
+    .btn-entrar:hover { background:var(--terracota-dark); }
+    .btn-grabacion { background:transparent;color:var(--terracota);border:1px solid var(--terracota);border-radius:10px;padding:8px 16px;font-size:13px;cursor:pointer; }
+    .countdown { font-size:13px;color:var(--gris-medio);font-family:monospace; }
+
+    /* ADMIN MEETINGS */
+    .meeting-admin-row { display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap; }
+    .meeting-admin-row:last-child { border-bottom:none; }
+
+    .membresia-banner { background: linear-gradient(135deg, #FFF5EC, #FFF0F7); border: 1px solid #F0C5A0; border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; }
+
+    /* VISOR DE MÓDULO */
+    .visor-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px; }
+    .visor-card { background:#fff;border-radius:20px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column; }
+    .visor-header { padding:20px 24px 16px;border-bottom:1px solid var(--borde);display:flex;align-items:flex-start;justify-content:space-between;gap:12px; }
+    .visor-titulo { font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);font-weight:700; }
+    .visor-close { background:none;border:none;font-size:22px;color:var(--gris-medio);cursor:pointer;padding:4px;flex-shrink:0; }
+    .visor-body { padding:24px;flex:1; }
+    .visor-video { position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;background:#000;margin-bottom:20px; }
+    .visor-video iframe { position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:12px; }
+    .visor-texto { font-size:15px;color:var(--gris);line-height:1.8;margin-bottom:20px;white-space:pre-wrap; }
+    .visor-archivo { display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--borde);border-radius:10px;margin-bottom:10px;background:var(--gris-claro); }
+    .visor-archivo-icon { font-size:24px;flex-shrink:0; }
+    .visor-archivo-info { flex:1; }
+    .visor-archivo-name { font-size:14px;font-weight:700;color:var(--gris); }
+    .visor-archivo-tipo { font-size:11px;color:var(--gris-medio);margin-top:2px; }
+    .visor-archivo-btn { background:var(--terracota);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap; }
+    .visor-archivo-btn.solo-lectura { background:var(--gris-claro);color:var(--gris-medio);border:1px solid #E0DED8;cursor:not-allowed; }
+    .visor-footer { padding:16px 24px;border-top:1px solid var(--borde);display:flex;gap:10px;justify-content:flex-end; }
+    .btn-completar { background:var(--terracota);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:1px; }
+    .btn-completar.ya-completo { background:#A8DCBC;color:#1A6B3A; }
+
+    /* EDITOR DE MÓDULOS ADMIN */
+    .mod-editor-block { border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--gris-claro); }
+    .mod-editor-header { display:flex;align-items:center;gap:10px;margin-bottom:12px; }
+    .mod-num-badge { width:28px;height:28px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0; }
+    .mod-name-input { flex:1;background:#fff;border:1px solid #E0DED8;border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--gris);font-family:'Lato',sans-serif;outline:none; }
+    .mod-name-input:focus { border-color:var(--terracota); }
+    .mod-desc-input { width:100%;background:#fff;border:1px solid #E0DED8;border-radius:8px;padding:7px 12px;font-size:13px;color:var(--gris-medio);font-family:'Lato',sans-serif;outline:none;margin-bottom:10px; }
+    .content-section { background:#fff;border:1px solid #E0DED8;border-radius:10px;padding:12px;margin-bottom:8px; }
+    .content-section-title { font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px; }
+    .content-input { width:100%;background:var(--gris-claro);border:1px solid #E0DED8;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--gris);font-family:'Lato',sans-serif;outline:none;margin-bottom:6px; }
+    .content-input:focus { border-color:var(--terracota); }
+    .content-textarea { width:100%;background:var(--gris-claro);border:1px solid #E0DED8;border-radius:7px;padding:8px 10px;font-size:13px;color:var(--gris);font-family:'Lato',sans-serif;outline:none;min-height:80px;resize:vertical; }
+    .content-textarea:focus { border-color:var(--terracota); }
+    .archivo-row { display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F5F2EE;flex-wrap:wrap; }
+    .archivo-row:last-child { border-bottom:none; }
+    .toggle-descarga { display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);cursor:pointer; }
+    .toggle-descarga input { accent-color:var(--terracota);width:15px;height:15px; }
+    .membresia-titulo { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #8B3A1A; margin-bottom: 8px; }
+    .membresia-sub { font-size: 13px; color: var(--gris-medio); margin-bottom: 16px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .welcome-left { display: none; }
+      .welcome-right { width: 100%; border-left: none; padding: 32px 24px 48px; }
+      .form-side { display: none; }
+      .form-body { padding: 28px 24px 48px; }
+      .screen-header { padding: 40px 24px 24px; }
+      .home-sidebar { display: none; }
+      .home-topbar { padding: 12px 20px; }
+      .home-main { padding: 20px 16px 80px; }
+      .greeting { font-size: 26px; }
+      .cursos-grid { grid-template-columns: 1fr; }
+      .option-grid { grid-template-columns: 1fr 1fr; }
+      .onboarding-card { padding: 28px 20px; }
+      .mobile-nav { display: flex !important; }
+    }
+    @media (min-width: 769px) { .form-side { display: block; } }
+    .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; justify-content: space-around; padding: 10px 4px 16px; border-top: 1px solid #E0DED8; background: var(--gris-claro); z-index: 100; }
+    .nav-item { text-align: center; cursor: pointer; padding: 4px 12px; }
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 9px; color: var(--gris-medio); margin-top: 2px; }
+    .nav-label.active { color: var(--terracota); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- BIENVENIDA -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-wrap">
+      <div class="welcome-left">
+        <div class="ornament">~ ❧ ~</div>
+        <div class="logo-main"><span>O</span>hla</div>
+        <div class="logo-sub">Academy</div>
+        <div class="hero-divider"></div>
+        <div class="hero-frase">"Cada cosa que creás con tus manos es un paso hacia tu libertad"</div>
+        <div class="hero-firma">— Flor & Mery</div>
+      </div>
+      <div class="welcome-right">
+        <div class="ornament" style="font-size:16px;">~ ❧ ~</div>
+        <div class="logo-main" style="font-size:40px;"><span>O</span>hla</div>
+        <div class="logo-sub" style="font-size:10px;">Academy</div>
+        <div style="height:24px;"></div>
+        <button class="btn-primary" onclick="showScreen('screen-login')">Ingresar a mi cuenta</button>
+        <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="screen-login">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
+      <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
+      <div class="logo-sub" style="font-size:9px;">Academy</div>
+      <div class="screen-title">Bienvenida de vuelta</div>
+      <div class="screen-sub">Ingresá a tu cuenta</div>
+    </div>
+    <div class="form-wrap">
+      <div class="form-side"></div>
+      <div class="form-body">
+        <div class="msg msg-error" id="login-error"></div>
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" class="field-input" id="login-email" placeholder="tu@mail.com">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" class="field-input" id="login-password" placeholder="Tu contraseña">
+          <div class="forgot-link"><a href="#" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+          <input type="checkbox" id="remember-me" style="width:18px;height:18px;accent-color:#C4723A;cursor:pointer;" checked>
+          <label for="remember-me" style="font-size:13px;color:#5F5E5A;cursor:pointer;">Recordar mi sesión en este dispositivo</label>
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Ingresar</button>
+        <div class="divider-or"><hr><span>o</span><hr></div>
+        <button class="btn-secondary" onclick="showScreen('screen-register')">Crear cuenta nueva</button>
+        <div class="link-txt"><a href="#" onclick="showScreen('screen-register')">¿No tenés cuenta? Registrate acá</a></div>
+        <div class="profe-note">¿Sos profe? Tu acceso lo habilita el equipo de Ohla Academy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="screen" id="screen-register">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-welcome')">←</button>
+      <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
+      <div class="logo-sub" style="font-size:9px;">Academy</div>
+      <div class="screen-title">Crear mi cuenta</div>
+      <div class="screen-sub">Gratis · Solo toma un momento</div>
+    </div>
+    <div class="form-wrap">
+      <div class="form-side"></div>
+      <div class="form-body">
+        <div class="msg msg-error" id="register-error"></div>
+        <div class="field-group">
+          <label class="field-label">Nombre completo</label>
+          <input type="text" class="field-input" id="register-name" placeholder="Tu nombre y apellido">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Correo electrónico</label>
+          <input type="email" class="field-input" id="register-email" placeholder="tu@mail.com">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Contraseña</label>
+          <input type="password" class="field-input" id="register-password" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Confirmar contraseña</label>
+          <input type="password" class="field-input" id="register-password2" placeholder="Repetí tu contraseña">
+        </div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear mi cuenta</button>
+        <div class="link-txt" style="margin-top:16px;"><a href="#" onclick="showScreen('screen-login')">¿Ya tenés cuenta? Ingresá acá</a></div>
+        <div class="terms-note">Al registrarte aceptás los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Ohla Academy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ELECCIÓN INICIAL -->
+  <div class="screen" id="screen-eleccion">
+    <div class="onboarding-wrap">
+      <div class="onboarding-card" style="max-width:560px;">
+        <div style="text-align:center;margin-bottom:28px;">
+          <div class="ornament" style="font-size:16px;">~ ❧ ~</div>
+          <div class="logo-main" style="font-size:36px;"><span>O</span>hla</div>
+          <div class="logo-sub" style="font-size:9px;margin-bottom:16px;">Academy</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gris);margin-bottom:6px;">¡Bienvenida!</div>
+          <div style="font-size:14px;color:var(--gris-medio);">¿Cómo querés empezar tu camino creativo?</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+          <!-- Opción membresía -->
+          <div onclick="elegirMembresia()" style="border:2px solid var(--borde);border-radius:16px;padding:20px;cursor:pointer;text-align:center;transition:all 0.2s;" onmouseover="this.style.borderColor='#C4723A';this.style.background='#FFF5EC'" onmouseout="this.style.borderColor='var(--borde)';this.style.background='#fff'">
+            <div style="font-size:36px;margin-bottom:10px;">🌸</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--gris);margin-bottom:6px;">Membresía completa</div>
+            <div style="font-size:12px;color:var(--gris-medio);line-height:1.5;">Acceso a todos los cursos. Empezás de a poco y se van desbloqueando según tus preferencias.</div>
+            <div style="margin-top:10px;background:var(--terracota-light);color:#8B3A1A;font-size:11px;padding:3px 10px;border-radius:10px;display:inline-block;">Lo más popular</div>
+          </div>
+
+          <!-- Opción cursos individuales -->
+          <div onclick="elegirCursosIndividuales()" style="border:2px solid var(--borde);border-radius:16px;padding:20px;cursor:pointer;text-align:center;transition:all 0.2s;" onmouseover="this.style.borderColor='#C4723A';this.style.background='#FFF5EC'" onmouseout="this.style.borderColor='var(--borde)';this.style.background='#fff'">
+            <div style="font-size:36px;margin-bottom:10px;">📚</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--gris);margin-bottom:6px;">Cursos individuales</div>
+            <div style="font-size:12px;color:var(--gris-medio);line-height:1.5;">Elegís y pagás solo los cursos que te interesan. Sin compromisos mensuales.</div>
+            <div style="margin-top:10px;background:#F0F0EC;color:var(--gris-medio);font-size:11px;padding:3px 10px;border-radius:10px;display:inline-block;">A tu ritmo</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;">
+          <div style="font-size:12px;color:var(--gris-medio);">¿Ya tenés una membresía activa? <a href="#" onclick="showScreen('screen-login')" style="color:var(--terracota);text-decoration:none;">Ingresá acá</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="screen" id="screen-onboarding">
+    <div class="onboarding-wrap">
+      <div id="onboarding-intro" class="onboarding-card" style="max-width:580px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:48px;margin-bottom:12px;">🌸</div>
+          <div style="font-family:Cormorant Garamond,serif;font-size:30px;color:var(--gris);margin-bottom:8px;">Bienvenida a Ohla Academy</div>
+          <div style="font-size:14px;color:var(--gris-medio);">Antes de empezar, te contamos cómo funciona</div>
+        </div>
+        <div style="background:var(--gris-claro);border-radius:14px;padding:20px;margin-bottom:20px;">
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">1</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Elegís por dónde empezar</div><div style="font-size:13px;color:var(--gris-medio);">Te hacemos preguntas rápidas para entender qué te apasiona — flores, velas, costura, jabones y mucho más.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">2</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Se te habilitan tus primeros cursos</div><div style="font-size:13px;color:var(--gris-medio);">El primer mes empezás con lo que elegiste. Dentro de cada curso, los módulos se desbloquean uno a uno a medida que avanzás.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">3</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Cada mes se habilita más contenido</div><div style="font-size:13px;color:var(--gris-medio);">El segundo mes se suma tu segunda elección, el tercero la tercera. Al cuarto mes tenés acceso libre a todo el catálogo.</div></div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--terracota);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">4</div>
+            <div><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:2px;">Meetings en vivo cada semana</div><div style="font-size:13px;color:var(--gris-medio);">Con tu membresía participás de las consultas en vivo con Flor y Mery, y podés ver las grabaciones cuando quieras.</div></div>
+          </div>
+        </div>
+        <div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#1A6B3A;">
+          La encuesta dura menos de 2 minutos. Podés cambiar tus preferencias cuando quieras desde tu perfil.
+        </div>
+        <button class="btn-primary" id="btn-ir-encuesta">Empezar la encuesta →</button>
+      </div>
+      <div id="onboarding-survey" class="onboarding-card" style="display:none;">
+        <div class="progress-dots" id="onboarding-dots"></div>
+        <div class="onboarding-step" id="onboarding-step-label">Paso 1 de 3</div>
+        <div class="onboarding-title" id="onboarding-title">¿Qué te gustaría aprender?</div>
+        <div class="onboarding-sub" id="onboarding-sub">Elegí hasta 3 categorías que más te interesen.</div>
+        <div class="selection-note" id="selection-note" style="font-size:12px;color:var(--gris-medio);margin-bottom:12px;text-align:center;"></div>
+        <div class="option-grid" id="onboarding-options"></div>
+        <button class="btn-primary" id="onboarding-next" style="margin-top:12px;" disabled>Continuar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="home-topbar">
+      <div class="home-logo"><span>O</span>hla Academy</div>
+      <div class="home-user-info">
+        <div>
+          <div style="font-size:14px;color:var(--gris);font-weight:700;" id="user-name-display"></div>
+          <div style="font-size:12px;color:var(--gris-medio);" id="user-email-display"></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+      </div>
+    </div>
+    <div class="home-content">
+      <div class="home-sidebar">
+        <div class="sidebar-title">Menú</div>
+        <div class="sidebar-item active" id="sb-cursos" onclick="showTab('tab-cursos')"><span>📚</span> Mis cursos</div>
+        <div class="sidebar-item" id="sb-meetings" onclick="showTab('tab-meetings')"><span>📅</span> Meetings</div>
+        <div class="sidebar-item" id="sb-perfil" onclick="showTab('tab-perfil')"><span>👤</span> Mi perfil</div>
+        <div class="sidebar-item" id="sidebar-admin" style="display:none;" onclick="showTab('tab-admin')"><span>⚙️</span> Administrar <span class="admin-badge">Admin</span></div>
+      </div>
+      <div class="home-main">
+
+        <!-- TAB CURSOS -->
+        <div id="tab-cursos">
+          <div class="greeting" id="home-greeting">¡Hola!</div>
+          <div class="greeting-sub" id="home-sub">¿Por dónde empezamos hoy?</div>
+          <div id="fase-info"></div>
+          <div id="cursos-content">
+            <div class="loading"><div class="spinner"></div> Cargando tus cursos...</div>
+          </div>
+        </div>
+
+        <!-- TAB MÓDULOS (dinámico) -->
+        <div id="tab-modulos" style="display:none;">
+          <div class="modulos-back" onclick="showTab('tab-cursos')">← Volver a mis cursos</div>
+          <div class="modulos-header">
+            <div class="modulos-title" id="modulo-curso-titulo"></div>
+            <div class="modulos-meta" id="modulo-curso-meta"></div>
+            <div class="prog-bar-wrap"><div class="prog-bar" id="modulo-prog-bar" style="width:0%"></div></div>
+            <div class="prog-label" id="modulo-prog-label"></div>
+          </div>
+          <div id="modulos-lista"></div>
+        </div>
+
+        <!-- VISOR DE CONTENIDO (overlay) -->
+        <div id="visor-overlay" class="visor-overlay" style="display:none;">
+          <div class="visor-card">
+            <div class="visor-header">
+              <div>
+                <div style="font-size:11px;color:var(--terracota);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;" id="visor-modulo-num"></div>
+                <div class="visor-titulo" id="visor-titulo"></div>
+              </div>
+              <button class="visor-close" onclick="cerrarVisor()">✕</button>
+            </div>
+            <div class="visor-body" id="visor-body"></div>
+            <div class="visor-footer">
+              <button class="btn-outline" onclick="cerrarVisor()">Volver a módulos</button>
+              <button class="btn-completar" id="btn-completar" onclick="completarDesdeVisor()">Marcar como completado ✓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB MEETINGS -->
+        <div id="tab-meetings" style="display:none;">
+          <div class="greeting">📅 Meetings en vivo</div>
+          <div class="greeting-sub">Consultas semanales con Flor y Mery</div>
+          <div id="meetings-content">
+            <div class="loading"><div class="spinner"></div> Cargando meetings...</div>
+          </div>
+        </div>
+
+        <!-- PAGOS POPUP -->
+  <div id="pagos-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card">
+      <div class="pagos-header">
+        <div style="font-size:36px;margin-bottom:8px;">🌸</div>
+        <div class="pagos-titulo" id="pagos-titulo">Elegí tu plan</div>
+        <div class="pagos-sub" id="pagos-sub">Accedé a todo el contenido de Ohla Academy</div>
+      </div>
+      <div class="pagos-body">
+
+        <!-- Fecha de nacimiento para descuento jubilada -->
+        <div id="nacimiento-section" style="margin-bottom:16px;">
+          <label style="font-size:12px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">Tu fecha de nacimiento</label>
+          <input type="date" id="fecha-nacimiento" class="nacimiento-field" onchange="verificarDescuentoJubilada()">
+          <div class="descuento-aviso" id="aviso-jubilada">🎉 ¡Aplicamos tu descuento especial para jubiladas!</div>
+        </div>
+
+        <!-- Planes -->
+        <div id="planes-container"></div>
+
+        <!-- Brick de MercadoPago -->
+        <div id="mp-brick-container"></div>
+
+        <!-- PayPal -->
+        <div id="paypal-container" style="margin-top:12px;"></div>
+
+      </div>
+      <div class="pagos-footer">
+        <button class="btn-outline" onclick="cerrarPagos()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CERTIFICADO POPUP -->
+  <div id="cert-overlay" class="cert-overlay" style="display:none;">
+    <div class="cert-card" style="max-width:min(720px,95vw);max-height:95vh;overflow-y:auto;">
+      <div class="cert-header">
+        <div class="cert-emoji">🎓</div>
+        <div class="cert-titulo" id="cert-titulo">¡Felicitaciones!</div>
+        <div class="cert-sub" id="cert-sub">Completaste el curso</div>
+      </div>
+      <div class="cert-body">
+        <div class="cert-nombre" id="cert-nombre"></div>
+        <div class="cert-curso" id="cert-curso"></div>
+        <div class="cert-msg" id="cert-msg"></div>
+        <div id="cert-estado" style="font-size:13px;color:var(--terracota);margin-bottom:16px;"></div>
+        <!-- Preview del certificado -->
+        <div id="cert-body-visual" style="display:none;border:1px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px;width:100%;"></div>
+      </div>
+      <div class="cert-footer">
+        <button class="btn-outline" onclick="cerrarCertificado()">Cerrar</button>
+        <button class="btn-small" id="cert-btn-descargar" style="display:none;">⬇ Descargar certificado</button>
+        <button class="btn-small" id="cert-btn-reenviar" onclick="reenviarCertificado()" style="display:none;">📧 Reenviar mail</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALA DE MEETING PROPIA -->
+        <div id="sala-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#1a1a1a;z-index:2000;flex-direction:column;">
+          <!-- Header -->
+          <div style="background:#111;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #333;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#e74c3c;animation:pulse 1.5s infinite;"></div>
+              <div>
+                <div style="font-family:Cormorant Garamond,serif;font-size:18px;color:#fff;" id="sala-titulo">Meeting en vivo</div>
+                <div style="font-size:11px;color:#888;" id="sala-participantes">Conectando...</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button id="btn-mic" onclick="toggleMic()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">🎤 Mic</button>
+              <button id="btn-cam" onclick="toggleCam()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">📷 Cám</button>
+              <button onclick="cerrarSala()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">✕ Salir</button>
+            </div>
+          </div>
+
+          <!-- Contenido principal -->
+          <div style="display:flex;flex:1;overflow:hidden;">
+
+            <!-- Videos -->
+            <div style="flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;overflow:hidden;">
+              <!-- Video local -->
+              <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;flex:1;">
+                <video id="video-local" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+                <div style="position:absolute;bottom:10px;left:12px;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px;" id="label-local">Vos</div>
+                <div id="mic-off-indicator" style="display:none;position:absolute;top:10px;right:10px;background:rgba(231,76,60,0.8);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;">🔇 Mic apagado</div>
+              </div>
+              <!-- Videos remotos -->
+              <div id="videos-remotos" style="display:flex;gap:8px;max-height:160px;overflow-x:auto;"></div>
+            </div>
+
+            <!-- Panel lateral: chat + participantes -->
+            <div style="width:300px;background:#111;border-left:1px solid #333;display:flex;flex-direction:column;">
+
+              <!-- Tabs -->
+              <div style="display:flex;border-bottom:1px solid #333;">
+                <button onclick="salaTab('chat')" id="tab-chat-btn" style="flex:1;padding:10px;background:transparent;border:none;color:#C4723A;font-size:13px;cursor:pointer;border-bottom:2px solid #C4723A;">💬 Chat</button>
+                <button onclick="salaTab('participantes')" id="tab-part-btn" style="flex:1;padding:10px;background:transparent;border:none;color:#888;font-size:13px;cursor:pointer;">👥 Participantes</button>
+              </div>
+
+              <!-- Chat -->
+              <div id="panel-chat" style="flex:1;display:flex;flex-direction:column;">
+                <div id="chat-mensajes" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+                <div style="padding:10px;border-top:1px solid #333;">
+                  <!-- Pedir palabra -->
+                  <button id="btn-pedir-palabra" onclick="pedirPalabra()" style="width:100%;background:#2C2C2A;color:#C4723A;border:1px solid #C4723A;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;margin-bottom:8px;">✋ Pedir la palabra</button>
+                  <div style="display:flex;gap:6px;">
+                    <input id="chat-input" type="text" placeholder="Escribí un mensaje..." style="flex:1;background:#222;border:1px solid #333;border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;outline:none;" onkeydown="if(event.key==='Enter')enviarMensaje()">
+                    <button onclick="enviarMensaje()" style="background:#C4723A;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">→</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Participantes -->
+              <div id="panel-participantes" style="display:none;flex:1;overflow-y:auto;padding:12px;">
+                <div id="lista-participantes" style="display:flex;flex-direction:column;gap:8px;"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB PERFIL -->
+        <div id="tab-perfil" style="display:none;">
+          <div class="greeting">👤 Mi perfil</div>
+          <div class="greeting-sub">Tu información en Ohla Academy</div>
+          <div style="background:#fff;border:1px solid var(--borde);border-radius:14px;padding:28px;margin-top:20px;max-width:480px;">
+            <div style="margin-bottom:16px;"><div class="field-label">Nombre</div><div id="perfil-nombre" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:16px;"><div class="field-label">Correo</div><div id="perfil-email" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:16px;"><div class="field-label">Rol</div><div id="perfil-rol" style="font-size:14px;color:var(--gris-medio);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
+            <div style="margin-bottom:20px;"><div class="field-label">Fase actual</div><div id="perfil-fase" style="font-size:14px;color:var(--gris-medio);padding:10px 0;"></div></div>
+            <button class="logout-btn" style="width:100%;padding:12px;" onclick="doLogout()">Cerrar sesión</button>
+          </div>
+        </div>
+
+        <!-- TAB ADMIN -->
+        <div id="tab-admin" style="display:none;">
+          <div class="greeting">⚙️ Panel de administración</div>
+          <div class="greeting-sub">Gestioná categorías, cursos y usuarias de Ohla Academy</div>
+
+          <div class="admin-panel" style="margin-top:20px;">
+            <div class="admin-section-title">📂 Categorías y cursos</div>
+            <div class="admin-section-sub">Organizá el contenido por categoría. Las alumnas verán esto en su encuesta de bienvenida.</div>
+            <div id="cats-editor"></div>
+            <button class="add-cat-btn" onclick="addCategoria()">+ Agregar nueva categoría</button>
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn-small" onclick="saveCatalogo()">Guardar cambios</button>
+            </div>
+            <div class="msg msg-success" id="admin-ok" style="margin-top:12px;"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📚 Editor de módulos</div>
+            <div class="admin-section-sub">Seleccioná un curso para editar sus módulos, agregar videos, textos y archivos.</div>
+            <div style="margin-bottom:16px;">
+              <select id="curso-selector" class="curso-type-select" style="width:100%;padding:10px;font-size:14px;" onchange="cargarEditorModulos(this.value)">
+                <option value="">— Seleccioná un curso —</option>
+              </select>
+            </div>
+            <div id="modulos-editor-container"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📅 Meetings en vivo</div>
+            <div class="admin-section-sub">Programá las reuniones semanales. Las alumnas con membresía las verán automáticamente.</div>
+            <div id="meetings-admin-list"></div>
+            <button class="add-cat-btn" style="margin-top:12px;" onclick="agregarMeeting()">+ Programar nuevo meeting</button>
+            <div style="margin-top:12px;"><button class="btn-small" onclick="guardarMeetings()">Guardar meetings</button></div>
+            <div class="msg msg-success" id="meetings-ok" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">💳 Precios y descuentos</div>
+            <div class="admin-section-sub">Configurá los precios de la membresía y el descuento automático para jubiladas.</div>
+            <div id="admin-pagos-container"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">👥 Usuarias registradas</div>
+            <div class="admin-section-sub">Cambiá el rol y gestioná el acceso de cada persona.</div>
+            <div id="users-list"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="mobile-nav">
+      <div class="nav-item" onclick="showTab('tab-cursos')"><div class="nav-icon">📚</div><div class="nav-label active" id="mn-cursos">Cursos</div></div>
+      <div class="nav-item" onclick="showTab('tab-meetings')"><div class="nav-icon">📅</div><div class="nav-label" id="mn-meetings">Meetings</div></div>
+      <div class="nav-item" onclick="showTab('tab-perfil')"><div class="nav-icon">👤</div><div class="nav-label" id="mn-perfil">Perfil</div></div>
+      <div class="nav-item" id="mobile-admin" style="display:none;" onclick="showTab('tab-admin')"><div class="nav-icon">⚙️</div><div class="nav-label" id="mn-admin">Admin</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Wrapper para funciones que se llaman desde HTML antes de que cargue el módulo
+  function showScreen(id) { window._pendingScreen = id; if(window._showScreen) window._showScreen(id); }
+  function showTab(id) { if(window._showTab) window._showTab(id); }
+  function startOnboarding() { if(window._startOnboarding) window._startOnboarding(); }
+  function onboardingNext() { if(window._onboardingNext) window._onboardingNext(); }
+  function toggleOnboardingOption(id, max) { if(window._toggleOnboardingOption) window._toggleOnboardingOption(id, max); }
+  function doLogin() { if(window._doLogin) window._doLogin(); }
+  function doRegister() { if(window._doRegister) window._doRegister(); }
+  function doLogout() { if(window._doLogout) window._doLogout(); }
+  function resetPassword() { if(window._resetPassword) window._resetPassword(); }
+  function cerrarVisor() { if(window._cerrarVisor) window._cerrarVisor(); }
+  function cerrarSala() { if(window._cerrarSala) window._cerrarSala(); }
+  function cerrarCertificado() { if(window._cerrarCertificado) window._cerrarCertificado(); }
+  function enviarMensaje() { if(window._enviarMensaje) window._enviarMensaje(); }
+  function pedirPalabra() { if(window._pedirPalabra) window._pedirPalabra(); }
+  function salaTab(t) { if(window._salaTab) window._salaTab(t); }
+  function toggleMic() { if(window._toggleMic) window._toggleMic(); }
+  function toggleCam() { if(window._toggleCam) window._toggleCam(); }
+  function completarDesdeVisor() { if(window._completarDesdeVisor) window._completarDesdeVisor(); }
+  function reenviarCertificado() { if(window._reenviarCertificado) window._reenviarCertificado(); }
+  function abrirPagos(p) { if(window._abrirPagos) window._abrirPagos(p); }
+  function cerrarPagos() { if(window._cerrarPagos) window._cerrarPagos(); }
+  function verificarDescuentoJubilada() { if(window._verificarDescuentoJubilada) window._verificarDescuentoJubilada(); }
+  function seleccionarPlan(id, precio) { if(window._seleccionarPlan) window._seleccionarPlan(id, precio); }
+  function guardarConfigPagos() { if(window._guardarConfigPagos) window._guardarConfigPagos(); }
+  function elegirMembresia() { if(window._elegirMembresia) window._elegirMembresia(); else if(window.elegirMembresia) window.elegirMembresia(); }
+  function elegirCursosIndividuales() { if(window.elegirCursosIndividuales) window.elegirCursosIndividuales(); }
+  function comprarCursoIndividual(id,n,p) { if(window.comprarCursoIndividual) window.comprarCursoIndividual(id,n,p); }
+  function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCn5f9zcmVekjTkPAnC2kM1cK2hAuDQDaY",
+    authDomain: "ohla-academy.firebaseapp.com",
+    projectId: "ohla-academy",
+    storageBucket: "ohla-academy.firebasestorage.app",
+    messagingSenderId: "698150315103",
+    appId: "1:698150315103:web:ca37b7db0167a1ad4be7ea",
+    databaseURL: "https://ohla-academy-default-rtdb.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const ADMIN_EMAILS = ['aguilera.nasser@gmail.com','ohlaacademy@gmail.com','meriaineslloret18@gmail.com'];
+
+  const DEFAULT_CATALOGO = [
+    { id: 'manualidades', icon: '🌸', nombre: 'Manualidades', cursos: [
+      { id: 'budas', icon: '🗿', nombre: 'Budas de yeso intervenidos', tipo: 'membresia' },
+      { id: 'flores', icon: '🌺', nombre: 'Flores de tela', tipo: 'membresia' }
+    ]},
+    { id: 'costura', icon: '🧵', nombre: 'Costura y tejido', cursos: [
+      { id: 'abccostura', icon: '🪡', nombre: 'ABC de la costura', tipo: 'gratis' },
+      { id: 'moldes', icon: '✂️', nombre: 'Moldes y progresiones — hacé tu outfit', tipo: 'membresia' },
+      { id: 'crochet', icon: '🧶', nombre: 'Crochet', tipo: 'membresia' },
+      { id: 'bordado', icon: '🪢', nombre: 'Bordado', tipo: 'membresia' }
+    ]},
+    { id: 'belleza', icon: '🧴', nombre: 'Belleza natural', cursos: [
+      { id: 'cremascorp', icon: '✨', nombre: 'Cremas corporales', tipo: 'membresia' },
+      { id: 'cremaspelo', icon: '💆', nombre: 'Cremas de pelo y de rostro', tipo: 'membresia' },
+      { id: 'shampoo', icon: '🛁', nombre: 'Shampoo y acondicionador sólido', tipo: 'membresia' },
+      { id: 'jabones', icon: '🧼', nombre: 'Jabones', tipo: 'membresia' }
+    ]},
+    { id: 'deco', icon: '🕯', nombre: 'Deco y aromas', cursos: [
+      { id: 'bodysplash', icon: '💧', nombre: 'Body splash', tipo: 'membresia' },
+      { id: 'velas', icon: '🕯️', nombre: 'Velas aromáticas', tipo: 'membresia' },
+      { id: 'difusores', icon: '🌿', nombre: 'Difusores', tipo: 'membresia' },
+      { id: 'yeso', icon: '🏺', nombre: 'Contenedores de yeso cerámico', tipo: 'membresia' }
+    ]}
+  ];
+
+  const DEFAULT_MODULOS = [
+    { nombre: 'Introducción al curso', desc: 'Bienvenida y materiales necesarios' },
+    { nombre: 'Técnica base', desc: 'Fundamentos y primeros pasos' },
+    { nombre: 'Práctica guiada', desc: 'Ejercicios con Flor y Mery' },
+    { nombre: 'Proyecto final', desc: 'Tu primera creación completa' },
+    { nombre: 'Emprendé con esto', desc: 'Cómo monetizar lo que aprendiste' }
+  ];
+
+  let catalogo = [];
+  let currentUser = null;
+  let userData = null;
+  let onboardingStep = 0;
+  let onboardingSelections = [[], [], []];
+
+  // ── ONBOARDING ──
+  window._startOnboarding = window.startOnboarding = function() {
+    onboardingStep = 0;
+    onboardingSelections = [[], [], []];
+    const intro = document.getElementById('onboarding-intro');
+    const survey = document.getElementById('onboarding-survey');
+    if (intro) intro.style.display = 'block';
+    if (survey) survey.style.display = 'none';
+    showScreen('screen-onboarding');
+    setTimeout(() => {
+      const btnIr = document.getElementById('btn-ir-encuesta');
+      if (btnIr) btnIr.onclick = () => {
+        intro.style.display = 'none';
+        survey.style.display = 'block';
+        renderOnboardingStep();
+      };
+      const btnNext = document.getElementById('onboarding-next');
+      if (btnNext) btnNext.onclick = onboardingNext;
+    }, 100);
+  }
+
+  function renderOnboardingStep() {
+    const steps = [
+      { label: 'Paso 1 de 3', title: '¿Qué te gustaría aprender?', sub: 'Elegí hasta 3 categorías. Empezarás con la primera que elijas y cada mes se irá habilitando la siguiente.', max: 3, items: catalogo.map(c => ({ id: c.id, icon: c.icon, name: c.nombre, desc: `${c.cursos.length} cursos disponibles` })) },
+      { label: 'Paso 2 de 3', title: '¿Por dónde querés empezar?', sub: 'De la primera categoría que elegiste, ¿qué preferís hacer primero? Elegí hasta 3 opciones.', max: 3, items: [] },
+      { label: 'Paso 3 de 3', title: '¿Qué más te gustaría explorar?', sub: 'Cuando termines los primeros cursos, ¿qué te gustaría aprender después?', max: 3, items: [] }
+    ];
+
+    if (onboardingStep === 1) {
+      const cat1 = catalogo.find(c => onboardingSelections[0][0] === c.id);
+      if (cat1) steps[1].items = cat1.cursos.map(c => ({ id: c.id, icon: c.icon, name: c.nombre, desc: c.tipo === 'gratis' ? 'Gratis' : 'Con membresía' }));
+    }
+    if (onboardingStep === 2) {
+      const otrosCursos = catalogo.filter(c => !onboardingSelections[0].includes(c.id)).flatMap(c => c.cursos.map(cu => ({ id: cu.id, icon: cu.icon, name: cu.nombre, desc: c.nombre })));
+      steps[2].items = otrosCursos;
+    }
+
+    const step = steps[onboardingStep];
+    document.getElementById('onboarding-step-label').textContent = step.label;
+    document.getElementById('onboarding-title').textContent = step.title;
+    document.getElementById('onboarding-sub').textContent = step.sub;
+
+    const dots = document.getElementById('onboarding-dots');
+    dots.innerHTML = [0,1,2].map(i => `<div class="dot ${i < onboardingStep ? 'done' : i === onboardingStep ? 'active' : ''}"></div>`).join('');
+
+    const grid = document.getElementById('onboarding-options');
+    const sel = onboardingSelections[onboardingStep];
+    grid.innerHTML = step.items.map(item => `
+      <div class="option-card ${sel.includes(item.id) ? 'selected' : ''}" data-id="${item.id}" data-max="${step.max}">
+        <div class="option-icon">${item.icon}</div>
+        <div class="option-name">${item.name}</div>
+        <div class="option-desc">${item.desc}</div>
+      </div>`).join('');
+
+    grid.querySelectorAll('.option-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const max = parseInt(card.dataset.max);
+        const sel2 = onboardingSelections[onboardingStep];
+        const idx = sel2.indexOf(id);
+        if (idx >= 0) sel2.splice(idx, 1);
+        else if (sel2.length < max) sel2.push(id);
+        renderOnboardingStep();
+      });
+    });
+
+    updateOnboardingNote(step.max);
+  }
+
+
+
+  function updateOnboardingNote(max) {
+    const sel = onboardingSelections[onboardingStep];
+    const note = document.getElementById('selection-note');
+    const btn = document.getElementById('onboarding-next');
+    if (note) note.textContent = sel.length > 0 ? `${sel.length} de ${max} seleccionadas` : 'Seleccioná al menos 1 opción';
+    if (btn) btn.disabled = sel.length === 0;
+  }
+
+  window._onboardingNext = window.onboardingNext = async function() {
+    if (onboardingStep < 2) {
+      onboardingStep++;
+      renderOnboardingStep();
+    } else {
+      // Guardar preferencias y empezar
+      const prefs = {
+        categorias: onboardingSelections[0],
+        cursosInicio: onboardingSelections[1],
+        cursosExtra: onboardingSelections[2],
+        fase: 1,
+        fechaInicio: new Date().toISOString(),
+        onboardingCompleto: true
+      };
+      await set(ref(db, `usuarios/${currentUser.uid}/preferencias`), prefs);
+      userData.preferencias = prefs;
+      showScreen('screen-home');
+      renderCursos();
+    }
+  }
+
+  // ── CURSOS ──
+  function renderCursos() {
+    // Si es modo cursos individuales, mostrar todos con precios
+    if (userData?.modoAcceso === 'individual') {
+      renderCursosIndividuales();
+      return;
+    }
+    const container = document.getElementById('cursos-content');
+    const faseInfo = document.getElementById('fase-info');
+    const esAdminOProfe = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email) || ADMIN_EMAILS.includes(userData?.email);
+    if (!esAdminOProfe && !userData?.preferencias?.onboardingCompleto) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;"><div style="font-size:40px;margin-bottom:12px;">🌸</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">¡Bienvenida a Ohla Academy!</div><div style="font-size:14px;color:var(--gris-medio);margin-bottom:20px;">Respondé unas preguntas rápidas para personalizar tu experiencia</div><button class="btn-primary" style="max-width:300px;margin:0 auto;display:block;" onclick="startOnboarding()">Empezar mi encuesta →</button></div>`;
+      return;
+    }
+
+    let faseActual = 4;
+    let categoriasElegidas = catalogo.map(c => c.id);
+    let cursosInicio = [];
+
+    if (esAdminOProfe) {
+      faseInfo.innerHTML = '<div class="fase-badge">👑 Vista de administradora — Acceso completo</div>';
+      document.getElementById('perfil-fase').textContent = '👑 Administradora — acceso completo';
+    } else {
+      const fase = userData.preferencias?.fase || 1;
+      const fechaInicio = new Date(userData.preferencias?.fechaInicio || new Date());
+      const hoy = new Date();
+      const mesesTranscurridos = Math.floor((hoy - fechaInicio) / (1000 * 60 * 60 * 24 * 30));
+      faseActual = Math.min(mesesTranscurridos + 1, 4);
+      if (faseActual > fase) {
+        set(ref(db, `usuarios/${currentUser.uid}/preferencias/fase`), faseActual);
+        userData.preferencias.fase = faseActual;
+      }
+      categoriasElegidas = userData.preferencias?.categorias || [];
+      cursosInicio = userData.preferencias?.cursosInicio || [];
+      const faseTxt = faseActual >= 4 ? '✦ Acceso completo — ¡Explorá todo!' : `✦ Fase ${faseActual} de 3 — ${faseActual === 1 ? 'Tus primeros cursos' : faseActual === 2 ? 'Se habilitó tu segunda elección' : 'Se habilitó tu tercera elección'}`;
+      faseInfo.innerHTML = `<div class="fase-badge">${faseTxt}</div>`;
+      document.getElementById('perfil-fase').textContent = faseTxt;
+    }
+
+    let html = '';
+    catalogo.forEach(cat => {
+      const catHabilitada = faseActual >= 4 || categoriasElegidas.includes(cat.id);
+      const cursosVisibles = cat.cursos.filter(c => c.tipo === 'gratis' || catHabilitada);
+      if (cursosVisibles.length === 0) return;
+
+      html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
+      cursosVisibles.forEach((curso, i) => {
+        const esPrioritario = cursosInicio.includes(curso.id);
+        const hoy2 = new Date().toISOString().split('T')[0];
+        const esTempActivo = curso.tipo === 'gratis-temporal' && curso.gratisDesde && curso.gratisHasta && hoy2 >= curso.gratisDesde && hoy2 <= curso.gratisHasta;
+        const esGratisReal = curso.tipo === 'gratis' || esTempActivo;
+        const bloqueado = !esGratisReal && curso.tipo !== 'gratis' && !userData.membresia && !ADMIN_EMAILS.includes(currentUser.email);
+        const colorIdx = i % 6;
+        const safeId = encodeURIComponent(curso.id);
+        const safeCat = encodeURIComponent(cat.id);
+        html += `<div class="curso-card c${colorIdx+1} ${bloqueado ? 'locked' : ''}" data-curso="${safeId}" data-cat="${safeCat}" data-bloqueado="${bloqueado}">
+          <div class="curso-card-header">
+            <span class="curso-card-icon">${curso.icon}</span>
+            <div class="curso-card-info">
+              <div class="curso-card-name">${curso.nombre}</div>
+              <div class="curso-card-cat">${cat.nombre}</div>
+            </div>
+          </div>
+          <div class="curso-card-footer">
+            <span class="curso-badge ${bloqueado ? 'badge-bloqueado' : curso.tipo === 'gratis' ? 'badge-gratis' : 'badge-membresia'}">${bloqueado ? '🔒 Membresía' : esGratisReal ? (curso.tipo === 'gratis-temporal' ? '⏰ Gratis por tiempo' : '✓ Gratis') : esPrioritario ? '⭐ Tu elección' : '✦ Membresía'}</span>
+            <span style="font-size:12px;color:var(--gris-medio);">${bloqueado ? '' : '→'}</span>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    if (!html) html = '<div style="font-size:13px;color:var(--gris-medio);padding:20px 0;">No hay cursos disponibles aún.</div>';
+    container.innerHTML = html;
+
+    // Agregar event listeners a las cards de cursos
+    container.querySelectorAll('.curso-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const bloqueado = card.dataset.bloqueado === 'true';
+        const cursoId = decodeURIComponent(card.dataset.curso);
+        const catId = decodeURIComponent(card.dataset.cat);
+        console.log('Click curso:', cursoId, catId, 'bloqueado:', bloqueado);
+        console.log('Catalogo IDs:', catalogo.map(c => c.id));
+        if (bloqueado) showMembresiaBanner();
+        else abrirCurso(cursoId, catId);
+      });
+    });
+  }
+
+  window._showMembresiaBanner = window.showMembresiaBanner = function() {
+    document.getElementById('cursos-content').insertAdjacentHTML('afterbegin', `
+      <div class="membresia-banner">
+        <div class="membresia-titulo">🌸 Este curso es parte de la membresía</div>
+        <div class="membresia-sub">Accedé a todos los cursos, meetings en vivo y contenido exclusivo con tu membresía mensual.</div>
+        <button class="btn-small" onclick="abrirPagos()">Quiero mi membresía →</button>
+      </div>`);
+    setTimeout(() => document.querySelector('.membresia-banner')?.remove(), 5000);
+  }
+
+  let cursoActivo = null;
+  let moduloActivo = null;
+  let modulosActivos = [];
+
+  function youtubeId(url) {
+    if (!url) return null;
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function renderCursosIndividuales() {
+    const container = document.getElementById('cursos-content');
+    const faseInfo = document.getElementById('fase-info');
+    faseInfo.innerHTML = '<div class="fase-badge">📚 Modo cursos individuales — Elegís lo que querés</div>';
+
+    let html = '';
+    catalogo.forEach((cat, ci) => {
+      html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
+      cat.cursos.forEach((curso, i) => {
+        const comprado = userData?.cursosComprados?.[curso.id];
+        const precio = configPagos?.planes?.find(p => p.id === 'curso')?.precio || 5000;
+        const colorIdx = i % 6;
+        if (comprado) {
+          html += `<div class="curso-card c${colorIdx+1}" data-curso="${encodeURIComponent(curso.id)}" data-cat="${encodeURIComponent(cat.id)}" data-bloqueado="false">
+            <div class="curso-card-header">
+              <span class="curso-card-icon">${curso.icon}</span>
+              <div class="curso-card-info">
+                <div class="curso-card-name">${curso.nombre}</div>
+                <div class="curso-card-cat">${cat.nombre}</div>
+              </div>
+            </div>
+            <div class="curso-card-footer">
+              <span class="curso-badge badge-gratis">✓ Comprado</span>
+              <span style="font-size:12px;color:var(--gris-medio);">→</span>
+            </div>
+          </div>`;
+        } else {
+          html += `<div class="curso-card c${colorIdx+1}" style="cursor:pointer;" onclick="comprarCursoIndividual('${curso.id}','${curso.nombre}',${precio})">
+            <div class="curso-card-header">
+              <span class="curso-card-icon">${curso.icon}</span>
+              <div class="curso-card-info">
+                <div class="curso-card-name">${curso.nombre}</div>
+                <div class="curso-card-cat">${cat.nombre}</div>
+              </div>
+            </div>
+            <div class="curso-card-footer">
+              <span class="curso-badge badge-membresia">$${precio.toLocaleString('es-AR')}</span>
+              <button class="btn-small" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation();comprarCursoIndividual('${curso.id}','${curso.nombre}',${precio})">Comprar</button>
+            </div>
+          </div>`;
+        }
+      });
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+
+    // Event listeners para cursos comprados
+    container.querySelectorAll('.curso-card[data-bloqueado="false"]').forEach(card => {
+      card.addEventListener('click', () => {
+        abrirCurso(decodeURIComponent(card.dataset.curso), decodeURIComponent(card.dataset.cat));
+      });
+    });
+  }
+
+  window.comprarCursoIndividual = async function(cursoId, cursoNombre, precio) {
+    document.getElementById('pagos-titulo').textContent = cursoNombre;
+    document.getElementById('pagos-sub').textContent = 'Comprá este curso una sola vez';
+    await window.abrirPagos('curso');
+    // Guardar qué curso se está comprando
+    window._cursoEnCompra = cursoId;
+  }
+
+  window.elegirMembresia = async function() {
+    await set(ref(db, 'usuarios/' + currentUser.uid + '/modoAcceso'), 'membresia');
+    userData.modoAcceso = 'membresia';
+    showScreen('screen-home');
+    renderCursos();
+    // Abrir pagos directo
+    setTimeout(() => window.abrirPagos('mensual'), 300);
+  }
+
+  window.elegirCursosIndividuales = async function() {
+    // Guardar modo en Firebase
+    await set(ref(db, `usuarios/${currentUser.uid}/modoAcceso`), 'individual');
+    userData.modoAcceso = 'individual';
+    showScreen('screen-home');
+    renderCursos();
+  }
+
+  window.abrirCurso = async function(cursoId, catId) {
+    const cat = catalogo.find(c => c.id === catId);
+    const curso = cat?.cursos.find(c => c.id === cursoId);
+    if (!curso) return;
+    cursoActivo = { cursoId, catId };
+
+    document.getElementById('modulo-curso-titulo').textContent = `${curso.icon} ${curso.nombre}`;
+    document.getElementById('modulo-curso-meta').textContent = `${cat.nombre} · Con Flor y Mery`;
+
+    const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`));
+    const prog = progSnap.exists() ? progSnap.val() : { completados: [] };
+    const completados = prog.completados || [];
+
+    // Cargar módulos desde Firebase o usar defaults
+    const modSnap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+    modulosActivos = modulos;
+
+    const total = modulos.length;
+    const hecho = completados.length;
+    const pct = total > 0 ? Math.round((hecho / total) * 100) : 0;
+
+    document.getElementById('modulo-prog-bar').style.width = pct + '%';
+    document.getElementById('modulo-prog-label').textContent = `${hecho} de ${total} módulos completados`;
+
+    const lista = document.getElementById('modulos-lista');
+    lista.innerHTML = modulos.map((m, i) => {
+      const done = completados.includes(i);
+      const active = !done && (i === 0 || completados.includes(i - 1));
+      const locked = !done && !active;
+      const tieneVideo = !!(m.videoUrl && youtubeId(m.videoUrl));
+      const tieneTexto = !!(m.texto && m.texto.trim());
+      const tieneArchivos = !!(m.archivos && m.archivos.length > 0);
+      return `<div class="modulo-item ${done ? 'completado' : active ? 'en-curso' : 'locked'}" data-modulo="${i}" data-locked="${locked}" style="${locked ? 'cursor:not-allowed;' : 'cursor:pointer;'}">
+        <div class="modulo-num ${done ? 'num-done' : active ? 'num-active' : 'num-pending'}">${done ? '✓' : i + 1}</div>
+        <div class="modulo-info">
+          <div class="modulo-name">${m.nombre}</div>
+          <div class="modulo-desc">${m.desc || ''}${tieneVideo?' · 📹':''}${tieneTexto?' · 📝':''}${tieneArchivos?' · 📎':''}</div>
+        </div>
+        <div class="modulo-status">${done ? '✅' : active ? '▶' : '🔒'}</div>
+      </div>`;
+    }).join('');
+
+    // Event listeners en módulos
+    document.querySelectorAll('.modulo-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (item.dataset.locked === 'true') return;
+        abrirVisor(parseInt(item.dataset.modulo));
+      });
+    });
+
+    showTab('tab-modulos');
+  }
+
+  window.abrirVisor = function(idx) {
+    const m = modulosActivos[idx];
+    if (!m) return;
+    moduloActivo = idx;
+
+    document.getElementById('visor-modulo-num').textContent = `Módulo ${idx + 1} de ${modulosActivos.length}`;
+    document.getElementById('visor-titulo').textContent = m.nombre;
+
+    let html = '';
+
+    // Video YouTube
+    if (m.videoUrl) {
+      const vid = youtubeId(m.videoUrl);
+      if (vid) {
+        html += `<div class="visor-video"><iframe src="https://www.youtube.com/embed/${vid}?rel=0&modestbranding=1" allowfullscreen></iframe></div>`;
+      }
+    }
+
+    // Texto
+    if (m.texto && m.texto.trim()) {
+      html += `<div class="visor-texto">${m.texto}</div>`;
+    }
+
+    // Archivos
+    if (m.archivos && m.archivos.length > 0) {
+      html += `<div style="margin-top:8px;"><div style="font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">📎 Archivos del módulo</div>`;
+      m.archivos.forEach(a => {
+        const icono = a.tipo === 'molde' ? '📐' : a.tipo === 'pdf' ? '📄' : '📁';
+        const puedeDescargar = a.descargable;
+        html += `<div class="visor-archivo">
+          <div class="visor-archivo-icon">${icono}</div>
+          <div class="visor-archivo-info">
+            <div class="visor-archivo-name">${a.nombre}</div>
+            <div class="visor-archivo-tipo">${a.tipo === 'molde' ? 'Molde descargable' : a.tipo === 'pdf' ? 'Documento PDF' : 'Archivo'} ${puedeDescargar ? '· Descargable' : '· Solo lectura'}</div>
+          </div>
+          ${puedeDescargar && a.url
+            ? `<a href="${a.url}" target="_blank" download><button class="visor-archivo-btn">⬇ Descargar</button></a>`
+            : `<button class="visor-archivo-btn solo-lectura">🔒 Solo lectura</button>`}
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (!html) html = '<div style="text-align:center;padding:40px 0;color:var(--gris-medio);">Este módulo no tiene contenido cargado aún.</div>';
+
+    document.getElementById('visor-body').innerHTML = html;
+
+    // Estado del botón completar
+    const progRef = get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoActivo.cursoId}`));
+    progRef.then(snap => {
+      const prog = snap.exists() ? snap.val() : { completados: [] };
+      const done = (prog.completados || []).includes(idx);
+      const btn = document.getElementById('btn-completar');
+      btn.textContent = done ? '✓ Completado' : 'Marcar como completado ✓';
+      btn.className = done ? 'btn-completar ya-completo' : 'btn-completar';
+    });
+
+    document.getElementById('visor-overlay').style.display = 'flex';
+  }
+
+  window._cerrarVisor = window.cerrarVisor = function() {
+    document.getElementById('visor-overlay').style.display = 'none';
+    document.getElementById('visor-body').innerHTML = '';
+  }
+
+  window._completarDesdeVisor = window.completarDesdeVisor = async function() {
+    const idx = moduloActivo;
+    const cursoId = cursoActivo.cursoId;
+    const catId = cursoActivo.catId;
+    const progRef = ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`);
+    const snap = await get(progRef);
+    const prog = snap.exists() ? snap.val() : { completados: [] };
+    const completados = prog.completados || [];
+    if (!completados.includes(idx)) completados.push(idx);
+    await set(progRef, { completados });
+    cerrarVisor();
+    await abrirCurso(cursoId, catId);
+    // Verificar si completó el curso y enviar certificado
+    await verificarCertificado(cursoId, catId);
+  }
+
+  window.marcarModulo = async function(cursoId, idx, estabaDone) {
+    const progRef = ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`);
+    const snap = await get(progRef);
+    const prog = snap.exists() ? snap.val() : { completados: [] };
+    const completados = prog.completados || [];
+    if (estabaDone) completados.splice(completados.indexOf(idx), 1);
+    else if (!completados.includes(idx)) completados.push(idx);
+    await set(progRef, { completados });
+    abrirCurso(cursoId, cursoActivo?.catId || catalogo.find(c => c.cursos.some(cu => cu.id === cursoId))?.id);
+  }
+
+  // ── ADMIN CATÁLOGO ──
+  function gratisRow(c, ci, coi) {
+    const esGratisTemporal = c.tipo === 'gratis-temporal';
+    const esGratis = c.tipo === 'gratis' || esGratisTemporal;
+    const hoy = new Date().toISOString().split('T')[0];
+    const vencido = esGratisTemporal && c.gratisHasta && c.gratisHasta < hoy;
+    return `
+      <div class="curso-row" style="flex-direction:column;align-items:stretch;gap:8px;background:${esGratis?'#F5FBF8':'#fff'};padding:10px;border-radius:10px;border:1px solid ${esGratis?'#A8DCBC':'var(--borde)'};">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input class="curso-icon-input" value="${c.icon}" oninput="catalogo[${ci}].cursos[${coi}].icon=this.value">
+          <input class="curso-name-input" value="${c.nombre}" oninput="catalogo[${ci}].cursos[${coi}].nombre=this.value">
+          <select class="curso-type-select" onchange="changeTipo(${ci},${coi},this.value)">
+            <option value="membresia" ${c.tipo==='membresia'?'selected':''}>✦ Membresía</option>
+            <option value="gratis" ${c.tipo==='gratis'?'selected':''}>✓ Gratis permanente</option>
+            <option value="gratis-temporal" ${esGratisTemporal?'selected':''}>⏰ Gratis por tiempo limitado</option>
+          </select>
+          <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕</button>
+        </div>
+        ${esGratisTemporal ? `
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 4px;border-top:1px solid #E0DED8;">
+          <span style="font-size:12px;color:var(--gris-medio);">⏰ Gratis desde:</span>
+          <input type="date" value="${c.gratisDesde||''}" style="border:1px solid #E0DED8;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;" onchange="catalogo[${ci}].cursos[${coi}].gratisDesde=this.value">
+          <span style="font-size:12px;color:var(--gris-medio);">hasta:</span>
+          <input type="date" value="${c.gratisHasta||''}" style="border:1px solid #E0DED8;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;${vencido?'border-color:#c0392b;':''}" onchange="catalogo[${ci}].cursos[${coi}].gratisHasta=this.value">
+          ${vencido ? '<span style="font-size:11px;color:#c0392b;font-weight:700;">⚠ Vencido — volvió a ser de membresía</span>' : ''}
+          ${!vencido && c.gratisHasta ? '<span style="font-size:11px;color:#1A6B3A;">✓ Activo</span>' : ''}
+        </div>` : ''}
+      </div>`;
+  }
+
+  window.changeTipo = (ci, coi, val) => {
+    catalogo[ci].cursos[coi].tipo = val;
+    if (val !== 'gratis-temporal') {
+      delete catalogo[ci].cursos[coi].gratisDesde;
+      delete catalogo[ci].cursos[coi].gratisHasta;
+    }
+    renderCatsEditor();
+  }
+
+  function renderCatsEditor() {
+    const ed = document.getElementById('cats-editor');
+    ed.innerHTML = catalogo.map((cat, ci) => `
+      <div class="cat-block">
+        <div class="cat-header">
+          <input class="cat-icon-input" value="${cat.icon}" oninput="catalogo[${ci}].icon=this.value">
+          <input class="cat-name-input" value="${cat.nombre}" oninput="catalogo[${ci}].nombre=this.value">
+          <button class="btn-danger" onclick="removeCat(${ci})">✕ Categoría</button>
+        </div>
+        <div id="cursos-cat-${ci}">
+          ${cat.cursos.map((c, coi) => gratisRow(c, ci, coi)).join('')}
+        </div>
+        <button class="add-row-btn" onclick="addCurso(${ci})">+ Agregar curso</button>
+      </div>`).join('');
+  }
+
+  window.addCategoria = () => { catalogo.push({ id: `cat-${Date.now()}`, icon: '✨', nombre: 'Nueva categoría', cursos: [] }); renderCatsEditor(); }
+  window.removeCat = i => { catalogo.splice(i, 1); renderCatsEditor(); }
+  window.addCurso = ci => { catalogo[ci].cursos.push({ id: `curso-${Date.now()}`, icon: '📖', nombre: 'Nuevo curso', tipo: 'membresia' }); renderCatsEditor(); }
+  window.removeCurso = (ci, coi) => { catalogo[ci].cursos.splice(coi, 1); renderCatsEditor(); }
+
+  // ── EDITOR DE MÓDULOS ADMIN ──
+  function poblarSelectorCursos() {
+    const sel = document.getElementById('curso-selector');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Seleccioná un curso —</option>';
+    catalogo.forEach(cat => {
+      cat.cursos.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${cat.icon} ${cat.nombre} → ${c.icon} ${c.nombre}`;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  window.cargarEditorModulos = async function(cursoId) {
+    const container = document.getElementById('modulos-editor-container');
+    if (!cursoId) { container.innerHTML = ''; return; }
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando módulos...</div>';
+    const snap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = snap.exists() ? snap.val() : [...DEFAULT_MODULOS];
+    renderEditorModulos(cursoId, modulos);
+  }
+
+  function renderEditorModulos(cursoId, modulos) {
+    const container = document.getElementById('modulos-editor-container');
+    let html = modulos.map((m, i) => `
+      <div class="mod-editor-block" id="mod-block-${i}">
+        <div class="mod-editor-header">
+          <div class="mod-num-badge">${i+1}</div>
+          <input class="mod-name-input" value="${m.nombre||''}" placeholder="Nombre del módulo" oninput="modulos_edit[${i}].nombre=this.value">
+          <button class="btn-danger" onclick="eliminarModulo(${i},'${cursoId}')">✕</button>
+        </div>
+        <input class="mod-desc-input" value="${m.desc||''}" placeholder="Descripción breve del módulo" oninput="modulos_edit[${i}].desc=this.value">
+
+        <div class="content-section">
+          <div class="content-section-title">📹 Video de YouTube</div>
+          <input class="content-input" value="${m.videoUrl||''}" placeholder="https://www.youtube.com/watch?v=..." oninput="modulos_edit[${i}].videoUrl=this.value">
+          <div style="font-size:11px;color:var(--gris-medio);">Pegá el link del video. Puede ser público, no listado o privado con permiso de embed.</div>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title">📝 Texto del módulo</div>
+          <textarea class="content-textarea" placeholder="Escribí el contenido de texto de este módulo..." oninput="modulos_edit[${i}].texto=this.value">${m.texto||''}</textarea>
+        </div>
+
+        <div class="content-section">
+          <div class="content-section-title">📎 Archivos (PDFs, moldes, documentos)</div>
+          <div id="archivos-mod-${i}">
+            ${(m.archivos||[]).map((a, ai) => `
+              <div class="archivo-row">
+                <select style="background:var(--gris-claro);border:1px solid #E0DED8;border-radius:6px;padding:5px;font-size:12px;outline:none;" onchange="modulos_edit[${i}].archivos[${ai}].tipo=this.value">
+                  <option value="pdf" ${a.tipo==='pdf'?'selected':''}>📄 PDF</option>
+                  <option value="molde" ${a.tipo==='molde'?'selected':''}>📐 Molde</option>
+                  <option value="otro" ${a.tipo==='otro'?'selected':''}>📁 Otro</option>
+                </select>
+                <input class="content-input" style="flex:1;margin:0;" value="${a.nombre||''}" placeholder="Nombre del archivo" oninput="modulos_edit[${i}].archivos[${ai}].nombre=this.value">
+                <input class="content-input" style="flex:2;margin:0;" value="${a.url||''}" placeholder="URL del archivo (Google Drive, Dropbox...)" oninput="modulos_edit[${i}].archivos[${ai}].url=this.value">
+                <label class="toggle-descarga"><input type="checkbox" ${a.descargable?'checked':''} onchange="modulos_edit[${i}].archivos[${ai}].descargable=this.checked"> Descargable</label>
+                <button class="btn-danger" onclick="eliminarArchivo(${i},${ai},'${cursoId}')">✕</button>
+              </div>`).join('')}
+          </div>
+          <button class="add-row-btn" style="margin-top:6px;" onclick="agregarArchivo(${i},'${cursoId}')">+ Agregar archivo</button>
+        </div>
+      </div>`).join('');
+
+    html += `<div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="add-cat-btn" style="flex:1;" onclick="agregarModulo('${cursoId}')">+ Agregar módulo</button>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:10px;">
+      <button class="btn-small" onclick="guardarModulos('${cursoId}')">Guardar módulos</button>
+    </div>
+    <div class="msg msg-success" id="modulos-ok" style="margin-top:10px;"></div>`;
+
+    container.innerHTML = html;
+    window.modulos_edit = JSON.parse(JSON.stringify(modulos));
+  }
+
+  window.agregarModulo = function(cursoId) {
+    window.modulos_edit = window.modulos_edit || [];
+    window.modulos_edit.push({ nombre: 'Nuevo módulo', desc: '', videoUrl: '', texto: '', archivos: [] });
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.eliminarModulo = function(idx, cursoId) {
+    if (window.modulos_edit.length <= 1) return;
+    window.modulos_edit.splice(idx, 1);
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.agregarArchivo = function(modIdx, cursoId) {
+    if (!window.modulos_edit[modIdx].archivos) window.modulos_edit[modIdx].archivos = [];
+    window.modulos_edit[modIdx].archivos.push({ tipo: 'pdf', nombre: '', url: '', descargable: false });
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.eliminarArchivo = function(modIdx, archivoIdx, cursoId) {
+    window.modulos_edit[modIdx].archivos.splice(archivoIdx, 1);
+    renderEditorModulos(cursoId, window.modulos_edit);
+  }
+
+  window.guardarModulos = async function(cursoId) {
+    try {
+      await set(ref(db, `modulos/${cursoId}`), window.modulos_edit);
+      const ok = document.getElementById('modulos-ok');
+      ok.textContent = '✦ Módulos guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar módulos.'); }
+  }
+
+  window.saveCatalogo = async () => {
+    try {
+      await set(ref(db, 'catalogo'), catalogo);
+      poblarSelectorCursos();
+      const ok = document.getElementById('admin-ok');
+      ok.textContent = '✦ Cambios guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar.'); }
+  }
+
+  async function loadCatalogo() {
+    try {
+      const snap = await get(ref(db, 'catalogo'));
+      catalogo = snap.exists() ? snap.val() : [...DEFAULT_CATALOGO];
+    } catch(e) { catalogo = [...DEFAULT_CATALOGO]; }
+  }
+
+  // ── DAILY.CO API KEY ──
+
+
+
+  let meetingsData = [];
+
+  // ── CARGAR MEETINGS (alumnas) ──
+  function toLocalInput(date) {
+    const offset = -3 * 60; // Argentina UTC-3
+    const local = new Date(date.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  async function loadMeetings() {
+    const container = document.getElementById('meetings-content');
+    if (!container) return;
+    container.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando meetings...</div>';
+    try {
+      const snap = await get(ref(db, 'meetings'));
+      const data = snap.exists() ? Object.values(snap.val()) : [];
+      meetingsData = data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      renderMeetings();
+    } catch(e) {
+      console.error('Error meetings:', e.code, e.message);
+      if (e.code === 'PERMISSION_DENIED') {
+        container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">⚠ Error de permisos en Firebase. Las reglas de seguridad están bloqueando la lectura.</div>';
+      } else {
+        container.innerHTML = '<div style="color:#c0392b;font-size:13px;padding:20px 0;">Error: ' + e.message + '</div>';
+      }
+    }
+  }
+
+  function renderMeetings() {
+    const container = document.getElementById('meetings-content');
+    if (!container) return;
+    const ahora = new Date();
+    const tieneMem = userData?.membresia || userData?.rol === 'admin' || ADMIN_EMAILS.includes(currentUser?.email);
+
+    if (!tieneMem) {
+      container.innerHTML = `<div class="membresia-banner" style="max-width:500px;">
+        <div class="membresia-titulo">📅 Meetings exclusivos para miembros</div>
+        <div class="membresia-sub">Con tu membresía podés participar de las consultas en vivo semanales con Flor y Mery, y ver todas las grabaciones.</div>
+        <button class="btn-small" onclick="abrirPagos()">Quiero mi membresía →</button>
+      </div>`;
+      return;
+    }
+
+    if (meetingsData.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;">
+        <div style="font-size:40px;margin-bottom:12px;">📅</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gris);margin-bottom:8px;">No hay meetings programados</div>
+        <div style="font-size:14px;color:var(--gris-medio);">Pronto se publicarán las fechas de las próximas consultas en vivo.</div>
+      </div>`;
+      return;
+    }
+
+    let html = '';
+    meetingsData.forEach(m => {
+      const fecha = new Date(m.fecha);
+      const fin = new Date(fecha.getTime() + (m.duracion || 60) * 60000);
+      const estaVivo = ahora >= fecha && ahora <= fin;
+      const esProximo = fecha > ahora;
+      const yaTermino = ahora > fin;
+
+      const fechaStr = fecha.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
+      const horaStr = fecha.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+
+      // Calcular botonHtml según rol y tiempo
+      const esHost2 = userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser?.email);
+      const msAntes2 = fecha - ahora;
+      const minAntes2 = msAntes2 / 60000;
+      let botonHtml = '';
+      if (yaTermino) {
+        botonHtml = m.grabacionUrl
+          ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>`
+          : `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>`;
+      } else if (esHost2 && minAntes2 <= 10) {
+        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',true)">${estaVivo ? '🔴 Iniciar clase' : '⚙️ Preparar sala'}</button>`;
+      } else if (!esHost2 && estaVivo) {
+        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',false)">🔴 Entrar ahora</button>`;
+      } else if (esProximo) {
+        botonHtml = `<div style="text-align:right;"><div style="font-size:12px;color:var(--terracota);font-weight:700;">⏰ En ${tiempoHasta(fecha)}</div></div>`;
+      }
+
+      html += `<div class="meeting-card">
+        <div class="meeting-card-header">
+          ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
+          <div class="meeting-card-info">
+            <div class="meeting-titulo">${m.titulo}</div>
+            <div class="meeting-fecha">${fechaStr} · ${horaStr} hs · ${m.duracion || 60} min · Con Flor y Mery</div>
+            ${m.descripcion ? `<div style="font-size:13px;color:var(--gris-medio);margin-top:6px;">${m.descripcion}</div>` : ''}
+          </div>
+        </div>
+        <div class="meeting-card-footer">
+          <div class="meeting-estado ${estaVivo ? 'estado-vivo' : esProximo ? 'estado-proximo' : 'estado-grabado'}">
+            ${estaVivo ? '🔴 En vivo ahora' : esProximo ? `⏰ En ${tiempoHasta(fecha)}` : '📼 Finalizado'}
+          </div>
+          <div style="display:flex;gap:8px;">
+            ${botonHtml}
+            ${yaTermino && m.grabacionUrl ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>` : ''}
+            ${yaTermino && !m.grabacionUrl ? `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function tiempoHasta(fecha) {
+    const diff = fecha - new Date();
+    if (diff <= 0) return 'ahora';
+    const dias = Math.floor(diff / 86400000);
+    const hs = Math.floor((diff % 86400000) / 3600000);
+    const min = Math.floor((diff % 3600000) / 60000);
+    if (dias > 0) return `${dias}d ${hs}h`;
+    if (hs > 0) return `${hs}h ${min}min`;
+    return `${min} minutos`;
+  }
+
+  // ── SALA DE MEETINGS PROPIA WebRTC + Firebase ──
+  let localStream = null;
+  let micActivo = true;
+  let camActiva = true;
+  let peerConnections = {};
+  let salaId = null;
+  let mensajesRef = null;
+  let participantesRef = null;
+  let unsubMensajes = null;
+  let unsubParticipantes = null;
+
+  window.entrarSala = async function(roomUrl, titulo, esHostSala = false) {
+    // Extraer ID de sala del URL o usar un ID fijo
+    salaId = roomUrl.split('/').pop() || 'ohla-sala';
+    document.getElementById('sala-titulo').textContent = titulo;
+    document.getElementById('sala-overlay').style.display = 'flex';
+
+    // Pedir cámara y micrófono
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      document.getElementById('video-local').srcObject = localStream;
+      document.getElementById('label-local').textContent = userData?.nombre || currentUser?.email?.split('@')[0] || 'Vos';
+    } catch(e) {
+      agregarMensajeSistema('No se pudo acceder a la cámara o micrófono. Verificá los permisos del navegador.');
+    }
+
+    // Cartel de espera para alumnas si el host no entró aún
+    if (!esHostSala) {
+      const partSnap0 = await get(ref(db, 'salas/' + salaId + '/participantes'));
+      const hayHost = partSnap0.exists() && Object.values(partSnap0.val()).some(p => p.esHost);
+      if (!hayHost) {
+        const videoWrap = document.getElementById('video-local').parentElement;
+        const espera = document.createElement('div');
+        espera.id = 'cartel-espera';
+        espera.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;text-align:center;padding:24px;';
+        espera.innerHTML = '<div style="font-size:52px;margin-bottom:16px;">🌸</div><div style="font-family:Cormorant Garamond,serif;font-size:26px;color:#fff;margin-bottom:10px;">La clase está por comenzar</div><div style="font-size:14px;color:#C4723A;line-height:1.6;">Tu profe está preparando todo.<br>En breve comienza.</div>';
+        videoWrap.style.position = 'relative';
+        videoWrap.appendChild(espera);
+        const { onValue: onValEsp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+        const unsubEsp = onValEsp(ref(db, 'salas/' + salaId + '/participantes'), snapEsp => {
+          if (snapEsp.exists() && Object.values(snapEsp.val()).some(p => p.esHost)) {
+            document.getElementById('cartel-espera')?.remove();
+            agregarMensajeSistema('La profe entró a la sala. La clase comienza ahora 🌸');
+            unsubEsp();
+          }
+        });
+      }
+    }
+
+    // Registrar participante en Firebase
+    const partRef = ref(db, `salas/${salaId}/participantes/${currentUser.uid}`);
+    const esHostReal = esHostSala || userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser.email);
+    await set(partRef, {
+      nombre: userData?.nombre || currentUser.email,
+      uid: currentUser.uid,
+      esHost: esHostReal,
+      pidePalabra: false,
+      ingreso: new Date().toISOString()
+    });
+
+    // Escuchar mensajes del chat
+    const { onValue: onVal } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    mensajesRef = ref(db, `salas/${salaId}/mensajes`);
+    unsubMensajes = onVal(mensajesRef, snap => {
+      const chatDiv = document.getElementById('chat-mensajes');
+      if (!snap.exists()) { chatDiv.innerHTML = ''; return; }
+      const msgs = Object.values(snap.val()).sort((a,b) => new Date(a.ts) - new Date(b.ts));
+      chatDiv.innerHTML = msgs.map(m => {
+        const esPropio = m.uid === currentUser.uid;
+        const esSistema = m.tipo === 'sistema';
+        const esPalabra = m.tipo === 'palabra';
+        if (esSistema) return `<div style="text-align:center;font-size:11px;color:#666;padding:4px 0;">${m.texto}</div>`;
+        if (esPalabra) return `<div style="background:#2C2C2A;border:1px solid #C4723A;border-radius:8px;padding:8px 10px;font-size:12px;color:#C4723A;">✋ <strong>${m.nombre}</strong> pide la palabra</div>`;
+        return `<div style="display:flex;flex-direction:column;align-items:${esPropio?'flex-end':'flex-start'};">
+          <div style="font-size:10px;color:#666;margin-bottom:2px;">${esPropio?'Vos':m.nombre}</div>
+          <div style="background:${esPropio?'#C4723A':'#2C2C2A'};color:#fff;border-radius:${esPropio?'12px 12px 0 12px':'12px 12px 12px 0'};padding:8px 12px;font-size:13px;max-width:200px;word-wrap:break-word;">${m.texto}</div>
+        </div>`;
+      }).join('');
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+
+    // Escuchar participantes
+    participantesRef = ref(db, `salas/${salaId}/participantes`);
+    unsubParticipantes = onVal(participantesRef, snap => {
+      const lista = document.getElementById('lista-participantes');
+      const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+      document.getElementById('sala-participantes').textContent = `${count} participante${count!==1?'s':''} conectado${count!==1?'s':''}`;
+      if (!snap.exists()) { lista.innerHTML = ''; return; }
+      const parts = Object.values(snap.val());
+      lista.innerHTML = parts.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#1a1a1a;border-radius:8px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#C4723A;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${p.esHost?'👑':'🌸'}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:#fff;font-weight:${p.esHost?'700':'400'};">${p.nombre}${p.esHost?' (Host)':''}</div>
+            ${p.pidePalabra?'<div style="font-size:11px;color:#C4723A;">✋ Pide la palabra</div>':''}
+          </div>
+        </div>`).join('');
+    });
+
+    agregarMensajeSistema('Entraste a la sala');
+  }
+
+  window._cerrarSala = window.cerrarSala = async function() {
+    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if (unsubMensajes) unsubMensajes();
+    if (unsubParticipantes) unsubParticipantes();
+    // Quitar participante
+    if (salaId && currentUser) {
+      await set(ref(db, `salas/${salaId}/participantes/${currentUser.uid}`), null);
+      agregarMensajeSistemaDB('Salió de la sala');
+    }
+    document.getElementById('sala-overlay').style.display = 'none';
+    document.getElementById('video-local').srcObject = null;
+    document.getElementById('chat-mensajes').innerHTML = '';
+    document.getElementById('videos-remotos').innerHTML = '';
+    peerConnections = {};
+    salaId = null;
+  }
+
+  window._toggleMic = window.toggleMic = function() {
+    if (!localStream) return;
+    micActivo = !micActivo;
+    localStream.getAudioTracks().forEach(t => t.enabled = micActivo);
+    document.getElementById('btn-mic').style.background = micActivo ? '#333' : '#c0392b';
+    document.getElementById('btn-mic').textContent = micActivo ? '🎤 Mic' : '🔇 Mic';
+    document.getElementById('mic-off-indicator').style.display = micActivo ? 'none' : 'block';
+  }
+
+  window._toggleCam = window.toggleCam = function() {
+    if (!localStream) return;
+    camActiva = !camActiva;
+    localStream.getVideoTracks().forEach(t => t.enabled = camActiva);
+    document.getElementById('btn-cam').style.background = camActiva ? '#333' : '#c0392b';
+    document.getElementById('btn-cam').textContent = camActiva ? '📷 Cám' : '📷 Off';
+  }
+
+  window._enviarMensaje = window.enviarMensaje = async function() {
+    const input = document.getElementById('chat-input');
+    const texto = input.value.trim();
+    if (!texto || !salaId) return;
+    input.value = '';
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, {
+      texto, uid: currentUser.uid,
+      nombre: userData?.nombre || currentUser.email,
+      ts: new Date().toISOString(),
+      tipo: 'chat'
+    });
+  }
+
+  window._pedirPalabra = window.pedirPalabra = async function() {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, {
+      texto: 'pide la palabra',
+      uid: currentUser.uid,
+      nombre: userData?.nombre || currentUser.email,
+      ts: new Date().toISOString(),
+      tipo: 'palabra'
+    });
+    await set(ref(db, `salas/${salaId}/participantes/${currentUser.uid}/pidePalabra`), true);
+    document.getElementById('btn-pedir-palabra').textContent = '✋ Pedido enviado';
+    document.getElementById('btn-pedir-palabra').disabled = true;
+    setTimeout(() => {
+      const btn = document.getElementById('btn-pedir-palabra');
+      if (btn) { btn.textContent = '✋ Pedir la palabra'; btn.disabled = false; }
+    }, 10000);
+  }
+
+  async function agregarMensajeSistema(texto) {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}`);
+    await set(msgRef, { texto, tipo: 'sistema', ts: new Date().toISOString() });
+  }
+
+  async function agregarMensajeSistemaDB(texto) {
+    if (!salaId) return;
+    const msgRef = ref(db, `salas/${salaId}/mensajes/${Date.now()}_out`);
+    await set(msgRef, { texto: `${userData?.nombre || ''} ${texto}`, tipo: 'sistema', ts: new Date().toISOString() });
+  }
+
+  window._salaTab = window.salaTab = function(tab) {
+    document.getElementById('panel-chat').style.display = tab === 'chat' ? 'flex' : 'none';
+    document.getElementById('panel-participantes').style.display = tab === 'participantes' ? 'block' : 'none';
+    document.getElementById('tab-chat-btn').style.color = tab === 'chat' ? '#C4723A' : '#888';
+    document.getElementById('tab-chat-btn').style.borderBottom = tab === 'chat' ? '2px solid #C4723A' : 'none';
+    document.getElementById('tab-part-btn').style.color = tab === 'participantes' ? '#C4723A' : '#888';
+    document.getElementById('tab-part-btn').style.borderBottom = tab === 'participantes' ? '2px solid #C4723A' : 'none';
+  }
+
+  // ── ADMIN MEETINGS ──
+  let meetingsEdit = [];
+
+  async function loadMeetingsAdmin() {
+    const snap = await get(ref(db, 'meetings'));
+    meetingsEdit = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key: k})) : [];
+    renderMeetingsAdmin();
+  }
+
+  function renderMeetingsAdmin() {
+    const list = document.getElementById('meetings-admin-list');
+    if (!list) return;
+    if (meetingsEdit.length === 0) {
+      list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">No hay meetings programados aún.</div>';
+      return;
+    }
+    list.innerHTML = meetingsEdit.map((m, i) => `
+      <div class="meeting-admin-row">
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Título</div>
+          <input class="content-input" value="${m.titulo||''}" placeholder="Ej: Consultas semana 1" oninput="meetingsEdit[${i}].titulo=this.value">
+        </div>
+        <div style="min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Fecha y hora</div>
+          <input type="datetime-local" class="content-input" value="${m.fecha ? toLocalInput(new Date(m.fecha)) : ''}" oninput="meetingsEdit[${i}].fecha=new Date(this.value + ':00-03:00').toISOString()">
+        </div>
+        <div style="width:80px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Duración (min)</div>
+          <input type="number" class="content-input" value="${m.duracion||60}" min="15" max="240" oninput="meetingsEdit[${i}].duracion=parseInt(this.value)">
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">ID de sala (ej: consultas-ohla)</div>
+          <input class="content-input" value="${m.roomUrl||''}" placeholder="consultas-ohla" oninput="meetingsEdit[${i}].roomUrl=this.value">
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link grabación (opcional)</div>
+          <input class="content-input" value="${m.grabacionUrl||''}" placeholder="Link de YouTube o Drive" oninput="meetingsEdit[${i}].grabacionUrl=this.value">
+        </div>
+        <button class="btn-danger" style="align-self:flex-end;" onclick="eliminarMeeting(${i})">✕</button>
+      </div>`).join('');
+  }
+
+  window.agregarMeeting = function() {
+    meetingsEdit.push({ titulo: 'Consultas en vivo', fecha: new Date().toISOString(), duracion: 60, roomUrl: '', grabacionUrl: '' });
+    renderMeetingsAdmin();
+  }
+
+  window.eliminarMeeting = function(i) {
+    meetingsEdit.splice(i, 1);
+    renderMeetingsAdmin();
+  }
+
+  window.guardarMeetings = async function() {
+    try {
+      const obj = {};
+      meetingsEdit.forEach((m, i) => { obj[m._key || `meeting_${Date.now()}_${i}`] = m; });
+      await set(ref(db, 'meetings'), obj);
+      loadMeetings();
+      const ok = document.getElementById('meetings-ok');
+      ok.textContent = '✦ Meetings guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar.'); }
+  }
+
+  // ── SISTEMA DE CERTIFICADOS ──
+  const EMAILJS_SERVICE = 'service_zc4scd9';
+  const EMAILJS_TEMPLATE_CURSO = 'template_a1459rq';
+  let certActual = null;
+
+  async function verificarCertificado(cursoId, catId) {
+    const cat = catalogo.find(c => c.id === catId);
+    const curso = cat?.cursos.find(c => c.id === cursoId);
+    if (!curso || !cat) return;
+
+    // Cargar módulos del curso
+    const modSnap = await get(ref(db, `modulos/${cursoId}`));
+    const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+    const total = modulos.length;
+
+    // Cargar progreso
+    const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${cursoId}`));
+    const completados = progSnap.exists() ? (progSnap.val().completados || []) : [];
+
+    if (completados.length >= total && total > 0) {
+      // Verificar si ya se envió el certificado de este curso
+      const certSnap = await get(ref(db, `usuarios/${currentUser.uid}/certificados/${cursoId}`));
+      if (!certSnap.exists()) {
+        await enviarCertificadoCurso(curso, cat);
+      }
+
+      // Verificar si completó todos los cursos de la categoría
+      await verificarCertificadoCategoria(cat);
+    }
+  }
+
+  function generarCertificadoSVG(nombreAlumna, nombreCurso, nombreCat, fecha) {
+    // Escapar caracteres especiales para SVG
+    const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const na = esc(nombreAlumna);
+    const nc = esc(nombreCurso);
+    const ncat = esc(nombreCat);
+    const fe = esc(fecha);
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 460" width="680" height="460">' +
+      '<rect x="0" y="0" width="680" height="460" fill="#FDFAF5" rx="12"/>' +
+      '<rect x="12" y="12" width="656" height="436" fill="none" stroke="#C4723A" stroke-width="1.5" rx="8"/>' +
+      '<rect x="22" y="22" width="636" height="416" fill="none" stroke="#C4723A" stroke-width="0.5" rx="6"/>' +
+      '<path d="M12,40 L12,12 L40,12" fill="none" stroke="#C4723A" stroke-width="2"/>' +
+      '<path d="M640,12 L668,12 L668,40" fill="none" stroke="#C4723A" stroke-width="2"/>' +
+      '<path d="M12,420 L12,448 L40,448" fill="none" stroke="#C4723A" stroke-width="2"/>' +
+      '<path d="M640,448 L668,448 L668,420" fill="none" stroke="#C4723A" stroke-width="2"/>' +
+      '<text x="340" y="62" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="#C4723A" opacity="0.7">~ &#10087; ~</text>' +
+      '<text x="340" y="105" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-weight="700" fill="#5F5E5A" letter-spacing="4"><tspan fill="#C4723A">O</tspan>hla</text>' +
+      '<text x="340" y="124" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#C4723A" letter-spacing="8">ACADEMY</text>' +
+      '<line x1="240" y1="138" x2="440" y2="138" stroke="#C4723A" stroke-width="0.5" opacity="0.6"/>' +
+      '<text x="340" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#888780" letter-spacing="3">CERTIFICADO DE FINALIZACI&#211;N</text>' +
+      '<text x="340" y="198" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#888780" font-style="italic">Este certificado se otorga a</text>' +
+      '<text x="340" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="700" fill="#5F5E5A">' + na + '</text>' +
+      '<line x1="180" y1="250" x2="500" y2="250" stroke="#C4723A" stroke-width="0.5" opacity="0.4"/>' +
+      '<text x="340" y="278" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#888780" font-style="italic">por haber completado satisfactoriamente el curso</text>' +
+      '<text x="340" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="700" fill="#C4723A">' + nc + '</text>' +
+      '<text x="340" y="330" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#888780">Categor&#237;a: ' + ncat + ' &#183; Ohla Academy</text>' +
+      '<text x="340" y="358" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#888780">' + fe + '</text>' +
+      '<line x1="120" y1="400" x2="280" y2="400" stroke="#5F5E5A" stroke-width="0.5"/>' +
+      '<text x="200" y="416" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#5F5E5A">Florencia Aguilera</text>' +
+      '<text x="200" y="430" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888780">Directora</text>' +
+      '<line x1="400" y1="400" x2="560" y2="400" stroke="#5F5E5A" stroke-width="0.5"/>' +
+      '<text x="480" y="416" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#5F5E5A">Mar&#237;a In&#233;s Lloret</text>' +
+      '<text x="480" y="430" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888780">Directora</text>' +
+      '<text x="340" y="448" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#C4723A" opacity="0.5">&#10022;</text>' +
+    '</svg>';
+  }
+
+  function svgToDataUrl(svgString) {
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    return URL.createObjectURL(blob);
+  }
+
+  async function svgToPngBase64(svgString) {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 680;
+      canvas.height = 460;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        ctx.fillStyle = '#FDFAF5';
+        ctx.fillRect(0, 0, 680, 460);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.src = url;
+    });
+  }
+
+  async function enviarCertificadoCurso(curso, cat) {
+    const nombre = userData?.nombre || currentUser.email;
+    const fecha = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+
+    try {
+      // Generar SVG del certificado
+      const svgString = generarCertificadoSVG(nombre, curso.nombre, cat.nombre, fecha);
+      const pngDataUrl = await svgToPngBase64(svgString);
+
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+        alumna_nombre: nombre,
+        curso_nombre: curso.nombre,
+        categoria_nombre: cat.nombre,
+        fecha_emision: fecha,
+        to_email: currentUser.email,
+        mensaje: `¡Felicitaciones! Completaste todos los módulos del curso "${curso.nombre}". Tu certificado está adjunto.`
+      });
+
+      await set(ref(db, `usuarios/${currentUser.uid}/certificados/${curso.id}`), {
+        tipo: 'curso',
+        cursoId: curso.id,
+        cursoNombre: curso.nombre,
+        categoriaNombre: cat.nombre,
+        fecha,
+        email: currentUser.email,
+        svgUrl: pngDataUrl
+      });
+
+      mostrarPopupCertificado({
+        titulo: '¡Felicitaciones! 🎓',
+        sub: 'Completaste el curso',
+        nombre,
+        curso: curso.nombre,
+        msg: `Terminaste todos los módulos de "${curso.nombre}". Tu certificado fue enviado a ${currentUser.email}.`,
+        tipo: 'curso',
+        svgString
+      });
+
+    } catch(e) {
+      console.error('Error enviando certificado:', e);
+    }
+  }
+
+  async function verificarCertificadoCategoria(cat) {
+    // Verificar si completó todos los cursos de la categoría
+    let todosCompletos = true;
+    for (const curso of cat.cursos) {
+      const modSnap = await get(ref(db, `modulos/${curso.id}`));
+      const modulos = modSnap.exists() ? modSnap.val() : DEFAULT_MODULOS;
+      const progSnap = await get(ref(db, `usuarios/${currentUser.uid}/progreso/${curso.id}`));
+      const completados = progSnap.exists() ? (progSnap.val().completados || []) : [];
+      if (completados.length < modulos.length) { todosCompletos = false; break; }
+    }
+
+    if (todosCompletos) {
+      const certCatSnap = await get(ref(db, `usuarios/${currentUser.uid}/certificados/cat_${cat.id}`));
+      if (!certCatSnap.exists()) {
+        const nombre = userData?.nombre || currentUser.email;
+        const fecha = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+
+        try {
+          await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+            alumna_nombre: nombre,
+            curso_nombre: `Categoría completa: ${cat.nombre}`,
+            categoria_nombre: cat.nombre,
+            fecha_emision: fecha,
+            to_email: currentUser.email,
+            mensaje: `¡Completaste TODOS los cursos de la categoría "${cat.nombre}"! Este es tu certificado de categoría completa. ¡Sos una experta!`
+          });
+
+          await set(ref(db, `usuarios/${currentUser.uid}/certificados/cat_${cat.id}`), {
+            tipo: 'categoria',
+            categoriaId: cat.id,
+            categoriaNombre: cat.nombre,
+            fecha,
+            email: currentUser.email
+          });
+
+          setTimeout(() => {
+            mostrarPopupCertificado({
+              titulo: '🏆 ¡Categoría completada!',
+              sub: 'Completaste todos los cursos de',
+              nombre,
+              curso: cat.nombre,
+              msg: `¡Sos una experta en "${cat.nombre}"! Completaste todos los cursos. Tu certificado especial fue enviado a ${currentUser.email}.`,
+              tipo: 'categoria'
+            });
+          }, 3000);
+
+        } catch(e) {
+          console.error('Error certificado categoría:', e);
+        }
+      }
+    }
+  }
+
+  function mostrarPopupCertificado({ titulo, sub, nombre, curso, msg, tipo, svgString }) {
+    certActual = { titulo, sub, nombre, curso, msg, tipo, svgString };
+    document.getElementById('cert-titulo').textContent = titulo;
+    document.getElementById('cert-sub').textContent = sub;
+    document.getElementById('cert-nombre').textContent = nombre;
+    document.getElementById('cert-curso').textContent = curso;
+    document.getElementById('cert-msg').textContent = msg;
+    document.getElementById('cert-estado').textContent = '📧 Certificado enviado a tu mail';
+    document.getElementById('cert-btn-reenviar').style.display = 'inline-block';
+
+    // Mostrar el certificado visual en el popup
+    const certBody = document.getElementById('cert-body-visual');
+    if (certBody && svgString) {
+      certBody.innerHTML = svgString;
+      certBody.style.display = 'block';
+
+      // Botón de descarga
+      const btnDesc = document.getElementById('cert-btn-descargar');
+      if (btnDesc) {
+        btnDesc.style.display = 'inline-block';
+        btnDesc.onclick = () => {
+          const blob = new Blob([svgString], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Certificado_${curso.replace(/\s+/g,'_')}_OhlaAcademy.svg`;
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+      }
+    }
+
+    document.getElementById('cert-overlay').style.display = 'flex';
+  }
+
+  window._cerrarCertificado = window.cerrarCertificado = () => {
+    document.getElementById('cert-overlay').style.display = 'none';
+  }
+
+  window._reenviarCertificado = window.reenviarCertificado = async () => {
+    if (!certActual) return;
+    const btn = document.getElementById('cert-btn-reenviar');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    try {
+      await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+        alumna_nombre: certActual.nombre,
+        curso_nombre: certActual.curso,
+        fecha_emision: new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' }),
+        to_email: currentUser.email,
+        mensaje: 'Reenvío de tu certificado de Ohla Academy.'
+      });
+      document.getElementById('cert-estado').textContent = '✅ Mail reenviado correctamente';
+    } catch(e) {
+      document.getElementById('cert-estado').textContent = '❌ Error al reenviar. Intentá de nuevo.';
+    } finally {
+      btn.textContent = '📧 Reenviar mail';
+      btn.disabled = false;
+    }
+  }
+
+  // ── MERCADO PAGO + PAYPAL ──
+  const MP_PUBLIC_KEY = 'TEST-2bf151f1-52d9-4861-81ee-125f5f31bbbe';
+  let mp = null;
+  let planSeleccionado = null;
+  let descuentoAplicado = 0;
+  let configPagos = {
+    descuentoJubilada: 30, // % de descuento para mayores de 60
+    planes: [
+      { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección. Pago único sin cuotas.', tipo: 'unico' },
+      { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos. Se renueva cada mes. El precio puede variar con el tiempo.', tipo: 'recurrente', recomendado: true },
+      { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses de acceso completo con descuento especial. Podés pagar en cuotas con los intereses de tu banco.', tipo: 'unico', cuotas: true }
+    ]
+  };
+
+  async function loadConfigPagos() {
+    try {
+      const snap = await get(ref(db, 'config/pagos'));
+      if (snap.exists()) {
+        const data = snap.val();
+        // Reemplazar completamente los planes si existen en Firebase
+        configPagos = {
+          ...configPagos,
+          ...data,
+          planes: data.planes || configPagos.planes
+        };
+      }
+    } catch(e) { console.error('Error cargando config pagos:', e); }
+  }
+
+  window._abrirPagos = window.abrirPagos = async function(planId = null) {
+    await loadConfigPagos();
+    if (!mp) mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+    planSeleccionado = planId;
+    descuentoAplicado = 0;
+    document.getElementById('aviso-jubilada').style.display = 'none';
+    document.getElementById('fecha-nacimiento').value = '';
+    renderPlanes();
+    document.getElementById('mp-brick-container').innerHTML = '';
+    document.getElementById('pagos-overlay').style.display = 'flex';
+  }
+
+  window._cerrarPagos = window.cerrarPagos = function() {
+    document.getElementById('pagos-overlay').style.display = 'none';
+    document.getElementById('mp-brick-container').innerHTML = '';
+  }
+
+  window._verificarDescuentoJubilada = window.verificarDescuentoJubilada = function() {
+    const val = document.getElementById('fecha-nacimiento').value;
+    if (!val) return;
+    const nacimiento = new Date(val);
+    const hoy = new Date();
+    const edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const aviso = document.getElementById('aviso-jubilada');
+    if (edad >= 60) {
+      descuentoAplicado = configPagos.descuentoJubilada || 30;
+      aviso.textContent = '🎉 ¡Aplicamos tu descuento especial del ' + descuentoAplicado + '% para jubiladas!';
+      aviso.style.display = 'block';
+    } else {
+      descuentoAplicado = 0;
+      aviso.style.display = 'none';
+    }
+    renderPlanes();
+  }
+
+  function renderPlanes() {
+    const container = document.getElementById('planes-container');
+    const planes = configPagos.planes || [];
+
+    if (planes.every(p => p.precio === 0)) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gris-medio);font-size:13px;">⚙️ Los precios aún no están configurados. Consultá con el equipo de Ohla Academy.</div>';
+      return;
+    }
+
+    container.innerHTML = planes.map(p => {
+      if (p.precio === 0) return '';
+      const precioFinal = descuentoAplicado > 0 ? Math.round(p.precio * (1 - descuentoAplicado/100)) : p.precio;
+      const tieneDescuento = precioFinal !== p.precio;
+      return `<div class="plan-card ${planSeleccionado === p.id ? 'selected' : ''} ${p.recomendado ? 'recommended' : ''}" onclick="seleccionarPlan('${p.id}', ${precioFinal})">
+        <div class="plan-nombre">${p.nombre}</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;">
+          <span class="plan-precio">${precioFinal > 0 ? '$' + precioFinal.toLocaleString('es-AR') : 'Consultar'}</span>
+          ${tieneDescuento ? '<span class="plan-precio-original">$' + p.precio.toLocaleString('es-AR') + '</span>' : ''}
+          ${p.tipo === 'recurrente' ? '<span style="font-size:12px;color:var(--gris-medio);">/mes</span>' : ''}
+        </div>
+        <div class="plan-desc">${p.desc}</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${tieneDescuento ? '<span class="plan-descuento">✓ ' + descuentoAplicado + '% descuento jubilada</span>' : ''}
+          ${p.tipo === 'recurrente' ? '<span class="plan-descuento" style="background:#FFF5EC;color:#8B3A1A;">⚠ El precio puede variar mensualmente</span>' : ''}
+          ${p.cuotas ? '<span class="plan-descuento" style="background:#F0F7FF;color:#1A4A8B;">💳 Disponible en cuotas</span>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window._seleccionarPlan = window.seleccionarPlan = async function(planId, precio) {
+    planSeleccionado = planId;
+    renderPlanes();
+
+    // Crear preferencia de pago en Firebase Functions (simulado con fetch)
+    const brickContainer = document.getElementById('mp-brick-container');
+    brickContainer.innerHTML = '<div class="loading"><div class="spinner"></div> Preparando el pago...</div>';
+
+    try {
+      // Crear preferencia via MercadoPago API
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer TEST-4624206418289389-070917-660d8b289b2b02a2df0da17e44fdc93d-243395966'
+        },
+        body: JSON.stringify({
+          items: [{
+            title: configPagos.planes.find(p => p.id === planId)?.nombre || 'Membresía Ohla Academy',
+            quantity: 1,
+            unit_price: precio,
+            currency_id: 'ARS'
+          }],
+          payer: { email: currentUser.email },
+          back_urls: {
+            success: window.location.href,
+            failure: window.location.href,
+            pending: window.location.href
+          },
+          auto_return: 'approved',
+          external_reference: currentUser.uid + '_' + planId
+        })
+      });
+
+      const pref = await response.json();
+
+      if (pref.id) {
+        brickContainer.innerHTML = '<div id="mp-wallet-brick"></div>';
+        mp.bricks().create('wallet', 'mp-wallet-brick', {
+          initialization: { preferenceId: pref.id },
+          callbacks: {
+            onReady: () => {},
+            onError: (e) => console.error('MP Error:', e)
+          }
+        });
+      } else {
+        throw new Error('No se pudo crear la preferencia');
+      }
+    } catch(e) {
+      console.error('Error MP:', e);
+      brickContainer.innerHTML = `
+        <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-size:14px;color:#8B3A1A;margin-bottom:12px;">Continuá el pago con MercadoPago</div>
+          <a href="https://www.mercadopago.com.ar" target="_blank">
+            <button class="btn-primary" style="max-width:280px;">Pagar con MercadoPago →</button>
+          </a>
+        </div>`;
+    }
+  }
+
+  // Panel admin de precios
+  window.loadAdminPagos = async function() {
+    await loadConfigPagos();
+    const container = document.getElementById('admin-pagos-container');
+    if (!container) return;
+    const planes = configPagos.planes || [];
+    container.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <label class="field-label">Descuento para jubiladas (mayores de 60 años)</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="number" id="desc-jubilada" value="${configPagos.descuentoJubilada || 30}" min="0" max="100" class="content-input" style="width:80px;">
+          <span style="font-size:14px;color:var(--gris-medio);">% de descuento automático</span>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;font-size:12px;color:var(--gris-medio);">Precios de los planes en pesos argentinos. Podés actualizarlos cuando quieras. Poné 0 para ocultar un plan.</div>
+      ${planes.map((p, i) => `
+        <div style="padding:12px 0;border-bottom:1px solid var(--borde);">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:14px;font-weight:700;color:var(--gris);">${p.nombre}</div>
+              <div style="font-size:11px;color:var(--gris-medio);margin-top:2px;">${p.tipo === 'recurrente' ? '↻ Mensual' : p.cuotas ? '💳 Con cuotas' : '✓ Pago único'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;color:var(--gris-medio);">$</span>
+              <input type="number" value="${p.precio}" class="content-input" style="width:110px;" placeholder="0 = ocultar" oninput="configPagos.planes[${i}].precio=parseInt(this.value)||0">
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);white-space:nowrap;">
+              <input type="checkbox" ${p.recomendado?'checked':''} onchange="configPagos.planes[${i}].recomendado=this.checked">
+              Más popular
+            </label>
+          </div>
+        </div>`).join('')}
+      <div style="margin-top:16px;">
+        <button class="btn-small" onclick="guardarConfigPagos()">Guardar precios</button>
+      </div>
+      <div class="msg msg-success" id="pagos-ok" style="margin-top:10px;"></div>`;
+  }
+
+  window._guardarConfigPagos = window.guardarConfigPagos = async function() {
+    const descJub = parseInt(document.getElementById('desc-jubilada')?.value) || 0;
+    configPagos.descuentoJubilada = descJub;
+
+    // Leer precios directamente del DOM para no depender del oninput
+    const inputs = document.querySelectorAll('#admin-pagos-container input[type=number]');
+    const checkboxes = document.querySelectorAll('#admin-pagos-container input[type=checkbox]');
+
+    // El primer input es el descuento jubilada, los demas son precios de planes
+    let planIdx = 0;
+    inputs.forEach((inp, i) => {
+      if (i === 0) return; // saltar el descuento jubilada
+      if (configPagos.planes[planIdx]) {
+        configPagos.planes[planIdx].precio = parseInt(inp.value) || 0;
+      }
+      planIdx++;
+    });
+
+    checkboxes.forEach((chk, i) => {
+      if (configPagos.planes[i]) {
+        configPagos.planes[i].recomendado = chk.checked;
+      }
+    });
+
+    try {
+      await set(ref(db, 'config/pagos'), configPagos);
+      const ok = document.getElementById('pagos-ok');
+      ok.textContent = '✦ Precios guardados correctamente';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+    } catch(e) { alert('Error al guardar precios.'); }
+  }
+
+  async function loadUsers() {
+    const list = document.getElementById('users-list');
+    try {
+      const snap = await get(ref(db, 'usuarios'));
+      if (!snap.exists()) { list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);">No hay usuarias aún.</div>'; return; }
+      const data = snap.val();
+      list.innerHTML = Object.entries(data).map(([uid, info]) => {
+        const rol = typeof info === 'object' ? (info.rol || 'alumna') : info;
+        const email = typeof info === 'object' ? (info.email || '') : '';
+        const nombre = typeof info === 'object' ? (info.nombre || email) : email;
+        const membresia = typeof info === 'object' ? !!info.membresia : false;
+        const avatar = rol === 'admin' ? '👑' : rol === 'profe' ? '🎓' : '🌸';
+        return `<div class="user-row">
+          <div class="user-avatar">${avatar}</div>
+          <div class="user-info"><div class="user-name">${nombre}</div><div class="user-email">${email}</div></div>
+          <select class="role-select" onchange="changeUserRole('${uid}',this.value)">
+            <option value="alumna" ${rol==='alumna'?'selected':''}>🌸 Alumna</option>
+            <option value="profe" ${rol==='profe'?'selected':''}>🎓 Profe</option>
+            <option value="admin" ${rol==='admin'?'selected':''}>👑 Admin</option>
+          </select>
+          <button class="${membresia?'btn-danger':'btn-small'}" onclick="toggleMembresia('${uid}',${membresia})">${membresia?'Quitar membresía':'+ Membresía'}</button>
+        </div>`;
+      }).join('');
+    } catch(e) { list.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar.</div>'; }
+  }
+
+  window.changeUserRole = async (uid, rol) => {
+    const snap = await get(ref(db, `usuarios/${uid}`));
+    const data = snap.val();
+    await set(ref(db, `usuarios/${uid}`), { ...data, rol });
+  }
+
+  window.toggleMembresia = async (uid, tenia) => {
+    const snap = await get(ref(db, `usuarios/${uid}`));
+    const data = snap.val();
+    await set(ref(db, `usuarios/${uid}`), { ...data, membresia: !tenia });
+    loadUsers();
+  }
+
+  // ── AUTH ──
+  async function showHomeScreen(user) {
+    currentUser = user;
+    const nombre = user.displayName || user.email.split('@')[0];
+    document.getElementById('user-name-display').textContent = nombre;
+    document.getElementById('user-email-display').textContent = user.email;
+    document.getElementById('home-greeting').textContent = `¡Hola, ${nombre.split(' ')[0]}!`;
+    document.getElementById('perfil-nombre').textContent = nombre;
+    document.getElementById('perfil-email').textContent = user.email;
+
+    const uid = user.uid;
+    const userRef = ref(db, `usuarios/${uid}`);
+    const snap = await get(userRef);
+
+    if (!snap.exists()) {
+      const rolInicial = ADMIN_EMAILS.includes(user.email) ? 'admin' : 'alumna';
+      await set(userRef, { rol: rolInicial, email: user.email, nombre });
+      userData = { rol: rolInicial, email: user.email, nombre };
+    } else {
+      userData = snap.val();
+      if (ADMIN_EMAILS.includes(user.email) && userData.rol !== 'admin') {
+        await set(ref(db, `usuarios/${uid}/rol`), 'admin');
+        userData.rol = 'admin';
+      }
+    }
+
+    const rolTexto = userData.rol === 'admin' ? '👑 Administradora' : userData.rol === 'profe' ? '🎓 Profesora' : '🌸 Alumna';
+    document.getElementById('perfil-rol').textContent = rolTexto;
+
+    const isAdmin = userData.rol === 'admin';
+    document.getElementById('sidebar-admin').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
+
+    await loadCatalogo();
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
+
+    showScreen('screen-home');
+
+    if (userData.rol === 'alumna' && !userData.modoAcceso) {
+      // Usuario nuevo — mostrar pantalla de elección
+      showScreen('screen-eleccion');
+    } else if (userData.rol === 'alumna' && userData.modoAcceso === 'membresia' && !userData?.preferencias?.onboardingCompleto && !userData?.membresia) {
+      // Eligió membresía pero no pagó aún — mostrar pagos
+      showScreen('screen-home');
+      renderCursos();
+    } else {
+      showScreen('screen-home');
+      renderCursos();
+    }
+  }
+
+  window._showTab = window.showTab = id => {
+    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
+      const el = document.getElementById(t);
+      if (el) el.style.display = t === id ? 'block' : 'none';
+    });
+    if (id === 'tab-meetings' && currentUser) loadMeetings();
+    if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
+    document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-label').forEach(s => s.classList.remove('active'));
+    const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin'};
+    const mnMap = {'tab-cursos':'mn-cursos','tab-meetings':'mn-meetings','tab-perfil':'mn-perfil','tab-admin':'mn-admin'};
+    if (sbMap[id]) document.getElementById(sbMap[id])?.classList.add('active');
+    if (mnMap[id]) document.getElementById(mnMap[id])?.classList.add('active');
+  }
+
+  onAuthStateChanged(auth, user => { if (user) showHomeScreen(user); });
+
+  window._showScreen = window.showScreen = id => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    document.querySelectorAll('.msg').forEach(m => m.classList.remove('show'));
+  }
+
+  window._doLogin = window.doLogin = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const remember = document.getElementById('remember-me').checked;
+    const btn = document.getElementById('btn-login');
+    const err = document.getElementById('login-error');
+    if (!email||!password) { showMsg(err,'✦ Completá todos los campos'); return; }
+    btn.disabled = true; btn.textContent = 'Ingresando...';
+    try {
+      await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+      const r = await signInWithEmailAndPassword(auth, email, password);
+      showHomeScreen(r.user);
+    } catch(e) {
+      showMsg(err, e.code==='auth/invalid-credential' ? '✦ Mail o contraseña incorrectos' : e.code==='auth/too-many-requests' ? '✦ Demasiados intentos. Esperá.' : '✦ Error al ingresar.');
+    } finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
+  }
+
+  window._doRegister = window.doRegister = async () => {
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const pass = document.getElementById('register-password').value;
+    const pass2 = document.getElementById('register-password2').value;
+    const btn = document.getElementById('btn-register');
+    const err = document.getElementById('register-error');
+    if (!name||!email||!pass||!pass2) { showMsg(err,'✦ Completá todos los campos'); return; }
+    if (pass.length<8) { showMsg(err,'✦ Mínimo 8 caracteres'); return; }
+    if (pass!==pass2) { showMsg(err,'✦ Las contraseñas no coinciden'); return; }
+    btn.disabled = true; btn.textContent = 'Creando tu cuenta...';
+    try {
+      const r = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(r.user, { displayName: name });
+      showHomeScreen(r.user);
+    } catch(e) {
+      showMsg(err, e.code==='auth/email-already-in-use' ? '✦ Ese mail ya tiene cuenta' : '✦ Error al crear la cuenta.');
+    } finally { btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
+  }
+
+  window._doLogout = window.doLogout = async () => { await signOut(auth); showScreen('screen-welcome'); }
+
+  window._resetPassword = window.resetPassword = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const err = document.getElementById('login-error');
+    if (!email) { showMsg(err,'✦ Primero escribí tu mail'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      const ok = document.createElement('div');
+      ok.className = 'msg msg-success show';
+      ok.textContent = '✦ Te mandamos un mail para resetear tu contraseña';
+      err.parentNode.insertBefore(ok, err);
+      setTimeout(() => ok.remove(), 5000);
+    } catch(e) { showMsg(err,'✦ No encontramos ese mail'); }
+  }
+
+  function showMsg(el, text) { el.textContent = text; el.classList.add('show'); }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>

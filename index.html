@@ -2123,8 +2123,16 @@
   async function loadConfigPagos() {
     try {
       const snap = await get(ref(db, 'config/pagos'));
-      if (snap.exists()) configPagos = { ...configPagos, ...snap.val() };
-    } catch(e) {}
+      if (snap.exists()) {
+        const data = snap.val();
+        // Reemplazar completamente los planes si existen en Firebase
+        configPagos = {
+          ...configPagos,
+          ...data,
+          planes: data.planes || configPagos.planes
+        };
+      }
+    } catch(e) { console.error('Error cargando config pagos:', e); }
   }
 
   window._abrirPagos = window.abrirPagos = async function(planId = null) {
@@ -2291,8 +2299,29 @@
   }
 
   window._guardarConfigPagos = window.guardarConfigPagos = async function() {
-    const descJub = parseInt(document.getElementById('desc-jubilada')?.value) || 30;
+    const descJub = parseInt(document.getElementById('desc-jubilada')?.value) || 0;
     configPagos.descuentoJubilada = descJub;
+
+    // Leer precios directamente del DOM para no depender del oninput
+    const inputs = document.querySelectorAll('#admin-pagos-container input[type=number]');
+    const checkboxes = document.querySelectorAll('#admin-pagos-container input[type=checkbox]');
+
+    // El primer input es el descuento jubilada, los demas son precios de planes
+    let planIdx = 0;
+    inputs.forEach((inp, i) => {
+      if (i === 0) return; // saltar el descuento jubilada
+      if (configPagos.planes[planIdx]) {
+        configPagos.planes[planIdx].precio = parseInt(inp.value) || 0;
+      }
+      planIdx++;
+    });
+
+    checkboxes.forEach((chk, i) => {
+      if (configPagos.planes[i]) {
+        configPagos.planes[i].recomendado = chk.checked;
+      }
+    });
+
     try {
       await set(ref(db, 'config/pagos'), configPagos);
       const ok = document.getElementById('pagos-ok');

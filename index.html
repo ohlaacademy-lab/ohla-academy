@@ -1129,11 +1129,12 @@
   }
 
   window.elegirMembresia = async function() {
-    // Guardar modo en Firebase
-    await set(ref(db, `usuarios/${currentUser.uid}/modoAcceso`), 'membresia');
+    await set(ref(db, 'usuarios/' + currentUser.uid + '/modoAcceso'), 'membresia');
     userData.modoAcceso = 'membresia';
-    // Abrir pagos
-    await window.abrirPagos('mensual');
+    showScreen('screen-home');
+    renderCursos();
+    // Abrir pagos directo
+    setTimeout(() => window.abrirPagos('mensual'), 300);
   }
 
   window.elegirCursosIndividuales = async function() {
@@ -2113,9 +2114,9 @@
   let configPagos = {
     descuentoJubilada: 30, // % de descuento para mayores de 60
     planes: [
-      { id: 'curso', nombre: 'Curso individual', precio: 5000, desc: 'Acceso a un curso a tu elección', tipo: 'unico' },
-      { id: 'mensual', nombre: 'Membresía mensual', precio: 8000, desc: 'Acceso a todos los cursos por un mes', tipo: 'recurrente', recomendado: true },
-      { id: 'anual', nombre: 'Membresía anual', precio: 70000, desc: 'Acceso ilimitado todo el año — ahorrás 2 meses', tipo: 'unico' }
+      { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección. Pago único sin cuotas.', tipo: 'unico' },
+      { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos. Se renueva cada mes. El precio puede variar con el tiempo.', tipo: 'recurrente', recomendado: true },
+      { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses de acceso completo con descuento especial. Podés pagar en cuotas con los intereses de tu banco.', tipo: 'unico', cuotas: true }
     ]
   };
 
@@ -2164,18 +2165,29 @@
   function renderPlanes() {
     const container = document.getElementById('planes-container');
     const planes = configPagos.planes || [];
+
+    if (planes.every(p => p.precio === 0)) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gris-medio);font-size:13px;">⚙️ Los precios aún no están configurados. Consultá con el equipo de Ohla Academy.</div>';
+      return;
+    }
+
     container.innerHTML = planes.map(p => {
+      if (p.precio === 0) return '';
       const precioFinal = descuentoAplicado > 0 ? Math.round(p.precio * (1 - descuentoAplicado/100)) : p.precio;
       const tieneDescuento = precioFinal !== p.precio;
       return `<div class="plan-card ${planSeleccionado === p.id ? 'selected' : ''} ${p.recomendado ? 'recommended' : ''}" onclick="seleccionarPlan('${p.id}', ${precioFinal})">
         <div class="plan-nombre">${p.nombre}</div>
-        <div>
-          <span class="plan-precio">$${precioFinal.toLocaleString('es-AR')}</span>
-          ${tieneDescuento ? `<span class="plan-precio-original">$${p.precio.toLocaleString('es-AR')}</span>` : ''}
+        <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;">
+          <span class="plan-precio">${precioFinal > 0 ? '$' + precioFinal.toLocaleString('es-AR') : 'Consultar'}</span>
+          ${tieneDescuento ? '<span class="plan-precio-original">$' + p.precio.toLocaleString('es-AR') + '</span>' : ''}
+          ${p.tipo === 'recurrente' ? '<span style="font-size:12px;color:var(--gris-medio);">/mes</span>' : ''}
         </div>
         <div class="plan-desc">${p.desc}</div>
-        ${tieneDescuento ? `<span class="plan-descuento">✓ ${descuentoAplicado}% de descuento aplicado</span>` : ''}
-        ${p.tipo === 'recurrente' ? '<span class="plan-descuento" style="background:var(--terracota-light);color:#8B3A1A;">↻ Se renueva automáticamente</span>' : ''}
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${tieneDescuento ? '<span class="plan-descuento">✓ ' + descuentoAplicado + '% descuento jubilada</span>' : ''}
+          ${p.tipo === 'recurrente' ? '<span class="plan-descuento" style="background:#FFF5EC;color:#8B3A1A;">⚠ El precio puede variar mensualmente</span>' : ''}
+          ${p.cuotas ? '<span class="plan-descuento" style="background:#F0F7FF;color:#1A4A8B;">💳 Disponible en cuotas</span>' : ''}
+        </div>
       </div>`;
     }).join('');
   }
@@ -2254,18 +2266,23 @@
           <span style="font-size:14px;color:var(--gris-medio);">% de descuento automático</span>
         </div>
       </div>
-      <div style="margin-bottom:12px;font-size:12px;color:var(--gris-medio);">Precios de los planes (en pesos argentinos)</div>
+      <div style="margin-bottom:12px;font-size:12px;color:var(--gris-medio);">Precios de los planes en pesos argentinos. Podés actualizarlos cuando quieras. Poné 0 para ocultar un plan.</div>
       ${planes.map((p, i) => `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde);">
-          <div style="flex:1;font-size:14px;font-weight:700;color:var(--gris);">${p.nombre}</div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:13px;color:var(--gris-medio);">$</span>
-            <input type="number" value="${p.precio}" class="content-input" style="width:100px;" oninput="configPagos.planes[${i}].precio=parseInt(this.value)||0">
+        <div style="padding:12px 0;border-bottom:1px solid var(--borde);">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <div style="font-size:14px;font-weight:700;color:var(--gris);">${p.nombre}</div>
+              <div style="font-size:11px;color:var(--gris-medio);margin-top:2px;">${p.tipo === 'recurrente' ? '↻ Mensual' : p.cuotas ? '💳 Con cuotas' : '✓ Pago único'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;color:var(--gris-medio);">$</span>
+              <input type="number" value="${p.precio}" class="content-input" style="width:110px;" placeholder="0 = ocultar" oninput="configPagos.planes[${i}].precio=parseInt(this.value)||0">
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);white-space:nowrap;">
+              <input type="checkbox" ${p.recomendado?'checked':''} onchange="configPagos.planes[${i}].recomendado=this.checked">
+              Más popular
+            </label>
           </div>
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);">
-            <input type="checkbox" ${p.recomendado?'checked':''} onchange="configPagos.planes[${i}].recomendado=this.checked">
-            Más popular
-          </label>
         </div>`).join('')}
       <div style="margin-top:16px;">
         <button class="btn-small" onclick="guardarConfigPagos()">Guardar precios</button>

@@ -1065,17 +1065,27 @@
     return m ? m[1] : null;
   }
 
-  function renderCursosIndividuales() {
+  async function renderCursosIndividuales() {
+    await loadConfigPagos();
     const container = document.getElementById('cursos-content');
     const faseInfo = document.getElementById('fase-info');
-    faseInfo.innerHTML = '<div class="fase-badge">📚 Modo cursos individuales — Elegís lo que querés</div>';
+    const precioMem = configPagos?.planes?.find(p => p.id === 'mensual')?.precio || 0;
+    faseInfo.innerHTML = `<div class="fase-badge">📚 Modo cursos individuales</div>
+      ${precioMem > 0 ? `<div style="background:linear-gradient(135deg,#FFF5EC,#FFF0F7);border:1px solid #F0C5A0;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#8B3A1A;">🌸 Con la membresía accedés a <em>todos</em> los cursos</div>
+          <div style="font-size:12px;color:var(--gris-medio);margin-top:2px;">Por $${precioMem.toLocaleString('es-AR')}/mes en vez de comprar curso por curso</div>
+        </div>
+        <button class="btn-small" style="white-space:nowrap;" onclick="abrirPagos('mensual')">Ver membresía →</button>
+      </div>` : ''}`;
 
     let html = '';
     catalogo.forEach((cat, ci) => {
       html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
       cat.cursos.forEach((curso, i) => {
         const comprado = userData?.cursosComprados?.[curso.id];
-        const precio = configPagos?.planes?.find(p => p.id === 'curso')?.precio || 5000;
+        const precioCurso = configPagos?.planes?.find(p => p.id === 'curso')?.precio || 0;
+        const precioMembresia = configPagos?.planes?.find(p => p.id === 'mensual')?.precio || 0;
         const colorIdx = i % 6;
         if (comprado) {
           html += `<div class="curso-card c${colorIdx+1}" data-curso="${encodeURIComponent(curso.id)}" data-cat="${encodeURIComponent(cat.id)}" data-bloqueado="false">
@@ -1092,7 +1102,8 @@
             </div>
           </div>`;
         } else {
-          html += `<div class="curso-card c${colorIdx+1}" style="cursor:pointer;" onclick="comprarCursoIndividual('${curso.id}','${curso.nombre}',${precio})">
+          const precioTexto = precioCurso > 0 ? '$' + precioCurso.toLocaleString('es-AR') : 'Consultar';
+          html += `<div class="curso-card c${colorIdx+1}" style="cursor:default;">
             <div class="curso-card-header">
               <span class="curso-card-icon">${curso.icon}</span>
               <div class="curso-card-info">
@@ -1100,9 +1111,17 @@
                 <div class="curso-card-cat">${cat.nombre}</div>
               </div>
             </div>
+            <div style="padding:0 16px 8px;">
+              ${precioMembresia > 0 ? `<div style="font-size:11px;color:var(--gris-medio);margin-bottom:6px;">Con membresía ($${precioMembresia.toLocaleString('es-AR')}/mes) accedés a todos los cursos</div>` : ''}
+            </div>
             <div class="curso-card-footer">
-              <span class="curso-badge badge-membresia">$${precio.toLocaleString('es-AR')}</span>
-              <button class="btn-small" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation();comprarCursoIndividual('${curso.id}','${curso.nombre}',${precio})">Comprar</button>
+              <div>
+                <span class="curso-badge badge-membresia" style="font-size:12px;">${precioTexto} este curso</span>
+              </div>
+              <div style="display:flex;gap:6px;">
+                ${precioMembresia > 0 ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="abrirPagos('mensual')">Ver membresía</button>` : ''}
+                <button class="btn-small" style="font-size:11px;padding:5px 12px;" onclick="comprarCursoIndividual('${curso.id}','${curso.nombre}',${precioCurso})">Comprar</button>
+              </div>
             </div>
           </div>`;
         }
@@ -1121,11 +1140,31 @@
   }
 
   window.comprarCursoIndividual = async function(cursoId, cursoNombre, precio) {
-    document.getElementById('pagos-titulo').textContent = cursoNombre;
-    document.getElementById('pagos-sub').textContent = 'Comprá este curso una sola vez';
-    await window.abrirPagos('curso');
-    // Guardar qué curso se está comprando
+    await loadConfigPagos();
     window._cursoEnCompra = cursoId;
+    document.getElementById('pagos-titulo').textContent = cursoNombre;
+    document.getElementById('pagos-sub').textContent = 'Comprá este curso — acceso permanente';
+    // Mostrar solo plan individual en el popup
+    await window.abrirPagos('curso');
+    // Filtrar para mostrar solo el plan curso
+    const container = document.getElementById('planes-container');
+    const precioCurso = configPagos?.planes?.find(p => p.id === 'curso')?.precio || 0;
+    const precioMembresia = configPagos?.planes?.find(p => p.id === 'mensual')?.precio || 0;
+    container.innerHTML = `
+      <div class="plan-card selected">
+        <div class="plan-nombre">Curso individual — ${cursoNombre}</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;">
+          <span class="plan-precio">${precioCurso > 0 ? '$' + precioCurso.toLocaleString('es-AR') : 'Consultar'}</span>
+        </div>
+        <div class="plan-desc">Acceso permanente solo a este curso. Pago único sin cuotas.</div>
+      </div>
+      ${precioMembresia > 0 ? `<div style="margin-top:12px;padding:12px;background:#FFF5EC;border-radius:10px;border:1px solid #F0C5A0;">
+        <div style="font-size:13px;color:#8B3A1A;margin-bottom:6px;">💡 ¿Sabías que con la membresía accedés a <strong>todos</strong> los cursos?</div>
+        <div style="font-size:12px;color:var(--gris-medio);margin-bottom:8px;">Por $${precioMembresia.toLocaleString('es-AR')}/mes tenés acceso completo al catálogo.</div>
+        <button class="btn-outline" style="font-size:12px;padding:6px 14px;" onclick="cerrarPagos();abrirPagos('mensual')">Ver planes de membresía →</button>
+      </div>` : ''}`;
+    // Activar el pago directo para el curso
+    if (precioCurso > 0) seleccionarPlan('curso', precioCurso);
   }
 
   window.elegirMembresia = async function() {

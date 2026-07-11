@@ -2117,7 +2117,8 @@
       { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección. Pago único sin cuotas.', tipo: 'unico' },
       { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos. Se renueva cada mes. El precio puede variar con el tiempo.', tipo: 'recurrente', recomendado: true },
       { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses de acceso completo con descuento especial. Podés pagar en cuotas con los intereses de tu banco.', tipo: 'unico', cuotas: true }
-    ]
+    ],
+    descuentoJubilada: 0
   };
 
   async function loadConfigPagos() {
@@ -2125,12 +2126,8 @@
       const snap = await get(ref(db, 'config/pagos'));
       if (snap.exists()) {
         const data = snap.val();
-        // Reemplazar completamente los planes si existen en Firebase
-        configPagos = {
-          ...configPagos,
-          ...data,
-          planes: data.planes || configPagos.planes
-        };
+        configPagos = data; // Reemplazar todo con lo que hay en Firebase
+        console.log('Config pagos cargada:', configPagos);
       }
     } catch(e) { console.error('Error cargando config pagos:', e); }
   }
@@ -2265,6 +2262,14 @@
     await loadConfigPagos();
     const container = document.getElementById('admin-pagos-container');
     if (!container) return;
+    // Si no hay planes en Firebase usar defaults
+    if (!configPagos.planes || configPagos.planes.length === 0) {
+      configPagos.planes = [
+        { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección.', tipo: 'unico' },
+        { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos por mes.', tipo: 'recurrente', recomendado: true },
+        { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses con descuento.', tipo: 'unico', cuotas: true }
+      ];
+    }
     const planes = configPagos.planes || [];
     container.innerHTML = `
       <div style="margin-bottom:16px;">

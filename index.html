@@ -588,6 +588,7 @@
         </div>
 
         <!-- Planes -->
+        <div id="planes-aviso" style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px 14px;font-size:13px;color:#8B3A1A;margin-bottom:12px;">Por favor ingresá tu fecha de nacimiento para ver los planes disponibles. Esto nos permite aplicar descuentos especiales automáticamente.</div>
         <div id="planes-container"></div>
 
         <!-- Brick de MercadoPago -->
@@ -2178,7 +2179,9 @@
     descuentoAplicado = 0;
     document.getElementById('aviso-jubilada').style.display = 'none';
     document.getElementById('fecha-nacimiento').value = '';
-    renderPlanes();
+    document.getElementById('planes-container').innerHTML = '';
+    const avisoPl = document.getElementById('planes-aviso');
+    if (avisoPl) avisoPl.style.display = 'block';
     document.getElementById('mp-brick-container').innerHTML = '';
     document.getElementById('pagos-overlay').style.display = 'flex';
   }
@@ -2190,13 +2193,19 @@
 
   window._verificarDescuentoJubilada = window.verificarDescuentoJubilada = function() {
     const val = document.getElementById('fecha-nacimiento').value;
-    if (!val) return;
+    const avisoPlanes = document.getElementById('planes-aviso');
+    if (!val) {
+      document.getElementById('planes-container').innerHTML = '';
+      if (avisoPlanes) avisoPlanes.style.display = 'block';
+      return;
+    }
+    if (avisoPlanes) avisoPlanes.style.display = 'none';
     const nacimiento = new Date(val);
     const hoy = new Date();
     const edad = hoy.getFullYear() - nacimiento.getFullYear();
     const aviso = document.getElementById('aviso-jubilada');
     if (edad >= 60) {
-      descuentoAplicado = configPagos.descuentoJubilada || 30;
+      descuentoAplicado = configPagos.descuentoJubilada || 15;
       aviso.textContent = '🎉 ¡Aplicamos tu descuento especial del ' + descuentoAplicado + '% para jubiladas!';
       aviso.style.display = 'block';
     } else {

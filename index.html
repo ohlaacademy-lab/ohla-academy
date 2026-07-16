@@ -11,6 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=Aa-KZYlqvPUEWayJ6yl8aJwzMPq032VfQIiRhVmkWI0VPqCViAMLHQCPYn9Us75H4D0qZS-UorIBPta-&currency=USD&locale=es_AR"></script>
   <script>emailjs.init("JB2jvzNMExOGF-5yx");</script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
@@ -595,7 +596,11 @@
         <div id="mp-brick-container"></div>
 
         <!-- PayPal -->
-        <div id="paypal-container" style="margin-top:12px;"></div>
+        <div id="paypal-section" style="margin-top:16px;display:none;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><hr style="flex:1;border:none;border-top:1px solid var(--borde);"><span style="font-size:12px;color:var(--gris-medio);">o pagá con PayPal</span><hr style="flex:1;border:none;border-top:1px solid var(--borde);"></div>
+          <div id="paypal-container"></div>
+          <div style="text-align:center;margin-top:6px;font-size:11px;color:var(--gris-medio);">El precio se convierte a USD al momento del pago</div>
+        </div>
 
       </div>
       <div class="pagos-footer">
@@ -2243,6 +2248,38 @@
         </div>
       </div>`;
     }).join('');
+  }
+
+  async function crearBotonPayPal(precio, planId) {
+    const sec = document.getElementById('paypal-section');
+    const cont = document.getElementById('paypal-container');
+    if (!sec || !cont) return;
+    cont.innerHTML = '';
+    if (typeof paypal === 'undefined') { sec.style.display = 'none'; return; }
+    const usd = Math.max(1, Math.round(precio / 1000));
+    sec.style.display = 'block';
+    try {
+      paypal.Buttons({
+        style: { layout: 'horizontal', color: 'gold', shape: 'rect', label: 'pay', height: 40 },
+        createOrder: (data, actions) => actions.order.create({
+          purchase_units: [{ description: configPagos.planes?.find(p => p.id === planId)?.nombre || 'Ohla Academy', amount: { value: usd.toString(), currency_code: 'USD' } }]
+        }),
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
+          userData.membresia = true;
+          cerrarPagos();
+          const div = document.createElement('div');
+          div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A6B3A;color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;z-index:9999;';
+          div.textContent = 'Pago realizado con PayPal! Ya tenes acceso a Ohla Academy.';
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 5000);
+          renderCursos();
+        },
+        onError: (err) => console.error('PayPal error:', err)
+      }).render('#paypal-container');
+    } catch(e) { console.error('PayPal render error:', e); sec.style.display = 'none'; }
   }
 
   window._seleccionarPlan = window.seleccionarPlan = async function(planId, precio) {

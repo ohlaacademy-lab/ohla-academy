@@ -624,6 +624,7 @@
         <div style="font-size:36px;margin-bottom:8px;">🌸</div>
         <div class="pagos-titulo" id="pagos-titulo">Elegí tu plan</div>
         <div class="pagos-sub" id="pagos-sub">Accedé a todo el contenido de Ohla Academy</div>
+        <div style="font-size:11px;color:var(--gris-medio);margin-top:6px;">💳 Aceptamos Mercado Pago y PayPal</div>
       </div>
       <div class="pagos-body">
 
@@ -2456,6 +2457,7 @@
           </a>
         </div>`;
     }
+    await crearBotonPayPal(precio, planId);
   }
 
   // Panel admin de precios

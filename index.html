@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script src="https://www.paypal.com/sdk/js?client-id=Aa-KZYlqvPUEWayJ6yl8aJwzMPq032VfQIiRhVmkWI0VPqCViAMLHQCPYn9Us75H4D0qZS-UorIBPta-&currency=USD&locale=es_AR"></script>
+  <script src="https://meet.jit.si/external_api.js"></script>
   <script>emailjs.init("JB2jvzNMExOGF-5yx");</script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
   <style>
@@ -563,6 +564,7 @@
         <div class="sidebar-item" id="sb-perfil" onclick="showTab('tab-perfil')"><span>👤</span> Mi perfil</div>
         <div class="sidebar-item" id="sidebar-admin" style="display:none;" onclick="showTab('tab-admin')"><span>⚙️</span> Administrar <span class="admin-badge">Admin</span></div>
         <div class="sidebar-item" id="sidebar-finanzas" style="display:none;" onclick="showTab('tab-finanzas')"><span>💰</span> Finanzas <span class="admin-badge">Admin</span></div>
+        <div class="sidebar-item" id="sidebar-misclases" style="display:none;" onclick="showTab('tab-misclases')"><span>🎥</span> Mis clases</div>
       </div>
       <div class="home-main">
 
@@ -708,8 +710,6 @@
               </div>
             </div>
             <div style="display:flex;gap:8px;">
-              <button id="btn-mic" onclick="toggleMic()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">🎤 Mic</button>
-              <button id="btn-cam" onclick="toggleCam()" style="background:#333;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;">📷 Cám</button>
               <button onclick="cerrarSala()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">✕ Salir</button>
             </div>
           </div>
@@ -717,16 +717,11 @@
           <!-- Contenido principal -->
           <div style="display:flex;flex:1;overflow:hidden;">
 
-            <!-- Videos -->
+            <!-- Video real via Jitsi (estable para clases largas) -->
             <div style="flex:1;display:flex;flex-direction:column;padding:12px;gap:8px;overflow:hidden;">
-              <!-- Video local -->
               <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;flex:1;">
-                <video id="video-local" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
-                <div style="position:absolute;bottom:10px;left:12px;background:rgba(0,0,0,0.6);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px;" id="label-local">Vos</div>
-                <div id="mic-off-indicator" style="display:none;position:absolute;top:10px;right:10px;background:rgba(231,76,60,0.8);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;">🔇 Mic apagado</div>
+                <div id="jitsi-container" style="width:100%;height:100%;"></div>
               </div>
-              <!-- Videos remotos -->
-              <div id="videos-remotos" style="display:flex;gap:8px;max-height:160px;overflow-x:auto;"></div>
             </div>
 
             <!-- Panel lateral: chat + participantes -->
@@ -886,6 +881,33 @@
           </div>
         </div>
 
+        <!-- TAB MIS CLASES (para profes) -->
+        <div id="tab-misclases" style="display:none;">
+          <div class="greeting">🎥 Mis clases en vivo</div>
+          <div class="greeting-sub">Programá tu propia clase — se muestra a las alumnas con tu nombre</div>
+          <div id="misclases-lista"></div>
+          <div style="background:#fff;border:1px solid var(--borde);border-radius:14px;padding:20px;margin-top:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gris);margin-bottom:12px;">+ Programar nueva clase</div>
+            <div class="field-group">
+              <label class="field-label">Tema de tu clase</label>
+              <input type="text" id="mc-titulo" class="field-input" placeholder="Ej: Crochet — Puntos básicos">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Fecha y hora</label>
+              <input type="datetime-local" id="mc-fecha" class="field-input">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Duración (minutos)</label>
+              <input type="number" id="mc-duracion" class="field-input" value="60" min="15" max="240">
+            </div>
+            <button class="btn-primary" onclick="programarClaseProfe()">Programar mi clase →</button>
+            <div class="msg msg-success" id="mc-ok" style="margin-top:12px;"></div>
+          </div>
+          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:14px;margin-top:16px;font-size:12px;color:#8B3A1A;">
+            💡 Para que la clase se grabe, activá la grabación de pantalla de tu compu antes de entrar (Windows: <strong>Win+G</strong> — Mac: <strong>Cmd+Shift+5</strong>). Al terminar, subí el video a YouTube como "No listado" y pasale el link a Flor o Mery para agregarlo como grabación.
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="mobile-nav">
@@ -894,6 +916,7 @@
       <div class="nav-item" onclick="showTab('tab-perfil')"><div class="nav-icon">👤</div><div class="nav-label" id="mn-perfil">Perfil</div></div>
       <div class="nav-item" id="mobile-admin" style="display:none;" onclick="showTab('tab-admin')"><div class="nav-icon">⚙️</div><div class="nav-label" id="mn-admin">Admin</div></div>
       <div class="nav-item" id="mobile-finanzas" style="display:none;" onclick="showTab('tab-finanzas')"><div class="nav-icon">💰</div><div class="nav-label" id="mn-finanzas">Finanzas</div></div>
+      <div class="nav-item" id="mobile-misclases" style="display:none;" onclick="showTab('tab-misclases')"><div class="nav-icon">🎥</div><div class="nav-label" id="mn-misclases">Mis clases</div></div>
     </div>
   </div>
 
@@ -934,6 +957,9 @@
   function agregarGastoFin() { if(window._agregarGastoFin) window._agregarGastoFin(); }
   function recalcularFinanzas() { if(window._recalcularFinanzas) window._recalcularFinanzas(); }
   function eliminarGastoFin(k) { if(window._eliminarGastoFin) window._eliminarGastoFin(k); }
+  function programarClaseProfe() { if(window._programarClaseProfe) window._programarClaseProfe(); }
+  function eliminarClaseProfe(k) { if(window._eliminarClaseProfe) window._eliminarClaseProfe(k); }
+  function entrarComoProfe(k) { if(window._entrarComoProfe) window._entrarComoProfe(k); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -1779,57 +1805,39 @@
     return `${min} minutos`;
   }
 
-  // ── SALA DE MEETINGS PROPIA WebRTC + Firebase ──
-  let localStream = null;
-  let micActivo = true;
-  let camActiva = true;
-  let peerConnections = {};
+  // ── SALA DE MEETINGS con JITSI (video real y estable para clases largas) ──
+  let jitsiApi = null;
   let salaId = null;
   let mensajesRef = null;
-  let participantesRef = null;
   let unsubMensajes = null;
-  let unsubParticipantes = null;
 
   window.entrarSala = async function(roomUrl, titulo, esHostSala = false) {
-    // Extraer ID de sala del URL o usar un ID fijo
-    salaId = roomUrl.split('/').pop() || 'ohla-sala';
+    salaId = (roomUrl || 'ohla-sala').replace(/[^a-zA-Z0-9-_]/g, '');
     document.getElementById('sala-titulo').textContent = titulo;
     document.getElementById('sala-overlay').style.display = 'flex';
+    document.getElementById('sala-participantes').textContent = 'Conectando...';
 
-    // Pedir cámara y micrófono
+    // Crear la sala real con Jitsi (video/audio confiables, sin límite de tiempo)
     try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      document.getElementById('video-local').srcObject = localStream;
-      document.getElementById('label-local').textContent = userData?.nombre || currentUser?.email?.split('@')[0] || 'Vos';
-    } catch(e) {
-      agregarMensajeSistema('No se pudo acceder a la cámara o micrófono. Verificá los permisos del navegador.');
-    }
-
-    // Cartel de espera para alumnas si el host no entró aún
-    if (!esHostSala) {
-      const partSnap0 = await get(ref(db, 'salas/' + salaId + '/participantes'));
-      const hayHost = partSnap0.exists() && Object.values(partSnap0.val()).some(p => p.esHost);
-      if (!hayHost) {
-        const videoWrap = document.getElementById('video-local').parentElement;
-        const espera = document.createElement('div');
-        espera.id = 'cartel-espera';
-        espera.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;text-align:center;padding:24px;';
-        espera.innerHTML = '<div style="font-size:52px;margin-bottom:16px;">🌸</div><div style="font-family:Cormorant Garamond,serif;font-size:26px;color:#fff;margin-bottom:10px;">La clase está por comenzar</div><div style="font-size:14px;color:#C4723A;line-height:1.6;">Tu profe está preparando todo.<br>En breve comienza.</div>';
-        videoWrap.style.position = 'relative';
-        videoWrap.appendChild(espera);
-        const { onValue: onValEsp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-        const unsubEsp = onValEsp(ref(db, 'salas/' + salaId + '/participantes'), snapEsp => {
-          if (snapEsp.exists() && Object.values(snapEsp.val()).some(p => p.esHost)) {
-            document.getElementById('cartel-espera')?.remove();
-            agregarMensajeSistema('La profe entró a la sala. La clase comienza ahora 🌸');
-            unsubEsp();
-          }
+      if (typeof JitsiMeetExternalAPI !== 'undefined') {
+        const nombre = userData?.nombre || currentUser?.email?.split('@')[0] || 'Invitada';
+        jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', {
+          roomName: 'ohla-academy-' + salaId,
+          parentNode: document.getElementById('jitsi-container'),
+          width: '100%',
+          height: '100%',
+          userInfo: { displayName: (esHostSala ? '⭐ ' : '') + nombre },
+          configOverwrite: { prejoinPageEnabled: false, disableDeepLinking: true },
+          interfaceConfigOverwrite: { TOOLBAR_BUTTONS: ['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','tileview','select-background'] }
         });
+        jitsiApi.addEventListener('participantJoined', updateParticipantesCount);
+        jitsiApi.addEventListener('participantLeft', updateParticipantesCount);
+        jitsiApi.addEventListener('videoConferenceJoined', updateParticipantesCount);
       }
-    }
+    } catch(e) { console.error('Error iniciando Jitsi:', e); }
 
-    // Registrar participante en Firebase
-    const partRef = ref(db, `salas/${salaId}/participantes/${currentUser.uid}`);
+    // Registrar presencia en Firebase (para el cartel de espera y lista lateral)
+    const partRef = ref(db, 'salas/' + salaId + '/participantes/' + currentUser.uid);
     const esHostReal = esHostSala || userData?.rol === 'admin' || userData?.rol === 'profe' || ADMIN_EMAILS.includes(currentUser.email);
     await set(partRef, {
       nombre: userData?.nombre || currentUser.email,
@@ -1839,80 +1847,47 @@
       ingreso: new Date().toISOString()
     });
 
-    // Escuchar mensajes del chat
     const { onValue: onVal } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-    mensajesRef = ref(db, `salas/${salaId}/mensajes`);
+
+    mensajesRef = ref(db, 'salas/' + salaId + '/mensajes');
     unsubMensajes = onVal(mensajesRef, snap => {
       const chatDiv = document.getElementById('chat-mensajes');
       if (!snap.exists()) { chatDiv.innerHTML = ''; return; }
       const msgs = Object.values(snap.val()).sort((a,b) => new Date(a.ts) - new Date(b.ts));
       chatDiv.innerHTML = msgs.map(m => {
         const esPropio = m.uid === currentUser.uid;
-        const esSistema = m.tipo === 'sistema';
-        const esPalabra = m.tipo === 'palabra';
-        if (esSistema) return `<div style="text-align:center;font-size:11px;color:#666;padding:4px 0;">${m.texto}</div>`;
-        if (esPalabra) return `<div style="background:#2C2C2A;border:1px solid #C4723A;border-radius:8px;padding:8px 10px;font-size:12px;color:#C4723A;">✋ <strong>${m.nombre}</strong> pide la palabra</div>`;
-        return `<div style="display:flex;flex-direction:column;align-items:${esPropio?'flex-end':'flex-start'};">
-          <div style="font-size:10px;color:#666;margin-bottom:2px;">${esPropio?'Vos':m.nombre}</div>
-          <div style="background:${esPropio?'#C4723A':'#2C2C2A'};color:#fff;border-radius:${esPropio?'12px 12px 0 12px':'12px 12px 12px 0'};padding:8px 12px;font-size:13px;max-width:200px;word-wrap:break-word;">${m.texto}</div>
-        </div>`;
+        if (m.tipo === 'sistema') return '<div style="text-align:center;font-size:11px;color:#666;padding:4px 0;">' + m.texto + '</div>';
+        if (m.tipo === 'palabra') return '<div style="background:#2C2C2A;border:1px solid #C4723A;border-radius:8px;padding:8px 10px;font-size:12px;color:#C4723A;">✋ <strong>' + m.nombre + '</strong> pide la palabra</div>';
+        return '<div style="display:flex;flex-direction:column;align-items:' + (esPropio?'flex-end':'flex-start') + ';"><div style="font-size:10px;color:#666;margin-bottom:2px;">' + (esPropio?'Vos':m.nombre) + '</div><div style="background:' + (esPropio?'#C4723A':'#2C2C2A') + ';color:#fff;border-radius:' + (esPropio?'12px 12px 0 12px':'12px 12px 12px 0') + ';padding:8px 12px;font-size:13px;max-width:200px;word-wrap:break-word;">' + m.texto + '</div></div>';
       }).join('');
       chatDiv.scrollTop = chatDiv.scrollHeight;
     });
 
-    // Escuchar participantes
-    participantesRef = ref(db, `salas/${salaId}/participantes`);
-    unsubParticipantes = onVal(participantesRef, snap => {
+    const participantesRef = ref(db, 'salas/' + salaId + '/participantes');
+    onVal(participantesRef, snap => {
       const lista = document.getElementById('lista-participantes');
       const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-      document.getElementById('sala-participantes').textContent = `${count} participante${count!==1?'s':''} conectado${count!==1?'s':''}`;
+      document.getElementById('sala-participantes').textContent = count + ' participante' + (count!==1?'s':'') + ' conectado' + (count!==1?'s':'');
       if (!snap.exists()) { lista.innerHTML = ''; return; }
       const parts = Object.values(snap.val());
-      lista.innerHTML = parts.map(p => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#1a1a1a;border-radius:8px;">
-          <div style="width:32px;height:32px;border-radius:50%;background:#C4723A;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${p.esHost?'👑':'🌸'}</div>
-          <div style="flex:1;">
-            <div style="font-size:13px;color:#fff;font-weight:${p.esHost?'700':'400'};">${p.nombre}${p.esHost?' (Host)':''}</div>
-            ${p.pidePalabra?'<div style="font-size:11px;color:#C4723A;">✋ Pide la palabra</div>':''}
-          </div>
-        </div>`).join('');
+      lista.innerHTML = parts.map(p => '<div style="display:flex;align-items:center;gap:10px;padding:8px;background:#1a1a1a;border-radius:8px;"><div style="width:32px;height:32px;border-radius:50%;background:#C4723A;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">' + (p.esHost?'👑':'🌸') + '</div><div style="flex:1;"><div style="font-size:13px;color:#fff;font-weight:' + (p.esHost?'700':'400') + ';">' + p.nombre + (p.esHost?' (Host)':'') + '</div>' + (p.pidePalabra?'<div style="font-size:11px;color:#C4723A;">✋ Pide la palabra</div>':'') + '</div></div>').join('');
     });
 
     agregarMensajeSistema('Entraste a la sala');
   }
 
+  function updateParticipantesCount() { /* Firebase presence ya maneja el conteo mostrado */ }
+
   window._cerrarSala = window.cerrarSala = async function() {
-    if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if (jitsiApi) { try { jitsiApi.dispose(); } catch(e) {} jitsiApi = null; }
     if (unsubMensajes) unsubMensajes();
-    if (unsubParticipantes) unsubParticipantes();
-    // Quitar participante
     if (salaId && currentUser) {
-      await set(ref(db, `salas/${salaId}/participantes/${currentUser.uid}`), null);
-      agregarMensajeSistemaDB('Salió de la sala');
+      await set(ref(db, 'salas/' + salaId + '/participantes/' + currentUser.uid), null);
     }
     document.getElementById('sala-overlay').style.display = 'none';
-    document.getElementById('video-local').srcObject = null;
+    document.getElementById('jitsi-container').innerHTML = '';
     document.getElementById('chat-mensajes').innerHTML = '';
-    document.getElementById('videos-remotos').innerHTML = '';
-    peerConnections = {};
     salaId = null;
-  }
-
-  window._toggleMic = window.toggleMic = function() {
-    if (!localStream) return;
-    micActivo = !micActivo;
-    localStream.getAudioTracks().forEach(t => t.enabled = micActivo);
-    document.getElementById('btn-mic').style.background = micActivo ? '#333' : '#c0392b';
-    document.getElementById('btn-mic').textContent = micActivo ? '🎤 Mic' : '🔇 Mic';
-    document.getElementById('mic-off-indicator').style.display = micActivo ? 'none' : 'block';
-  }
-
-  window._toggleCam = window.toggleCam = function() {
-    if (!localStream) return;
-    camActiva = !camActiva;
-    localStream.getVideoTracks().forEach(t => t.enabled = camActiva);
-    document.getElementById('btn-cam').style.background = camActiva ? '#333' : '#c0392b';
-    document.getElementById('btn-cam').textContent = camActiva ? '📷 Cám' : '📷 Off';
   }
 
   window._enviarMensaje = window.enviarMensaje = async function() {
@@ -2841,6 +2816,88 @@
     catch(e) { alert('Error al eliminar.'); }
   }
 
+  // ── MIS CLASES (panel para profes) ──
+  window.loadMisClasesProfe = async function() {
+    const cont = document.getElementById('misclases-lista');
+    cont.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando tus clases...</div>';
+    try {
+      const snap = await get(ref(db, 'meetings'));
+      const todas = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+      const mias = todas.filter(m => m.profeUid === currentUser.uid);
+      mias.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+      if (mias.length === 0) {
+        cont.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:12px 0;">Todavía no programaste ninguna clase.</div>';
+        return;
+      }
+      const ahora = new Date();
+      cont.innerHTML = mias.map(m => {
+        const fecha = new Date(m.fecha);
+        const fin = new Date(fecha.getTime() + (m.duracion||60)*60000);
+        const estaVivo = ahora >= fecha && ahora <= fin;
+        const yaTermino = ahora > fin;
+        const msAntes = (fecha - ahora) / 60000;
+        const puedeEntrar = !yaTermino && msAntes <= 10;
+        return `<div class="meeting-card">
+          <div class="meeting-card-header">
+            ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
+            <div class="meeting-card-info">
+              <div class="meeting-titulo">${m.titulo}</div>
+              <div class="meeting-fecha">${fecha.toLocaleDateString('es-AR')} · ${fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})} hs · ${m.duracion||60} min</div>
+            </div>
+          </div>
+          <div class="meeting-card-footer">
+            <span class="meeting-estado ${estaVivo?'estado-vivo':yaTermino?'estado-grabado':'estado-proximo'}">${estaVivo?'🔴 En vivo':yaTermino?'📼 Finalizada':'⏰ Programada'}</span>
+            <div style="display:flex;gap:8px;">
+              ${puedeEntrar ? `<button class="btn-entrar" onclick="entrarComoProfe('${m._key}')">${estaVivo?'🔴 Iniciar clase':'⚙️ Preparar sala'}</button>` : ''}
+              ${!yaTermino ? `<button class="btn-danger" onclick="eliminarClaseProfe('${m._key}')">✕ Cancelar</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { cont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar tus clases.</div>'; }
+  }
+
+  window._programarClaseProfe = async function() {
+    const titulo = document.getElementById('mc-titulo').value.trim();
+    const fechaVal = document.getElementById('mc-fecha').value;
+    const duracion = parseInt(document.getElementById('mc-duracion').value) || 60;
+    if (!titulo || !fechaVal) { alert('Completá el tema y la fecha de tu clase.'); return; }
+    const fecha = new Date(fechaVal + ':00-03:00').toISOString();
+    const key = 'clase_' + currentUser.uid + '_' + Date.now();
+    try {
+      await set(ref(db, 'meetings/' + key), {
+        titulo: (userData?.nombre || 'Profe') + ' — ' + titulo,
+        fecha,
+        duracion,
+        roomUrl: key,
+        grabacionUrl: '',
+        profeUid: currentUser.uid,
+        profeNombre: userData?.nombre || currentUser.email
+      });
+      document.getElementById('mc-titulo').value = '';
+      document.getElementById('mc-fecha').value = '';
+      const ok = document.getElementById('mc-ok');
+      ok.textContent = '✦ Clase programada — ya aparece para las alumnas con membresía';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 4000);
+      loadMisClasesProfe();
+    } catch(e) { alert('Error al programar la clase.'); }
+  }
+
+  window._eliminarClaseProfe = async function(key) {
+    if (!confirm('¿Cancelar esta clase?')) return;
+    try { await set(ref(db, 'meetings/' + key), null); loadMisClasesProfe(); }
+    catch(e) { alert('Error al cancelar.'); }
+  }
+
+  window._entrarComoProfe = function(key) {
+    get(ref(db, 'meetings/' + key)).then(snap => {
+      if (!snap.exists()) return;
+      const m = snap.val();
+      entrarSala(m.roomUrl || key, m.titulo, true);
+    });
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -2914,6 +2971,9 @@
     document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
     document.getElementById('sidebar-finanzas').style.display = isAdmin ? 'flex' : 'none';
     document.getElementById('mobile-finanzas').style.display = isAdmin ? 'flex' : 'none';
+    const esProfe = userData.rol === 'profe' || isAdmin;
+    document.getElementById('sidebar-misclases').style.display = esProfe ? 'flex' : 'none';
+    document.getElementById('mobile-misclases').style.display = esProfe ? 'flex' : 'none';
 
     await loadCatalogo();
     await verificarRetornoMP();
@@ -2935,17 +2995,18 @@
   }
 
   window._showTab = window.showTab = id => {
-    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin','tab-finanzas'].forEach(t => {
+    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin','tab-finanzas','tab-misclases'].forEach(t => {
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
     if (id === 'tab-meetings' && currentUser) loadMeetings();
     if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
+    if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-label').forEach(s => s.classList.remove('active'));
-    const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin','tab-finanzas':'sidebar-finanzas'};
-    const mnMap = {'tab-cursos':'mn-cursos','tab-meetings':'mn-meetings','tab-perfil':'mn-perfil','tab-admin':'mn-admin','tab-finanzas':'mn-finanzas'};
+    const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin','tab-finanzas':'sidebar-finanzas','tab-misclases':'sidebar-misclases'};
+    const mnMap = {'tab-cursos':'mn-cursos','tab-meetings':'mn-meetings','tab-perfil':'mn-perfil','tab-admin':'mn-admin','tab-finanzas':'mn-finanzas','tab-misclases':'mn-misclases'};
     if (sbMap[id]) document.getElementById(sbMap[id])?.classList.add('active');
     if (mnMap[id]) document.getElementById(mnMap[id])?.classList.add('active');
   }

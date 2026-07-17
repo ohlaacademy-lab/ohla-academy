@@ -2344,10 +2344,11 @@
       const tieneDescuento = precioFinal !== p.precio;
       return `<div class="plan-card ${planSeleccionado === p.id ? 'selected' : ''} ${p.recomendado ? 'recommended' : ''}" onclick="seleccionarPlan('${p.id}', ${precioFinal})">
         <div class="plan-nombre">${p.nombre}</div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;">
+        <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;flex-wrap:wrap;">
           <span class="plan-precio">${precioFinal > 0 ? '$' + precioFinal.toLocaleString('es-AR') : 'Consultar'}</span>
           ${tieneDescuento ? '<span class="plan-precio-original">$' + p.precio.toLocaleString('es-AR') + '</span>' : ''}
           ${p.tipo === 'recurrente' ? '<span style="font-size:12px;color:var(--gris-medio);">/mes</span>' : ''}
+          ${p.precioUSD > 0 ? '<span style="font-size:13px;color:var(--gris-medio);">/ USD $' + p.precioUSD + '</span>' : ''}
         </div>
         <div class="plan-desc">${p.desc}</div>
         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
@@ -2377,9 +2378,13 @@
         }),
         onApprove: async (data, actions) => {
           await actions.order.capture();
+          const diasVenc = planId === 'semestral' ? 180 : 30;
+          const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
           await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
           await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
           userData.membresia = true;
+          if (typeof registrarVentaFin === 'function') await registrarVentaFin({ plan: planId, montoBruto: precio, medio: 'PayPal' });
           cerrarPagos();
           const div = document.createElement('div');
           div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A6B3A;color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;z-index:9999;';

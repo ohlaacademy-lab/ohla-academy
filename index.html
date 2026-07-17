@@ -216,7 +216,23 @@
     #mp-brick-container { margin-top:16px; }
 
 
+    /* FINANZAS */
+    .fin-kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:24px; }
+    .fin-kpi { background:#fff; border:1px solid var(--borde); border-radius:14px; padding:18px; }
+    .fin-kpi-label { font-size:11px; color:var(--gris-medio); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+    .fin-kpi-valor { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:700; color:var(--gris); }
+    .fin-kpi.destacado { background:linear-gradient(135deg,#FFF5EC,#FFF0F7); border-color:#F0C5A0; }
+    .fin-kpi.destacado .fin-kpi-valor { color:#8B3A1A; }
+    .fin-tabla { width:100%; border-collapse:collapse; font-size:13px; }
+    .fin-tabla th { text-align:left; padding:8px 10px; background:var(--gris-claro); color:var(--gris-medio); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+    .fin-tabla td { padding:8px 10px; border-bottom:1px solid var(--borde); color:var(--gris); }
+    .fin-badge { font-size:10px; padding:2px 8px; border-radius:8px; }
+    .fin-badge.activa { background:#F0FBF5; color:#1A6B3A; }
+    .fin-badge.vencida { background:#FFF0EC; color:#8B3A1A; }
+    .fin-gasto-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--borde); flex-wrap:wrap; }
+
     /* SOPORTE IA */
+
     .soporte-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--terracota); color:#fff; border:none; font-size:24px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:5000; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
     .soporte-btn:hover { transform:scale(1.08); }
     .soporte-overlay { position:fixed; bottom:24px; right:24px; width:340px; max-width:calc(100vw - 32px); height:480px; max-height:calc(100vh - 100px); background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:5001; display:none; flex-direction:column; overflow:hidden; }
@@ -546,6 +562,7 @@
         <div class="sidebar-item" id="sb-meetings" onclick="showTab('tab-meetings')"><span>📅</span> Meetings</div>
         <div class="sidebar-item" id="sb-perfil" onclick="showTab('tab-perfil')"><span>👤</span> Mi perfil</div>
         <div class="sidebar-item" id="sidebar-admin" style="display:none;" onclick="showTab('tab-admin')"><span>⚙️</span> Administrar <span class="admin-badge">Admin</span></div>
+        <div class="sidebar-item" id="sidebar-finanzas" style="display:none;" onclick="showTab('tab-finanzas')"><span>💰</span> Finanzas <span class="admin-badge">Admin</span></div>
       </div>
       <div class="home-main">
 
@@ -805,6 +822,70 @@
           </div>
         </div>
 
+        <!-- TAB FINANZAS -->
+        <div id="tab-finanzas" style="display:none;">
+          <div class="greeting">💰 Panel financiero</div>
+          <div class="greeting-sub">Se actualiza solo con cada venta — no necesitás cargar nada</div>
+
+          <div class="fin-kpi-grid" id="fin-kpis">
+            <div class="loading"><div class="spinner"></div> Cargando datos...</div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📈 Ventas registradas</div>
+            <div class="admin-section-sub">Se anotan automáticamente cuando alguien paga con Mercado Pago o PayPal</div>
+            <div style="overflow-x:auto;">
+              <table class="fin-tabla" id="fin-tabla-ventas">
+                <thead><tr><th>Fecha</th><th>Alumna</th><th>Plan</th><th>Medio</th><th>Bruto</th><th>Comisión</th><th>Neto</th><th>Membresía</th></tr></thead>
+                <tbody id="fin-ventas-body"><tr><td colspan="8" style="text-align:center;color:var(--gris-medio);padding:16px;">Cargando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">💸 Gastos del negocio</div>
+            <div class="admin-section-sub">Cargá acá los gastos — se descuentan solos de la ganancia</div>
+            <div id="fin-gastos-lista"></div>
+            <div class="fin-gasto-row">
+              <input type="text" id="gasto-concepto" class="content-input" style="flex:2;margin:0;" placeholder="Concepto (ej: materiales para velas)">
+              <input type="number" id="gasto-monto" class="content-input" style="flex:1;margin:0;" placeholder="Monto $">
+              <select id="gasto-quien" class="content-input" style="flex:1;margin:0;">
+                <option>Flor</option>
+                <option>Mery</option>
+                <option>Compartido</option>
+              </select>
+              <button class="btn-small" onclick="agregarGastoFin()">+ Agregar</button>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">🤝 División de ganancias</div>
+            <div class="admin-section-sub">Ajustá el % de cada una — se recalcula solo</div>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+              <label style="font-size:13px;color:var(--gris-medio);">% para Flor</label>
+              <input type="number" id="fin-pct-flor" class="content-input" style="width:80px;margin:0;" value="50" min="0" max="100" onchange="recalcularFinanzas()">
+              <label style="font-size:13px;color:var(--gris-medio);">% para Mery</label>
+              <span id="fin-pct-mery" style="font-size:13px;color:var(--gris);font-weight:700;">50%</span>
+            </div>
+            <div class="fin-kpi-grid">
+              <div class="fin-kpi destacado">
+                <div class="fin-kpi-label">Ganancia para Flor</div>
+                <div class="fin-kpi-valor" id="fin-ganancia-flor">$0</div>
+              </div>
+              <div class="fin-kpi destacado">
+                <div class="fin-kpi-label">Ganancia para Mery</div>
+                <div class="fin-kpi-valor" id="fin-ganancia-mery">$0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">🎓 Membresías activas</div>
+            <div class="admin-section-sub">Alumnas con membresía y su estado de vencimiento</div>
+            <div id="fin-membresias-lista"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
+          </div>
+        </div>
+
       </div>
     </div>
     <div class="mobile-nav">
@@ -812,6 +893,7 @@
       <div class="nav-item" onclick="showTab('tab-meetings')"><div class="nav-icon">📅</div><div class="nav-label" id="mn-meetings">Meetings</div></div>
       <div class="nav-item" onclick="showTab('tab-perfil')"><div class="nav-icon">👤</div><div class="nav-label" id="mn-perfil">Perfil</div></div>
       <div class="nav-item" id="mobile-admin" style="display:none;" onclick="showTab('tab-admin')"><div class="nav-icon">⚙️</div><div class="nav-label" id="mn-admin">Admin</div></div>
+      <div class="nav-item" id="mobile-finanzas" style="display:none;" onclick="showTab('tab-finanzas')"><div class="nav-icon">💰</div><div class="nav-label" id="mn-finanzas">Finanzas</div></div>
     </div>
   </div>
 
@@ -849,6 +931,9 @@
   function toggleSoporte() { if(window._toggleSoporte) window._toggleSoporte(); }
   function enviarConsultaSoporte() { if(window._enviarConsultaSoporte) window._enviarConsultaSoporte(); }
   function elegirOpcionSoporte(t) { if(window._elegirOpcionSoporte) window._elegirOpcionSoporte(t); }
+  function agregarGastoFin() { if(window._agregarGastoFin) window._agregarGastoFin(); }
+  function recalcularFinanzas() { if(window._recalcularFinanzas) window._recalcularFinanzas(); }
+  function eliminarGastoFin(k) { if(window._eliminarGastoFin) window._eliminarGastoFin(k); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -2562,6 +2647,194 @@
     }
   }
 
+  // ── PANEL FINANCIERO (registro automático + gastos + reparto) ──
+  const COMISION_MP = 0.0649; // 6.49% + IVA aprox, referencia
+  const COMISION_PAYPAL = 0.054; // 5.4% + USD 0.30, referencia
+
+  async function registrarVentaFin({ plan, montoBruto, medio }) {
+    try {
+      const comisionPct = medio === 'Mercado Pago' ? COMISION_MP : COMISION_PAYPAL;
+      const comision = Math.round(montoBruto * comisionPct);
+      const neto = montoBruto - comision;
+      const ventaRef = ref(db, 'ventas/' + Date.now() + '_' + currentUser.uid);
+      await set(ventaRef, {
+        fecha: new Date().toISOString(),
+        alumnaUid: currentUser.uid,
+        alumnaNombre: userData?.nombre || currentUser.email,
+        alumnaEmail: currentUser.email,
+        plan,
+        montoBruto,
+        medio,
+        comision,
+        neto
+      });
+    } catch(e) { console.error('Error registrando venta:', e); }
+  }
+
+  // Detectar retorno de Mercado Pago (vuelve con collection_status=approved en la URL)
+  async function verificarRetornoMP() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('collection_status') || params.get('status');
+    const extRef = params.get('external_reference');
+    if (status === 'approved' && extRef && currentUser) {
+      const partes = extRef.split('_');
+      const planId = partes[partes.length - 1];
+      const yaRegistrado = sessionStorage.getItem('mp_registrado_' + params.get('payment_id'));
+      if (!yaRegistrado) {
+        await loadConfigPagos();
+        const plan = configPagos.planes?.find(p => p.id === planId);
+        if (plan) {
+          const diasVenc = planId === 'semestral' ? 180 : 30;
+          const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
+          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
+          userData.membresia = true;
+          await registrarVentaFin({ plan: planId, montoBruto: plan.precio, medio: 'Mercado Pago' });
+          sessionStorage.setItem('mp_registrado_' + params.get('payment_id'), '1');
+        }
+      }
+      // Limpiar la URL para que no se re-procese al refrescar
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
+
+  let ventasFinData = [];
+  let gastosFinData = [];
+
+  window.loadFinanzas = async function() {
+    const kpiCont = document.getElementById('fin-kpis');
+    kpiCont.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando datos...</div>';
+
+    try {
+      const [ventasSnap, gastosSnap, configSnap, usuariosSnap] = await Promise.all([
+        get(ref(db, 'ventas')),
+        get(ref(db, 'gastosFin')),
+        get(ref(db, 'config/finanzas')),
+        get(ref(db, 'usuarios'))
+      ]);
+
+      ventasFinData = ventasSnap.exists() ? Object.entries(ventasSnap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+      ventasFinData.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+      gastosFinData = gastosSnap.exists() ? Object.entries(gastosSnap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+
+      const configFin = configSnap.exists() ? configSnap.val() : { pctFlor: 50 };
+      document.getElementById('fin-pct-flor').value = configFin.pctFlor || 50;
+      document.getElementById('fin-pct-mery').textContent = (100 - (configFin.pctFlor || 50)) + '%';
+
+      renderVentasFin();
+      renderGastosFin();
+      renderMembresiasFin(usuariosSnap.exists() ? usuariosSnap.val() : {});
+      calcularKPIsFin();
+    } catch(e) {
+      kpiCont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar datos financieros: ' + e.message + '</div>';
+    }
+  }
+
+  function calcularKPIsFin() {
+    const totalBruto = ventasFinData.reduce((s,v) => s + (v.montoBruto||0), 0);
+    const totalComision = ventasFinData.reduce((s,v) => s + (v.comision||0), 0);
+    const totalNeto = totalBruto - totalComision;
+    const totalGastos = gastosFinData.reduce((s,g) => s + (g.monto||0), 0);
+    const ganancia = totalNeto - totalGastos;
+
+    const kpiCont = document.getElementById('fin-kpis');
+    kpiCont.innerHTML = `
+      <div class="fin-kpi"><div class="fin-kpi-label">Ingresos brutos</div><div class="fin-kpi-valor">$${totalBruto.toLocaleString('es-AR')}</div></div>
+      <div class="fin-kpi"><div class="fin-kpi-label">Comisiones (MP/PayPal)</div><div class="fin-kpi-valor">$${totalComision.toLocaleString('es-AR')}</div></div>
+      <div class="fin-kpi"><div class="fin-kpi-label">Ingresos netos</div><div class="fin-kpi-valor">$${totalNeto.toLocaleString('es-AR')}</div></div>
+      <div class="fin-kpi"><div class="fin-kpi-label">Gastos cargados</div><div class="fin-kpi-valor">$${totalGastos.toLocaleString('es-AR')}</div></div>
+      <div class="fin-kpi destacado"><div class="fin-kpi-label">Ganancia neta</div><div class="fin-kpi-valor">$${ganancia.toLocaleString('es-AR')}</div></div>
+      <div class="fin-kpi"><div class="fin-kpi-label">Ventas totales</div><div class="fin-kpi-valor">${ventasFinData.length}</div></div>
+    `;
+
+    window._recalcularFinanzas = window.recalcularFinanzas = async function() {
+      const pctFlor = parseInt(document.getElementById('fin-pct-flor').value) || 50;
+      document.getElementById('fin-pct-mery').textContent = (100 - pctFlor) + '%';
+      document.getElementById('fin-ganancia-flor').textContent = '$' + Math.round(ganancia * pctFlor/100).toLocaleString('es-AR');
+      document.getElementById('fin-ganancia-mery').textContent = '$' + Math.round(ganancia * (100-pctFlor)/100).toLocaleString('es-AR');
+      try { await set(ref(db, 'config/finanzas'), { pctFlor }); } catch(e) {}
+    }
+    recalcularFinanzas();
+  }
+
+  function renderVentasFin() {
+    const body = document.getElementById('fin-ventas-body');
+    if (ventasFinData.length === 0) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gris-medio);padding:16px;">Todavía no hay ventas registradas.</td></tr>';
+      return;
+    }
+    body.innerHTML = ventasFinData.slice(0, 50).map(v => {
+      const fecha = new Date(v.fecha).toLocaleDateString('es-AR');
+      return `<tr>
+        <td>${fecha}</td>
+        <td>${v.alumnaNombre||''}</td>
+        <td>${v.plan||''}</td>
+        <td>${v.medio||''}</td>
+        <td>$${(v.montoBruto||0).toLocaleString('es-AR')}</td>
+        <td>$${(v.comision||0).toLocaleString('es-AR')}</td>
+        <td>$${(v.neto||0).toLocaleString('es-AR')}</td>
+        <td><span class="fin-badge activa">✓</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderGastosFin() {
+    const cont = document.getElementById('fin-gastos-lista');
+    if (gastosFinData.length === 0) {
+      cont.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">No hay gastos cargados aún.</div>';
+      return;
+    }
+    cont.innerHTML = gastosFinData.map(g => `
+      <div class="fin-gasto-row">
+        <div style="flex:2;font-size:13px;color:var(--gris);">${g.concepto}</div>
+        <div style="flex:1;font-size:13px;color:var(--gris);">$${(g.monto||0).toLocaleString('es-AR')}</div>
+        <div style="flex:1;font-size:12px;color:var(--gris-medio);">${g.quien}</div>
+        <button class="btn-danger" onclick="eliminarGastoFin('${g._key}')">✕</button>
+      </div>`).join('');
+  }
+
+  function renderMembresiasFin(usuarios) {
+    const cont = document.getElementById('fin-membresias-lista');
+    const activas = Object.entries(usuarios).filter(([k,u]) => u.membresia);
+    if (activas.length === 0) {
+      cont.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);">No hay membresías activas todavía.</div>';
+      return;
+    }
+    const hoy = new Date();
+    cont.innerHTML = activas.map(([uid,u]) => {
+      const venc = u.membresiaVencimiento ? new Date(u.membresiaVencimiento) : null;
+      const vencida = venc && venc < hoy;
+      return `<div class="user-row">
+        <div class="user-avatar">🌸</div>
+        <div class="user-info">
+          <div class="user-name">${u.nombre||u.email}</div>
+          <div class="user-email">${u.membresiaPlan||'membresía'} ${venc ? '· vence ' + venc.toLocaleDateString('es-AR') : ''}</div>
+        </div>
+        <span class="fin-badge ${vencida ? 'vencida' : 'activa'}">${vencida ? 'Vencida' : 'Activa'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  window._agregarGastoFin = async function() {
+    const concepto = document.getElementById('gasto-concepto').value.trim();
+    const monto = parseInt(document.getElementById('gasto-monto').value) || 0;
+    const quien = document.getElementById('gasto-quien').value;
+    if (!concepto || !monto) { alert('Completá el concepto y el monto del gasto.'); return; }
+    try {
+      await set(ref(db, 'gastosFin/' + Date.now()), { concepto, monto, quien, fecha: new Date().toISOString() });
+      document.getElementById('gasto-concepto').value = '';
+      document.getElementById('gasto-monto').value = '';
+      loadFinanzas();
+    } catch(e) { alert('Error al guardar el gasto.'); }
+  }
+
+  window._eliminarGastoFin = async function(key) {
+    try { await set(ref(db, 'gastosFin/' + key), null); loadFinanzas(); }
+    catch(e) { alert('Error al eliminar.'); }
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -2633,8 +2906,11 @@
     const isAdmin = userData.rol === 'admin';
     document.getElementById('sidebar-admin').style.display = isAdmin ? 'flex' : 'none';
     document.getElementById('mobile-admin').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('sidebar-finanzas').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('mobile-finanzas').style.display = isAdmin ? 'flex' : 'none';
 
     await loadCatalogo();
+    await verificarRetornoMP();
     if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
 
     showScreen('screen-home');
@@ -2653,16 +2929,17 @@
   }
 
   window._showTab = window.showTab = id => {
-    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin'].forEach(t => {
+    ['tab-cursos','tab-modulos','tab-meetings','tab-perfil','tab-admin','tab-finanzas'].forEach(t => {
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
     if (id === 'tab-meetings' && currentUser) loadMeetings();
     if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
+    if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-label').forEach(s => s.classList.remove('active'));
-    const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin'};
-    const mnMap = {'tab-cursos':'mn-cursos','tab-meetings':'mn-meetings','tab-perfil':'mn-perfil','tab-admin':'mn-admin'};
+    const sbMap = {'tab-cursos':'sb-cursos','tab-meetings':'sb-meetings','tab-perfil':'sb-perfil','tab-admin':'sidebar-admin','tab-finanzas':'sidebar-finanzas'};
+    const mnMap = {'tab-cursos':'mn-cursos','tab-meetings':'mn-meetings','tab-perfil':'mn-perfil','tab-admin':'mn-admin','tab-finanzas':'mn-finanzas'};
     if (sbMap[id]) document.getElementById(sbMap[id])?.classList.add('active');
     if (mnMap[id]) document.getElementById(mnMap[id])?.classList.add('active');
   }

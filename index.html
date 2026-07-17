@@ -213,6 +213,31 @@
     .pagos-footer { padding:16px 24px 24px;border-top:1px solid var(--borde);display:flex;gap:10px;justify-content:flex-end; }
     #mp-brick-container { margin-top:16px; }
 
+
+    /* SOPORTE IA */
+    .soporte-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--terracota); color:#fff; border:none; font-size:24px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:5000; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
+    .soporte-btn:hover { transform:scale(1.08); }
+    .soporte-overlay { position:fixed; bottom:24px; right:24px; width:340px; max-width:calc(100vw - 32px); height:480px; max-height:calc(100vh - 100px); background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,0.3); z-index:5001; display:none; flex-direction:column; overflow:hidden; }
+    .soporte-header { background:linear-gradient(135deg,#F8F8F7,#FFF5EC); padding:16px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--borde); }
+    .soporte-header-title { font-family:'Cormorant Garamond',serif; font-size:18px; color:var(--gris); font-weight:700; }
+    .soporte-header-sub { font-size:11px; color:var(--gris-medio); margin-top:2px; }
+    .soporte-close { background:none; border:none; font-size:20px; color:var(--gris-medio); cursor:pointer; }
+    .soporte-mensajes { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--fondo-form); }
+    .sop-msg { max-width:85%; padding:9px 12px; border-radius:14px; font-size:13px; line-height:1.5; }
+    .sop-msg.bot { background:#fff; border:1px solid var(--borde); align-self:flex-start; border-bottom-left-radius:4px; }
+    .sop-msg.user { background:var(--terracota); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+    .soporte-footer { padding:10px; border-top:1px solid var(--borde); display:flex; gap:6px; background:#fff; }
+    .soporte-input { flex:1; background:var(--gris-claro); border:1px solid #E0DED8; border-radius:10px; padding:9px 12px; font-size:13px; color:var(--gris); outline:none; font-family:'Lato',sans-serif; }
+    .soporte-input:focus { border-color:var(--terracota); }
+    .soporte-send { background:var(--terracota); color:#fff; border:none; border-radius:10px; padding:9px 14px; font-size:13px; cursor:pointer; }
+    .soporte-opciones { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 10px; }
+    .sop-chip { background:#fff; border:1px solid var(--terracota); color:var(--terracota); border-radius:16px; padding:5px 12px; font-size:11px; cursor:pointer; }
+    .sop-chip:hover { background:var(--terracota-light); }
+    @media (max-width: 480px) {
+      .soporte-overlay { right:12px; bottom:80px; width:calc(100vw - 24px); }
+      .soporte-btn { bottom:80px; right:16px; }
+    }
+
     /* CERTIFICADO */
     @media (max-width: 768px) {
       .cert-card { border-radius: 16px !important; }
@@ -609,6 +634,25 @@
     </div>
   </div>
 
+
+  <!-- SOPORTE IA FLOTANTE -->
+  <button class="soporte-btn" id="soporte-btn" onclick="toggleSoporte()">💬</button>
+  <div class="soporte-overlay" id="soporte-overlay">
+    <div class="soporte-header">
+      <div>
+        <div class="soporte-header-title">🌸 Soporte Ohla Academy</div>
+        <div class="soporte-header-sub">Te ayudamos al instante</div>
+      </div>
+      <button class="soporte-close" onclick="toggleSoporte()">✕</button>
+    </div>
+    <div class="soporte-mensajes" id="soporte-mensajes"></div>
+    <div class="soporte-opciones" id="soporte-opciones"></div>
+    <div class="soporte-footer">
+      <input type="text" id="soporte-input" class="soporte-input" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter')enviarConsultaSoporte()">
+      <button class="soporte-send" onclick="enviarConsultaSoporte()">→</button>
+    </div>
+  </div>
+
   <!-- CERTIFICADO POPUP -->
   <div id="cert-overlay" class="cert-overlay" style="display:none;">
     <div class="cert-card" style="max-width:min(720px,95vw);max-height:95vh;overflow-y:auto;">
@@ -800,6 +844,9 @@
   function elegirMembresia() { if(window._elegirMembresia) window._elegirMembresia(); else if(window.elegirMembresia) window.elegirMembresia(); }
   function elegirCursosIndividuales() { if(window.elegirCursosIndividuales) window.elegirCursosIndividuales(); }
   function comprarCursoIndividual(id,n,p) { if(window.comprarCursoIndividual) window.comprarCursoIndividual(id,n,p); }
+  function toggleSoporte() { if(window._toggleSoporte) window._toggleSoporte(); }
+  function enviarConsultaSoporte() { if(window._enviarConsultaSoporte) window._enviarConsultaSoporte(); }
+  function elegirOpcionSoporte(t) { if(window._elegirOpcionSoporte) window._elegirOpcionSoporte(t); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -2419,6 +2466,98 @@
       ok.classList.add('show');
       setTimeout(() => ok.classList.remove('show'), 3000);
     } catch(e) { alert('Error al guardar precios.'); }
+  }
+
+  // ── SOPORTE CON IA (respuestas basadas en reglas + escalado por mail) ──
+  const FAQ_OHLA = [
+    { keys: ['contraseña','password','olvide','no puedo entrar','no me deja entrar'], resp: 'Si olvidaste tu contraseña, andá a la pantalla de ingreso y tocá "¿Olvidaste tu contraseña?" — te llega un mail para restablecerla en segundos.' },
+    { keys: ['certificado','diploma'], resp: 'Tu certificado se genera automáticamente cuando completás todos los módulos de un curso. Te llega por mail y también podés descargarlo desde el popup que aparece al terminar. Si no te llegó, fijate en la carpeta de spam.' },
+    { keys: ['meeting','vivo','consulta','clase en vivo','reunion'], resp: 'Los meetings en vivo están en la sección "Meetings" del menú. Ahí ves la fecha del próximo y el botón para entrar cuando empiece. Necesitás tener la membresía activa para acceder.' },
+    { keys: ['pago','membresia','precio','cuota','mercado pago','paypal'], resp: 'Podés pagar con Mercado Pago o PayPal desde la sección donde elegís tu plan. Si elegiste "Cursos individuales" al principio y ahora querés la membresía completa, escribime "quiero membresía" y te explico cómo cambiar.' },
+    { keys: ['modulo','no se desbloquea','bloqueado','no abre'], resp: 'Los módulos se desbloquean uno por uno — tenés que marcar el anterior como "completado" para que se habilite el siguiente. Si ya lo hiciste y sigue bloqueado, contame el nombre del curso y lo reviso.' },
+    { keys: ['descargar','archivo','molde','pdf'], resp: 'Los archivos descargables tienen un botón "⬇ Descargar" dentro del módulo. Si dice "🔒 Solo lectura" es porque la profe configuró ese archivo para verse pero no bajarse.' },
+    { keys: ['cancelar','baja','dar de baja','cancelar membresia'], resp: 'Para dar de baja tu membresía escribime "quiero cancelar" y le aviso directamente al equipo de Ohla Academy para que lo gestionen con vos.' },
+    { keys: ['hola','buenas','buen dia','buenas tardes'], resp: '¡Hola! 🌸 Soy el asistente de Ohla Academy. Contame en qué te puedo ayudar — cursos, meetings, pagos, certificados o cualquier otra duda.' }
+  ];
+
+  let soporteAbierto = false;
+  let soporteEsperandoMail = false;
+  let soporteConsultaPendiente = '';
+
+  window._toggleSoporte = function() {
+    const overlay = document.getElementById('soporte-overlay');
+    soporteAbierto = !soporteAbierto;
+    overlay.style.display = soporteAbierto ? 'flex' : 'none';
+    if (soporteAbierto && document.getElementById('soporte-mensajes').children.length === 0) {
+      agregarMsgSoporte('bot', '¡Hola! 🌸 Soy el asistente de Ohla Academy. Contame en qué te puedo ayudar.');
+      mostrarChipsSoporte(['🔑 Contraseña', '🎓 Certificado', '📅 Meetings', '💳 Pagos']);
+    }
+  }
+
+  function agregarMsgSoporte(tipo, texto) {
+    const cont = document.getElementById('soporte-mensajes');
+    const div = document.createElement('div');
+    div.className = 'sop-msg ' + tipo;
+    div.textContent = texto;
+    cont.appendChild(div);
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  function mostrarChipsSoporte(chips) {
+    const cont = document.getElementById('soporte-opciones');
+    cont.innerHTML = chips.map(c => `<div class="sop-chip" onclick="elegirOpcionSoporte('${c}')">${c}</div>`).join('');
+  }
+
+  window._elegirOpcionSoporte = function(texto) {
+    document.getElementById('soporte-input').value = texto.replace(/^\S+\s/, '');
+    enviarConsultaSoporte();
+  }
+
+  window._enviarConsultaSoporte = async function() {
+    const input = document.getElementById('soporte-input');
+    const texto = input.value.trim();
+    if (!texto) return;
+    input.value = '';
+    agregarMsgSoporte('user', texto);
+    document.getElementById('soporte-opciones').innerHTML = '';
+
+    // Si estamos esperando el mail de la alumna para escalar
+    if (soporteEsperandoMail) {
+      const email = texto;
+      if (!/\S+@\S+\.\S+/.test(email)) {
+        agregarMsgSoporte('bot', 'Ese mail no parece válido. ¿Podés escribirlo de nuevo?');
+        return;
+      }
+      try {
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+          alumna_nombre: userData?.nombre || 'Alumna',
+          curso_nombre: 'Consulta de soporte',
+          fecha_emision: new Date().toLocaleDateString('es-AR'),
+          to_email: 'ohlaacademy@gmail.com',
+          mensaje: `Consulta de soporte de ${userData?.nombre || currentUser?.email}: "${soporteConsultaPendiente}". Mail de contacto de la alumna: ${email}`
+        });
+        agregarMsgSoporte('bot', '¡Listo! Le avisé al equipo de Ohla Academy con tu consulta y tu mail (' + email + '). Te van a responder a la brevedad. 🌸');
+      } catch(e) {
+        agregarMsgSoporte('bot', 'No pude enviar el aviso automático. Escribí directamente a ohlaacademy@gmail.com con tu consulta, por favor.');
+      }
+      soporteEsperandoMail = false;
+      soporteConsultaPendiente = '';
+      return;
+    }
+
+    // Buscar coincidencia en la FAQ
+    const textoLower = texto.toLowerCase();
+    const match = FAQ_OHLA.find(f => f.keys.some(k => textoLower.includes(k)));
+
+    if (match) {
+      setTimeout(() => agregarMsgSoporte('bot', match.resp), 400);
+    } else {
+      soporteConsultaPendiente = texto;
+      setTimeout(() => {
+        agregarMsgSoporte('bot', 'No tengo una respuesta clara para eso. Te conecto con el equipo de Ohla Academy — pasame tu mail de contacto y les aviso ahora mismo.');
+        soporteEsperandoMail = true;
+      }, 400);
+    }
   }
 
   async function loadUsers() {

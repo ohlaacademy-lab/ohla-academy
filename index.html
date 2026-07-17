@@ -2293,9 +2293,9 @@
   let configPagos = {
     descuentoJubilada: 30, // % de descuento para mayores de 60
     planes: [
-      { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección. Pago único sin cuotas.', tipo: 'unico' },
-      { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos. Se renueva cada mes. El precio puede variar con el tiempo.', tipo: 'recurrente', recomendado: true },
-      { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses de acceso completo con descuento especial. Podés pagar en cuotas con los intereses de tu banco.', tipo: 'unico', cuotas: true }
+      { id: 'curso', nombre: 'Curso individual', precio: 0, precioUSD: 0, desc: 'Acceso permanente a un curso a tu elección. Pago único sin cuotas.', tipo: 'unico' },
+      { id: 'mensual', nombre: 'Membresía mensual', precio: 0, precioUSD: 0, desc: 'Acceso a todos los cursos. Se renueva cada mes. El precio puede variar con el tiempo.', tipo: 'recurrente', recomendado: true },
+      { id: 'semestral', nombre: 'Membresía semestral', precio: 0, precioUSD: 0, desc: '6 meses de acceso completo con descuento especial. Podés pagar en cuotas con los intereses de tu banco.', tipo: 'unico', cuotas: true }
     ],
     descuentoJubilada: 0
   };
@@ -2390,7 +2390,9 @@
     if (!sec || !cont) return;
     cont.innerHTML = '';
     if (typeof paypal === 'undefined') { sec.style.display = 'none'; return; }
-    const usd = Math.max(1, Math.round(precio / 1000));
+    const planConfig = configPagos.planes?.find(p => p.id === planId);
+    const usd = planConfig?.precioUSD > 0 ? planConfig.precioUSD : Math.max(1, Math.round(precio / 1000));
+    if (!planConfig?.precioUSD) { sec.style.display = 'none'; return; }
     sec.style.display = 'block';
     try {
       paypal.Buttons({
@@ -2484,9 +2486,9 @@
     // Si no hay planes en Firebase usar defaults
     if (!configPagos.planes || configPagos.planes.length === 0) {
       configPagos.planes = [
-        { id: 'curso', nombre: 'Curso individual', precio: 0, desc: 'Acceso permanente a un curso a tu elección.', tipo: 'unico' },
-        { id: 'mensual', nombre: 'Membresía mensual', precio: 0, desc: 'Acceso a todos los cursos por mes.', tipo: 'recurrente', recomendado: true },
-        { id: 'semestral', nombre: 'Membresía semestral', precio: 0, desc: '6 meses con descuento.', tipo: 'unico', cuotas: true }
+        { id: 'curso', nombre: 'Curso individual', precio: 0, precioUSD: 0, desc: 'Acceso permanente a un curso a tu elección.', tipo: 'unico' },
+        { id: 'mensual', nombre: 'Membresía mensual', precio: 0, precioUSD: 0, desc: 'Acceso a todos los cursos por mes.', tipo: 'recurrente', recomendado: true },
+        { id: 'semestral', nombre: 'Membresía semestral', precio: 0, precioUSD: 0, desc: '6 meses con descuento.', tipo: 'unico', cuotas: true }
       ];
     }
     const planes = configPagos.planes || [];
@@ -2498,7 +2500,7 @@
           <span style="font-size:14px;color:var(--gris-medio);">% de descuento automático</span>
         </div>
       </div>
-      <div style="margin-bottom:12px;font-size:12px;color:var(--gris-medio);">Precios de los planes en pesos argentinos. Podés actualizarlos cuando quieras. Poné 0 para ocultar un plan.</div>
+      <div style="margin-bottom:12px;font-size:12px;color:var(--gris-medio);">Precio en <strong>ARS</strong> para Mercado Pago, precio en <strong>USD</strong> para PayPal — los ponés vos según el dólar del día, no se calculan solos. Poné 0 en ARS para ocultar un plan.</div>
       ${planes.map((p, i) => `
         <div style="padding:12px 0;border-bottom:1px solid var(--borde);">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -2507,8 +2509,12 @@
               <div style="font-size:11px;color:var(--gris-medio);margin-top:2px;">${p.tipo === 'recurrente' ? '↻ Mensual' : p.cuotas ? '💳 Con cuotas' : '✓ Pago único'}</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:13px;color:var(--gris-medio);">$</span>
-              <input type="number" value="${p.precio}" class="content-input" style="width:110px;" placeholder="0 = ocultar" oninput="configPagos.planes[${i}].precio=parseInt(this.value)||0">
+              <span style="font-size:11px;color:var(--gris-medio);">ARS $</span>
+              <input type="number" value="${p.precio}" class="content-input" style="width:100px;" placeholder="0 = ocultar" oninput="configPagos.planes[${i}].precio=parseInt(this.value)||0">
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;color:var(--gris-medio);">USD $</span>
+              <input type="number" value="${p.precioUSD||0}" class="content-input" style="width:90px;" placeholder="PayPal" oninput="configPagos.planes[${i}].precioUSD=parseFloat(this.value)||0">
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);white-space:nowrap;">
               <input type="checkbox" ${p.recomendado?'checked':''} onchange="configPagos.planes[${i}].recomendado=this.checked">
@@ -2530,15 +2536,15 @@
     const inputs = document.querySelectorAll('#admin-pagos-container input[type=number]');
     const checkboxes = document.querySelectorAll('#admin-pagos-container input[type=checkbox]');
 
-    // El primer input es el descuento jubilada, los demas son precios de planes
+    // El primer input es el descuento jubilada, luego vienen pares ARS/USD por cada plan
     let planIdx = 0;
-    inputs.forEach((inp, i) => {
-      if (i === 0) return; // saltar el descuento jubilada
+    for (let i = 1; i < inputs.length; i += 2) {
       if (configPagos.planes[planIdx]) {
-        configPagos.planes[planIdx].precio = parseInt(inp.value) || 0;
+        configPagos.planes[planIdx].precio = parseInt(inputs[i].value) || 0;
+        configPagos.planes[planIdx].precioUSD = parseFloat(inputs[i+1]?.value) || 0;
       }
       planIdx++;
-    });
+    }
 
     checkboxes.forEach((chk, i) => {
       if (configPagos.planes[i]) {

@@ -1237,11 +1237,13 @@
     const container = document.getElementById('cursos-content');
     const faseInfo = document.getElementById('fase-info');
     const precioMem = configPagos?.planes?.find(p => p.id === 'mensual')?.precio || 0;
+    const precioMemUSD = configPagos?.planes?.find(p => p.id === 'mensual')?.precioUSD || 0;
     faseInfo.innerHTML = `<div class="fase-badge">📚 Modo cursos individuales</div>
       ${precioMem > 0 ? `<div style="background:linear-gradient(135deg,#FFF5EC,#FFF0F7);border:1px solid #F0C5A0;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
         <div>
           <div style="font-size:14px;font-weight:700;color:#8B3A1A;">🌸 Con la membresía accedés a <em>todos</em> los cursos</div>
-          <div style="font-size:12px;color:var(--gris-medio);margin-top:2px;">Por $${precioMem.toLocaleString('es-AR')}/mes en vez de comprar curso por curso</div>
+          <div style="font-size:12px;color:var(--gris-medio);margin-top:2px;">Por $${precioMem.toLocaleString('es-AR')}/mes${precioMemUSD > 0 ? ' / USD $' + precioMemUSD : ''} en vez de comprar curso por curso</div>
+          <div style="font-size:10px;color:var(--gris-medio);margin-top:2px;">💳 Mercado Pago y PayPal</div>
         </div>
         <button class="btn-small" style="white-space:nowrap;" onclick="abrirPagos('mensual')">Ver membresía →</button>
       </div>` : ''}`;
@@ -1270,6 +1272,8 @@
           </div>`;
         } else {
           const precioTexto = precioCurso > 0 ? '$' + precioCurso.toLocaleString('es-AR') : 'Consultar';
+          const precioCursoUSD = configPagos?.planes?.find(p => p.id === 'curso')?.precioUSD || 0;
+          const precioTextoUSD = precioCursoUSD > 0 ? ' / USD $' + precioCursoUSD : '';
           html += `<div class="curso-card c${colorIdx+1}" style="cursor:default;">
             <div class="curso-card-header">
               <span class="curso-card-icon">${curso.icon}</span>
@@ -1283,7 +1287,7 @@
             </div>
             <div class="curso-card-footer">
               <div>
-                <span class="curso-badge badge-membresia" style="font-size:12px;">${precioTexto} este curso</span>
+                <span class="curso-badge badge-membresia" style="font-size:12px;">${precioTexto}${precioTextoUSD} este curso</span>
               </div>
               <div style="display:flex;gap:6px;">
                 ${precioMembresia > 0 ? `<button class="btn-outline" style="font-size:11px;padding:5px 10px;" onclick="abrirPagos('mensual')">Ver membresía</button>` : ''}
@@ -3006,6 +3010,7 @@
       const el = document.getElementById(t);
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
+    if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
     if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();

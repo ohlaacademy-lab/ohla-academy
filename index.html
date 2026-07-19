@@ -485,7 +485,7 @@
         </div>
         <button class="btn-primary" id="btn-register" onclick="doRegister()">Crear mi cuenta</button>
         <div class="link-txt" style="margin-top:16px;"><a href="#" onclick="showScreen('screen-login')">¿Ya tenés cuenta? Ingresá acá</a></div>
-        <div class="terms-note">Al registrarte aceptás los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a> de Ohla Academy</div>
+        <div class="terms-note">Al registrarte aceptás los <a href="#" onclick="abrirLegal('terminos');return false;">términos y condiciones</a> y la <a href="#" onclick="abrirLegal('privacidad');return false;">política de privacidad</a> de Ohla Academy</div>
       </div>
     </div>
   </div>
@@ -759,6 +759,23 @@
     </div>
   </div>
 
+  <!-- TERMINOS Y PRIVACIDAD -->
+  <div id="legal-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card" style="max-width:640px;">
+      <div class="pagos-header">
+        <div style="font-size:34px;margin-bottom:6px;">📄</div>
+        <div class="pagos-titulo" id="legal-titulo"></div>
+        <div class="pagos-sub">Ohla Academy</div>
+      </div>
+      <div class="pagos-body" style="max-height:60vh;overflow-y:auto;">
+        <div id="legal-contenido" style="font-size:13px;color:var(--gris);line-height:1.8;"></div>
+      </div>
+      <div class="pagos-footer" style="justify-content:center;">
+        <button class="btn-small" onclick="cerrarLegal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AVISO GENERAL DEL EQUIPO -->
   <div id="anuncio-overlay" class="pagos-overlay" style="display:none;">
     <div class="pagos-card" style="max-width:460px;">
@@ -887,7 +904,19 @@
             <div style="margin-bottom:16px;"><div class="field-label">Correo</div><div id="perfil-email" style="font-size:16px;color:var(--gris);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
             <div style="margin-bottom:16px;"><div class="field-label">Rol</div><div id="perfil-rol" style="font-size:14px;color:var(--gris-medio);padding:10px 0;border-bottom:1px solid var(--borde);"></div></div>
             <div style="margin-bottom:20px;"><div class="field-label">Fase actual</div><div id="perfil-fase" style="font-size:14px;color:var(--gris-medio);padding:10px 0;"></div></div>
+
+            <div style="border-top:1px solid var(--borde);padding-top:16px;margin-bottom:20px;">
+              <div class="field-label">Mi membresía</div>
+              <div id="perfil-membresia" style="padding:10px 0;"></div>
+            </div>
+
             <button class="logout-btn" style="width:100%;padding:12px;" onclick="doLogout()">Cerrar sesión</button>
+
+            <div style="text-align:center;margin-top:18px;font-size:11px;color:var(--gris-medio);line-height:1.8;">
+              <a href="#" onclick="abrirLegal('terminos');return false;" style="color:var(--terracota);text-decoration:none;">Términos y condiciones</a> ·
+              <a href="#" onclick="abrirLegal('privacidad');return false;" style="color:var(--terracota);text-decoration:none;">Política de privacidad</a><br>
+              ¿Dudas? <strong>ohlaacademy@gmail.com</strong>
+            </div>
           </div>
         </div>
 
@@ -1229,6 +1258,9 @@
   function guardarAviso() { if(window._guardarAviso) window._guardarAviso(); }
   function cerrarAnuncio() { if(window._cerrarAnuncio) window._cerrarAnuncio(); }
   function verFichaAlumna(uid) { if(window._verFichaAlumna) window._verFichaAlumna(uid); }
+  function abrirLegal(t) { if(window._abrirLegal) window._abrirLegal(t); }
+  function cerrarLegal() { if(window._cerrarLegal) window._cerrarLegal(); }
+  function pedirBajaMembresia() { if(window._pedirBajaMembresia) window._pedirBajaMembresia(); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -3949,6 +3981,165 @@
       </div>`;
   }
 
+  // ── TÉRMINOS Y PRIVACIDAD ──
+  const TEXTO_LEGAL = {
+    terminos: {
+      titulo: 'Términos y condiciones',
+      html: `
+<p><strong>1. Quiénes somos</strong><br>
+Ohla Academy es una plataforma educativa online donde enseñamos oficios creativos y emprendimiento. Nos podés escribir a <strong>ohlaacademy@gmail.com</strong>.</p>
+
+<p><strong>2. Tu cuenta</strong><br>
+Para acceder a los cursos necesitás crear una cuenta con un mail válido. Es personal e intransferible: no compartas tu usuario y contraseña con otras personas. Si detectamos que una cuenta se comparte, podemos suspenderla.</p>
+
+<p><strong>3. Formas de acceso y pagos</strong><br>
+Ofrecemos tres modalidades:</p>
+<ul style="margin-left:18px;">
+<li><strong>Curso individual:</strong> pago único. El acceso a ese curso es <strong>permanente</strong> y no vence.</li>
+<li><strong>Membresía mensual:</strong> acceso a todo el catálogo mientras esté vigente. Se abona mes a mes y <strong>vence a los 30 días</strong> de cada pago.</li>
+<li><strong>Membresía semestral:</strong> igual que la mensual pero por 6 meses, con descuento.</li>
+</ul>
+<p>Los pagos se procesan a través de Mercado Pago y PayPal. Ohla Academy no almacena datos de tarjetas ni cuentas bancarias.</p>
+
+<p><strong>4. Vencimiento y renovación</strong><br>
+Las membresías <strong>no se renuevan automáticamente</strong>. Te avisamos dentro de la app cuando se acerca el vencimiento. Si no renovás, perdés el acceso a los cursos de membresía, pero <strong>tu progreso y tus certificados quedan guardados</strong> y los recuperás al volver a abonar. Los cursos comprados individualmente no se ven afectados.</p>
+
+<p><strong>5. Cambios de precio</strong><br>
+Los precios pueden actualizarse. Te avisamos con anticipación dentro de la app. Si ya abonaste un período, ese precio se respeta hasta que termine.</p>
+
+<p><strong>6. Clases en vivo</strong><br>
+Las clases duran aproximadamente 50 minutos y <strong>se graban</strong>. Al participar aceptás que tu imagen y voz puedan quedar registradas en la grabación, que se comparte solo con las alumnas del curso. Durante la clase el micrófono debe estar apagado y la cámara encendida; las consultas se hacen por escrito.</p>
+<p>Algunos cursos en vivo requieren un mínimo de alumnas inscriptas para dictarse. Si no se alcanza, te ofrecemos un horario alternativo o la devolución de lo abonado.</p>
+
+<p><strong>7. Contenido y propiedad intelectual</strong><br>
+Todos los videos, textos, moldes y materiales son propiedad de Ohla Academy y de las profesoras. Podés usarlos para tu aprendizaje y para los productos que hagas con tus manos, incluso para vender. <strong>No podés</strong> redistribuir, revender ni compartir públicamente el material del curso, ni grabar y republicar las clases.</p>
+
+<p><strong>8. Devoluciones</strong><br>
+Si tuviste un problema con tu compra escribinos a <strong>ohlaacademy@gmail.com</strong> dentro de los 7 días y lo resolvemos. En compras de cursos donde ya accediste a la mayor parte del contenido, evaluamos cada caso.</p>
+
+<p><strong>9. Cancelación</strong><br>
+Podés dar de baja tu membresía cuando quieras desde tu perfil o escribiéndonos. Al hacerlo mantenés el acceso hasta la fecha de vencimiento ya abonada.</p>
+
+<p><strong>10. Conducta</strong><br>
+Pedimos respeto y buen trato entre alumnas y con las profesoras. Nos reservamos el derecho de suspender cuentas ante conductas ofensivas.</p>
+
+<p style="color:var(--gris-medio);font-size:12px;margin-top:16px;">Última actualización: julio de 2026. Ante cualquier duda escribinos a ohlaacademy@gmail.com</p>`
+    },
+    privacidad: {
+      titulo: 'Política de privacidad',
+      html: `
+<p><strong>1. Qué datos guardamos</strong><br>
+Guardamos únicamente lo necesario para que la plataforma funcione:</p>
+<ul style="margin-left:18px;">
+<li>Tu nombre y correo electrónico</li>
+<li>Tus preferencias de cursos y tu progreso</li>
+<li>Los certificados que obtenés</li>
+<li>El registro de tus pagos (monto, fecha y medio — <strong>nunca datos de tarjeta</strong>)</li>
+<li>Las consultas que hacés al soporte</li>
+<li>Tu fecha de nacimiento, solo si aplicás al descuento para jubiladas</li>
+</ul>
+
+<p><strong>2. Para qué los usamos</strong><br>
+Para darte acceso a los cursos, emitir tus certificados, avisarte de clases y vencimientos, y responder tus consultas. También para entender qué cursos son más elegidos y mejorar la propuesta.</p>
+
+<p><strong>3. Con quién los compartimos</strong><br>
+No vendemos ni cedemos tus datos. Solo los comparten los servicios que hacen funcionar la app:</p>
+<ul style="margin-left:18px;">
+<li><strong>Firebase (Google):</strong> guarda tu cuenta y tu progreso</li>
+<li><strong>Mercado Pago y PayPal:</strong> procesan los pagos con sus propias políticas</li>
+<li><strong>EmailJS:</strong> envía los mails de certificados y avisos</li>
+<li><strong>Google Meet:</strong> donde se dictan las clases en vivo</li>
+</ul>
+
+<p><strong>4. Clases grabadas</strong><br>
+Las clases en vivo se graban y se comparten solo con las alumnas del curso, por un tiempo limitado. Si no querés aparecer, podés participar con la cámara apagada avisándole antes a tu profe.</p>
+
+<p><strong>5. Tus derechos</strong><br>
+Podés pedirnos en cualquier momento que te mostremos, corrijamos o borremos tus datos escribiendo a <strong>ohlaacademy@gmail.com</strong>. Si nos pedís la baja total, eliminamos tu cuenta y tus datos personales, conservando solo los registros contables que exige la ley.</p>
+
+<p><strong>6. Seguridad</strong><br>
+Tu contraseña está encriptada y no la vemos ni nosotras. El acceso a la base de datos está restringido: cada alumna solo puede ver su propia información.</p>
+
+<p><strong>7. Menores de edad</strong><br>
+La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás que un adulto responsable cree la cuenta y autorice la compra.</p>
+
+<p style="color:var(--gris-medio);font-size:12px;margin-top:16px;">Última actualización: julio de 2026. Consultas: ohlaacademy@gmail.com</p>`
+    }
+  };
+
+  window._abrirLegal = function(tipo) {
+    const t = TEXTO_LEGAL[tipo];
+    if (!t) return;
+    document.getElementById('legal-titulo').textContent = t.titulo;
+    document.getElementById('legal-contenido').innerHTML = t.html;
+    document.getElementById('legal-overlay').style.display = 'flex';
+  }
+
+  window._cerrarLegal = function() {
+    document.getElementById('legal-overlay').style.display = 'none';
+  }
+
+  // ── BAJA DE MEMBRESÍA (desde el perfil de la alumna) ──
+  window._pedirBajaMembresia = async function() {
+    const est = estadoMembresia();
+    const hasta = est ? est.fechaVenc.toLocaleDateString('es-AR') : 'la fecha de vencimiento';
+    if (!confirm('¿Seguro que querés dar de baja tu membresía?\n\nVas a mantener el acceso hasta el ' + hasta + '. Después de esa fecha no vas a poder ingresar a los cursos de membresía, pero tu progreso y tus certificados quedan guardados.')) return;
+
+    try {
+      await set(ref(db, 'usuarios/' + currentUser.uid + '/bajaSolicitada'), {
+        fecha: new Date().toISOString(),
+        accesoHasta: userData?.membresiaVencimiento || ''
+      });
+      userData.bajaSolicitada = { fecha: new Date().toISOString() };
+
+      try {
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+          alumna_nombre: userData?.nombre || currentUser.email,
+          curso_nombre: 'Baja de membresía',
+          fecha_emision: new Date().toLocaleDateString('es-AR'),
+          to_email: 'ohlaacademy@gmail.com',
+          mensaje: (userData?.nombre || currentUser.email) + ' (' + currentUser.email + ') solicitó la baja de su membresía. Mantiene acceso hasta el ' + hasta + '.'
+        });
+      } catch(e) {}
+
+      try {
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+          alumna_nombre: userData?.nombre || 'Alumna',
+          curso_nombre: 'Baja de membresía',
+          fecha_emision: new Date().toLocaleDateString('es-AR'),
+          to_email: currentUser.email,
+          mensaje: 'Recibimos tu solicitud de baja. Mantenés el acceso hasta el ' + hasta + '. Tu progreso y tus certificados quedan guardados por si volvés. ¡Gracias por haber sido parte! Cualquier duda escribinos a ohlaacademy@gmail.com'
+        });
+      } catch(e) {}
+
+      alert('Listo, registramos tu baja. Mantenés el acceso hasta el ' + hasta + '. Te mandamos un mail con el detalle.');
+      renderPerfilMembresia();
+    } catch(e) { alert('No pudimos registrar la baja. Escribinos a ohlaacademy@gmail.com'); }
+  }
+
+  function renderPerfilMembresia() {
+    const cont = document.getElementById('perfil-membresia');
+    if (!cont) return;
+    const est = estadoMembresia();
+    if (userData?.rol !== 'alumna') { cont.innerHTML = ''; return; }
+
+    if (userData?.bajaSolicitada) {
+      const h = userData.membresiaVencimiento ? new Date(userData.membresiaVencimiento).toLocaleDateString('es-AR') : '—';
+      cont.innerHTML = `<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px 14px;font-size:13px;color:#8B3A1A;">
+        Pediste la baja de tu membresía. Tenés acceso hasta el <strong>${h}</strong>.
+        <button class="btn-small" style="margin-top:10px;" onclick="abrirPagos('mensual')">Quiero seguir →</button>
+      </div>`;
+    } else if (userData?.membresia && est) {
+      cont.innerHTML = `<div class="ficha-dato" style="border:none;padding:0;">
+          <span class="ficha-label">Tu membresía vence el</span><span>${est.fechaVenc.toLocaleDateString('es-AR')}</span>
+        </div>
+        <button class="btn-outline" style="margin-top:12px;font-size:12px;padding:7px 14px;" onclick="pedirBajaMembresia()">Dar de baja mi membresía</button>`;
+    } else {
+      cont.innerHTML = `<div style="font-size:13px;color:var(--gris-medio);">No tenés una membresía activa.
+        <button class="btn-small" style="margin-top:10px;display:block;" onclick="abrirPagos('mensual')">Ver planes →</button></div>`;
+    }
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -4056,6 +4247,7 @@
       if (el) el.style.display = t === id ? 'block' : 'none';
     });
     if (id === 'tab-cursos' && currentUser) renderCursos();
+    if (id === 'tab-perfil' && currentUser) renderPerfilMembresia();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
     if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();

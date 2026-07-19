@@ -232,6 +232,18 @@
     .fin-badge.vencida { background:#FFF0EC; color:#8B3A1A; }
     .fin-gasto-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--borde); flex-wrap:wrap; }
 
+    /* FICHA Y STATS */
+    .stat-box { background:var(--gris-claro);border:1px solid var(--borde);border-radius:12px;padding:14px 16px; }
+    .stat-titulo { font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px; }
+    .stat-fila { display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--borde);font-size:13px;color:var(--gris); }
+    .stat-fila:last-child { border-bottom:none; }
+    .stat-num { background:var(--terracota-light);color:#8B3A1A;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:700; }
+    .ficha-seccion { border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:12px; }
+    .ficha-sec-titulo { font-size:11px;color:var(--terracota);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px; }
+    .ficha-dato { display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--gris);border-bottom:1px solid #F5F2EE; }
+    .ficha-dato:last-child { border-bottom:none; }
+    .ficha-label { color:var(--gris-medio); }
+
     /* CURSOS EN VIVO */
     .cv-card { background:#fff;border:1px solid #D8C5E8;border-radius:16px;overflow:hidden;margin-bottom:16px; }
     .cv-header { background:linear-gradient(135deg,#F7F0FF,#FFF5EC);padding:18px 20px; }
@@ -1010,6 +1022,21 @@
           </div>
 
           <div class="admin-panel">
+            <div class="admin-section-title">📊 Estadísticas</div>
+            <div class="admin-section-sub">Qué se compra más y qué preguntan las alumnas</div>
+            <div id="stats-container"><div class="loading"><div class="spinner"></div> Calculando...</div></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">🗂️ Ficha de alumna</div>
+            <div class="admin-section-sub">Elegí una alumna y vas a ver todo su historial en un solo lugar</div>
+            <select id="ficha-selector" class="content-input" style="width:100%;padding:10px;font-size:14px;margin-bottom:16px;" onchange="verFichaAlumna(this.value)">
+              <option value="">— Seleccioná una alumna —</option>
+            </select>
+            <div id="ficha-contenido"></div>
+          </div>
+
+          <div class="admin-panel">
             <div class="admin-section-title">👥 Usuarias registradas</div>
             <div class="admin-section-sub">Cambiá el rol y gestioná el acceso de cada persona.</div>
             <div id="users-list"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
@@ -1201,6 +1228,7 @@
   function cerrarAvisoVenc() { if(window._cerrarAvisoVenc) window._cerrarAvisoVenc(); }
   function guardarAviso() { if(window._guardarAviso) window._guardarAviso(); }
   function cerrarAnuncio() { if(window._cerrarAnuncio) window._cerrarAnuncio(); }
+  function verFichaAlumna(uid) { if(window._verFichaAlumna) window._verFichaAlumna(uid); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -2925,6 +2953,19 @@
         return;
       }
       try {
+        // Guardar la consulta para que el equipo la vea en el panel
+        try {
+          await set(ref(db, 'consultas/' + Date.now()), {
+            uid: currentUser?.uid || '',
+            nombre: userData?.nombre || 'Alumna',
+            email: email,
+            consulta: soporteConsultaPendiente,
+            categoria: 'sin_resolver',
+            fecha: new Date().toISOString(),
+            resuelta: false
+          });
+        } catch(err) { console.error('No se pudo guardar la consulta:', err); }
+
         await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
           alumna_nombre: userData?.nombre || 'Alumna',
           curso_nombre: 'Consulta de soporte',
@@ -2947,6 +2988,18 @@
 
     if (match) {
       setTimeout(() => agregarMsgSoporte('bot', match.resp), 400);
+      // Registrar para estadística (resuelta por el asistente)
+      try {
+        set(ref(db, 'consultas/' + Date.now()), {
+          uid: currentUser?.uid || '',
+          nombre: userData?.nombre || 'Alumna',
+          email: currentUser?.email || '',
+          consulta: texto,
+          categoria: match.keys[0],
+          fecha: new Date().toISOString(),
+          resuelta: true
+        });
+      } catch(err) {}
     } else {
       soporteConsultaPendiente = texto;
       setTimeout(() => {
@@ -3707,6 +3760,195 @@
     } catch(e) { return false; }
   }
 
+  // ── ESTADÍSTICAS Y FICHAS DE ALUMNAS ──
+  let datosFichas = { usuarios:{}, ventas:[], consultas:[], inscripciones:{}, cursosVivo:[] };
+
+  window.loadEstadisticas = async function() {
+    const cont = document.getElementById('stats-container');
+    if (!cont) return;
+    try {
+      const [uSnap, vSnap, cSnap, iSnap, cvSnap] = await Promise.all([
+        get(ref(db, 'usuarios')), get(ref(db, 'ventas')), get(ref(db, 'consultas')),
+        get(ref(db, 'inscripcionesVivo')), get(ref(db, 'cursosVivo'))
+      ]);
+      datosFichas.usuarios = uSnap.exists() ? uSnap.val() : {};
+      datosFichas.ventas = vSnap.exists() ? Object.values(vSnap.val()) : [];
+      datosFichas.consultas = cSnap.exists() ? Object.values(cSnap.val()) : [];
+      datosFichas.inscripciones = iSnap.exists() ? iSnap.val() : {};
+      datosFichas.cursosVivo = cvSnap.exists() ? Object.entries(cvSnap.val()).map(([k,v])=>({...v,_key:k})) : [];
+
+      // Cursos individuales más comprados
+      const compras = {};
+      Object.values(datosFichas.usuarios).forEach(u => {
+        Object.keys(u.cursosComprados || {}).forEach(cid => { compras[cid] = (compras[cid]||0)+1; });
+      });
+      // Inscripciones a cursos en vivo
+      Object.entries(datosFichas.inscripciones).forEach(([cvId, alumnas]) => {
+        const cv = datosFichas.cursosVivo.find(x => x._key === cvId);
+        const nombre = cv ? cv.nombre : 'Curso en vivo';
+        compras['[vivo] ' + nombre] = Object.keys(alumnas).length;
+      });
+      const rankCursos = Object.entries(compras).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+      // Consultas más frecuentes por categoría
+      const cats = {};
+      datosFichas.consultas.forEach(q => { const k = q.categoria || 'otra'; cats[k] = (cats[k]||0)+1; });
+      const rankCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const sinResolver = datosFichas.consultas.filter(q => !q.resuelta).length;
+
+      // Planes vendidos
+      const planes = {};
+      datosFichas.ventas.forEach(v => { const p = v.plan||'otro'; planes[p] = (planes[p]||0)+1; });
+
+      const nombreCurso = cid => {
+        if (cid.startsWith('[vivo] ')) return '🎥 ' + cid.replace('[vivo] ','');
+        for (const cat of catalogo) {
+          const cu = cat.cursos.find(x => x.id === cid);
+          if (cu) return cu.icon + ' ' + cu.nombre;
+        }
+        return cid;
+      };
+      const nombreCat = k => ({
+        'contraseña':'🔑 Contraseña','certificado':'🎓 Certificados','meeting':'📅 Clases en vivo',
+        'pago':'💳 Pagos','modulo':'📚 Módulos','descargar':'📎 Descargas',
+        'cancelar':'❌ Bajas','hola':'👋 Saludos','sin_resolver':'⚠ Sin resolver','otra':'Otras'
+      })[k] || k;
+
+      cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+        <div class="stat-box">
+          <div class="stat-titulo">🔥 Cursos más comprados</div>
+          ${rankCursos.length ? rankCursos.map(([cid,n]) =>
+            `<div class="stat-fila"><span>${nombreCurso(cid)}</span><span class="stat-num">${n}</span></div>`).join('')
+            : '<div style="font-size:12px;color:var(--gris-medio);">Todavía no hay compras registradas.</div>'}
+        </div>
+        <div class="stat-box">
+          <div class="stat-titulo">💬 Consultas más frecuentes</div>
+          ${rankCats.length ? rankCats.map(([k,n]) =>
+            `<div class="stat-fila"><span>${nombreCat(k)}</span><span class="stat-num">${n}</span></div>`).join('')
+            : '<div style="font-size:12px;color:var(--gris-medio);">Todavía no hay consultas.</div>'}
+          ${sinResolver ? `<div style="margin-top:10px;font-size:12px;color:#8B3A1A;background:#FFF5EC;border-radius:8px;padding:8px;">⚠ ${sinResolver} consulta${sinResolver!==1?'s':''} que el asistente no pudo resolver — revisá tu mail</div>` : ''}
+        </div>
+        <div class="stat-box">
+          <div class="stat-titulo">📦 Planes vendidos</div>
+          ${Object.keys(planes).length ? Object.entries(planes).sort((a,b)=>b[1]-a[1]).map(([p,n]) =>
+            `<div class="stat-fila"><span>${p === 'curso' ? '🎓 Curso individual' : p === 'mensual' ? '🌸 Membresía mensual' : p === 'semestral' ? '📅 Semestral' : p}</span><span class="stat-num">${n}</span></div>`).join('')
+            : '<div style="font-size:12px;color:var(--gris-medio);">Sin ventas todavía.</div>'}
+        </div>
+      </div>`;
+
+      poblarSelectorFichas();
+    } catch(e) {
+      cont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al calcular estadísticas.</div>';
+    }
+  }
+
+  function poblarSelectorFichas() {
+    const sel = document.getElementById('ficha-selector');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Seleccioná una alumna —</option>';
+    Object.entries(datosFichas.usuarios).forEach(([uid,u]) => {
+      const o = document.createElement('option');
+      o.value = uid;
+      o.textContent = (u.nombre || u.email) + (u.rol !== 'alumna' ? ' (' + u.rol + ')' : '');
+      sel.appendChild(o);
+    });
+  }
+
+  window._verFichaAlumna = async function(uid) {
+    const cont = document.getElementById('ficha-contenido');
+    if (!uid) { cont.innerHTML = ''; return; }
+    const u = datosFichas.usuarios[uid];
+    if (!u) return;
+    cont.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando ficha...</div>';
+
+    const ventasAlumna = datosFichas.ventas.filter(v => v.alumnaUid === uid);
+    const consultasAlumna = datosFichas.consultas.filter(q => q.uid === uid);
+    const venc = u.membresiaVencimiento ? new Date(u.membresiaVencimiento) : null;
+    const vencida = venc && venc < new Date();
+    const cursosComp = Object.keys(u.cursosComprados || {});
+
+    // Inscripciones a cursos en vivo
+    const insVivo = [];
+    Object.entries(datosFichas.inscripciones).forEach(([cvId, alumnas]) => {
+      if (alumnas[uid]) {
+        const cv = datosFichas.cursosVivo.find(x => x._key === cvId);
+        insVivo.push({ nombre: cv ? cv.nombre : 'Curso', ...alumnas[uid] });
+      }
+    });
+
+    // Progreso y certificados
+    let progreso = {}, certificados = {};
+    try {
+      const [pS, cS] = await Promise.all([
+        get(ref(db, 'usuarios/' + uid + '/progreso')),
+        get(ref(db, 'usuarios/' + uid + '/certificados'))
+      ]);
+      progreso = pS.exists() ? pS.val() : {};
+      certificados = cS.exists() ? cS.val() : {};
+    } catch(e) {}
+
+    const nomCurso = cid => {
+      for (const cat of catalogo) { const cu = cat.cursos.find(x => x.id === cid); if (cu) return cu.icon + ' ' + cu.nombre; }
+      return cid;
+    };
+    const totalPagado = ventasAlumna.reduce((s,v) => s + (v.montoBruto||0), 0);
+
+    cont.innerHTML = `
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Datos</div>
+        <div class="ficha-dato"><span class="ficha-label">Nombre</span><span>${u.nombre||'—'}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Mail</span><span>${u.email||'—'}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Rol</span><span>${u.rol||'alumna'}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Modo de acceso</span><span>${u.modoAcceso === 'individual' ? '📚 Cursos individuales' : u.modoAcceso === 'membresia' ? '🌸 Membresía' : '—'}</span></div>
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Membresía</div>
+        <div class="ficha-dato"><span class="ficha-label">Estado</span><span>${u.membresia ? '<span class="fin-badge activa">Activa</span>' : vencida ? '<span class="fin-badge vencida">Vencida / dada de baja</span>' : '<span class="fin-badge vencida">Sin membresía</span>'}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Plan</span><span>${u.membresiaPlan === 'semestral' ? 'Semestral' : u.membresiaPlan === 'mensual' ? 'Mensual' : '—'}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Vence</span><span>${venc ? venc.toLocaleDateString('es-AR') + (vencida ? ' (vencida)' : '') : '—'}</span></div>
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Cursos comprados (permanentes)</div>
+        ${cursosComp.length ? cursosComp.map(cid =>
+          `<div class="ficha-dato"><span>${nomCurso(cid)}</span><span class="fin-badge activa">✓ Permanente</span></div>`).join('')
+          : '<div style="font-size:12px;color:var(--gris-medio);">No compró cursos individuales.</div>'}
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Cursos en vivo</div>
+        ${insVivo.length ? insVivo.map(i =>
+          `<div class="ficha-dato"><span>🎥 ${i.nombre}</span><span class="fin-badge ${i.estado==='confirmado'?'activa':'vencida'}">${i.estado==='confirmado'?'Confirmada':'Pendiente'}</span></div>`).join('')
+          : '<div style="font-size:12px;color:var(--gris-medio);">No se anotó a cursos en vivo.</div>'}
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Historial de pagos · Total: $${totalPagado.toLocaleString('es-AR')}</div>
+        ${ventasAlumna.length ? ventasAlumna.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(v =>
+          `<div class="ficha-dato"><span>${new Date(v.fecha).toLocaleDateString('es-AR')} · ${v.plan||''} · ${v.medio||''}</span><span>$${(v.montoBruto||0).toLocaleString('es-AR')}</span></div>`).join('')
+          : '<div style="font-size:12px;color:var(--gris-medio);">Sin pagos registrados en la app.</div>'}
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Progreso y certificados</div>
+        <div class="ficha-dato"><span class="ficha-label">Cursos empezados</span><span>${Object.keys(progreso).length}</span></div>
+        <div class="ficha-dato"><span class="ficha-label">Certificados obtenidos</span><span>${Object.keys(certificados).length}</span></div>
+        ${Object.entries(progreso).map(([cid,p]) =>
+          `<div class="ficha-dato"><span>${nomCurso(cid)}</span><span>${(p.completados||[]).length} módulos ✓</span></div>`).join('')}
+      </div>
+
+      <div class="ficha-seccion">
+        <div class="ficha-sec-titulo">Consultas que hizo (${consultasAlumna.length})</div>
+        ${consultasAlumna.length ? consultasAlumna.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,10).map(q =>
+          `<div style="padding:7px 0;border-bottom:1px solid #F5F2EE;">
+            <div style="font-size:13px;color:var(--gris);">"${q.consulta}"</div>
+            <div style="font-size:11px;color:var(--gris-medio);margin-top:2px;">${new Date(q.fecha).toLocaleDateString('es-AR')} · ${q.resuelta ? '✓ Resuelta por el asistente' : '⚠ Derivada a ustedes'}</div>
+          </div>`).join('')
+          : '<div style="font-size:12px;color:var(--gris-medio);">No hizo consultas.</div>'}
+      </div>`;
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -3791,7 +4033,7 @@
       const mostro = await mostrarAnuncio();
       if (!mostro) mostrarAvisoVencimiento();
     }, 1200);
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadUsers(); }
 
     showScreen('screen-home');
 
@@ -3815,7 +4057,7 @@
     });
     if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
-    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadUsers(); }
+    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));

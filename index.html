@@ -747,6 +747,27 @@
     </div>
   </div>
 
+  <!-- AVISO DE VENCIMIENTO DE MEMBRESIA -->
+  <div id="venc-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card" style="max-width:440px;">
+      <div class="pagos-header" id="venc-header">
+        <div style="font-size:44px;margin-bottom:8px;" id="venc-emoji">🌸</div>
+        <div class="pagos-titulo" id="venc-titulo"></div>
+      </div>
+      <div class="pagos-body" style="text-align:center;">
+        <div style="font-size:14px;color:var(--gris);line-height:1.7;margin-bottom:20px;" id="venc-msg"></div>
+        <div style="background:var(--gris-claro);border:1px solid var(--borde);border-radius:12px;padding:14px;font-size:12px;color:var(--gris-medio);line-height:1.6;">
+          💡 Tu progreso y tus certificados quedan guardados.<br>
+          Los cursos que compraste por separado <strong>no se vencen nunca</strong>.
+        </div>
+      </div>
+      <div class="pagos-footer" style="justify-content:center;">
+        <button class="btn-outline" onclick="cerrarAvisoVenc()">Después</button>
+        <button class="btn-small" onclick="cerrarAvisoVenc();abrirPagos('mensual')">Volver a abonar el mes →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CERTIFICADO POPUP -->
   <div id="cert-overlay" class="cert-overlay" style="display:none;">
     <div class="cert-card" style="max-width:min(720px,95vw);max-height:95vh;overflow-y:auto;">
@@ -1135,6 +1156,7 @@
   function confirmarInscripcionCV() { if(window._confirmarInscripcionCV) window._confirmarInscripcionCV(); }
   function elegirHorarioCV(h,t) { if(window._elegirHorarioCV) window._elegirHorarioCV(h,t); }
   function confirmarCursoAdmin(k) { if(window._confirmarCursoAdmin) window._confirmarCursoAdmin(k); }
+  function cerrarAvisoVenc() { if(window._cerrarAvisoVenc) window._cerrarAvisoVenc(); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -1370,7 +1392,7 @@
     });
 
     if (!html) html = '<div style="font-size:13px;color:var(--gris-medio);padding:20px 0;">No hay cursos disponibles aún.</div>';
-    container.innerHTML = html;
+    container.innerHTML = bannerMembresia() + html;
     renderCursosVivoAlumna(container);
 
     // Agregar event listeners a las cards de cursos
@@ -1475,7 +1497,7 @@
       html += '</div>';
     });
 
-    container.innerHTML = html;
+    container.innerHTML = bannerMembresia() + html;
     renderCursosVivoAlumna(container);
 
     // Event listeners para cursos comprados
@@ -1489,6 +1511,7 @@
   window.comprarCursoIndividual = async function(cursoId, cursoNombre, precio) {
     await loadConfigPagos();
     window._cursoEnCompra = cursoId;
+    sessionStorage.setItem('curso_en_compra', cursoId);
     document.getElementById('pagos-titulo').textContent = cursoNombre;
     document.getElementById('pagos-sub').textContent = 'Comprá este curso — acceso permanente';
     // Mostrar solo plan individual en el popup
@@ -2619,12 +2642,26 @@
         }),
         onApprove: async (data, actions) => {
           await actions.order.capture();
-          const diasVenc = planId === 'semestral' ? 180 : 30;
-          const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
-          userData.membresia = true;
+          if (planId === 'curso') {
+            // CURSO INDIVIDUAL: acceso permanente, nunca vence
+            const cid = window._cursoEnCompra;
+            if (cid) {
+              await set(ref(db, 'usuarios/' + currentUser.uid + '/cursosComprados/' + cid), {
+                fecha: new Date().toISOString(), medio: 'PayPal', permanente: true
+              });
+              userData.cursosComprados = userData.cursosComprados || {};
+              userData.cursosComprados[cid] = { permanente: true };
+            }
+          } else {
+            // MEMBRESÍA: vence a los 30 o 180 días
+            const diasVenc = planId === 'semestral' ? 180 : 30;
+            const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
+            userData.membresia = true;
+            userData.membresiaVencimiento = vencimiento;
+          }
           if (typeof registrarVentaFin === 'function') await registrarVentaFin({ plan: planId, montoBruto: precio, medio: 'PayPal' });
           cerrarPagos();
           const div = document.createElement('div');
@@ -2912,12 +2949,24 @@
         await loadConfigPagos();
         const plan = configPagos.planes?.find(p => p.id === planId);
         if (plan) {
-          const diasVenc = planId === 'semestral' ? 180 : 30;
-          const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
-          await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
-          userData.membresia = true;
+          if (planId === 'curso') {
+            const cid = window._cursoEnCompra || sessionStorage.getItem('curso_en_compra');
+            if (cid) {
+              await set(ref(db, 'usuarios/' + currentUser.uid + '/cursosComprados/' + cid), {
+                fecha: new Date().toISOString(), medio: 'Mercado Pago', permanente: true
+              });
+              userData.cursosComprados = userData.cursosComprados || {};
+              userData.cursosComprados[cid] = { permanente: true };
+            }
+          } else {
+            const diasVenc = planId === 'semestral' ? 180 : 30;
+            const vencimiento = new Date(Date.now() + diasVenc*24*60*60*1000).toISOString();
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), true);
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaPlan'), planId);
+            await set(ref(db, 'usuarios/' + currentUser.uid + '/membresiaVencimiento'), vencimiento);
+            userData.membresia = true;
+            userData.membresiaVencimiento = vencimiento;
+          }
           await registrarVentaFin({ plan: planId, montoBruto: plan.precio, medio: 'Mercado Pago' });
           sessionStorage.setItem('mp_registrado_' + params.get('payment_id'), '1');
         }
@@ -3465,6 +3514,99 @@
     } catch(e) { alert('Error al anotarte. Intentá de nuevo o escribinos a ohlaacademy@gmail.com'); }
   }
 
+  // ── CONTROL DE VENCIMIENTO DE MEMBRESÍA ──
+  // Devuelve: { vencida, diasRestantes, fechaVenc } o null si no tiene membresía
+  function estadoMembresia() {
+    if (!userData?.membresia || !userData?.membresiaVencimiento) return null;
+    const venc = new Date(userData.membresiaVencimiento);
+    const ahora = new Date();
+    const dias = Math.ceil((venc - ahora) / (1000*60*60*24));
+    return { vencida: dias < 0, diasRestantes: dias, fechaVenc: venc };
+  }
+
+  // Si venció, le saca la membresía automáticamente
+  async function verificarVencimientoMembresia() {
+    const est = estadoMembresia();
+    if (est && est.vencida) {
+      try {
+        await set(ref(db, 'usuarios/' + currentUser.uid + '/membresia'), false);
+        userData.membresia = false;
+      } catch(e) { console.error('Error dando de baja membresía:', e); }
+    }
+  }
+
+  // Cartel de aviso — se muestra arriba de los cursos
+  function bannerMembresia() {
+    const est = estadoMembresia();
+    const venc = userData?.membresiaVencimiento ? new Date(userData.membresiaVencimiento) : null;
+
+    // Venció y ya está dada de baja
+    if (!userData?.membresia && venc && venc < new Date() && userData?.rol === 'alumna') {
+      const f = venc.toLocaleDateString('es-AR', { day:'numeric', month:'long' });
+      return `<div style="background:#FFF0EC;border:1px solid #F0A090;border-radius:16px;padding:20px 24px;margin-bottom:20px;max-width:640px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#8B3A1A;margin-bottom:8px;">⚠ Tu membresía venció el ${f}</div>
+        <div style="font-size:13px;color:var(--gris);line-height:1.6;margin-bottom:14px;">
+          Se suspendió la actividad que estabas realizando y no vas a poder ingresar a los cursos hasta que vuelvas a abonar. Tu progreso queda guardado.
+        </div>
+        <button class="btn-small" onclick="abrirPagos('mensual')">Volver a abonar el mes →</button>
+      </div>`;
+    }
+
+    // Está por vencer (7 días o menos)
+    if (est && !est.vencida && est.diasRestantes <= 7) {
+      const f = est.fechaVenc.toLocaleDateString('es-AR', { day:'numeric', month:'long' });
+      const d = est.diasRestantes;
+      return `<div style="background:linear-gradient(135deg,#FFF5EC,#FFF0F7);border:1px solid #F0C5A0;border-radius:16px;padding:20px 24px;margin-bottom:20px;max-width:640px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#8B3A1A;margin-bottom:8px;">🌸 Tu membresía vence ${d === 0 ? 'hoy' : d === 1 ? 'mañana' : 'en ' + d + ' días'}</div>
+        <div style="font-size:13px;color:var(--gris);line-height:1.6;margin-bottom:14px;">
+          El <strong>${f}</strong> se da de baja tu membresía. Recordá que se suspende la actividad que estés realizando y no vas a poder ingresar si no abonás.
+        </div>
+        <button class="btn-small" onclick="abrirPagos('mensual')">Volver a abonar el mes →</button>
+      </div>`;
+    }
+    return '';
+  }
+
+  window._cerrarAvisoVenc = function() {
+    document.getElementById('venc-overlay').style.display = 'none';
+  }
+
+  // Muestra el popup de aviso una vez por sesión
+  function mostrarAvisoVencimiento() {
+    if (userData?.rol !== 'alumna') return;
+    if (sessionStorage.getItem('aviso_venc_visto')) return;
+
+    const est = estadoMembresia();
+    const venc = userData?.membresiaVencimiento ? new Date(userData.membresiaVencimiento) : null;
+    let emoji = '', titulo = '', msg = '', headerBg = '';
+
+    if (!userData?.membresia && venc && venc < new Date()) {
+      // Ya venció
+      emoji = '⚠';
+      titulo = 'Tu membresía venció';
+      headerBg = 'linear-gradient(135deg,#FFF0EC,#FFE8E0)';
+      msg = 'Venció el <strong>' + venc.toLocaleDateString('es-AR', {day:'numeric', month:'long'}) +
+        '</strong>. Se suspendió la actividad que estabas realizando y <strong>no vas a poder ingresar a los cursos</strong> hasta que vuelvas a abonar.';
+    } else if (est && !est.vencida && est.diasRestantes <= 7) {
+      // Por vencer
+      const d = est.diasRestantes;
+      emoji = '🌸';
+      titulo = d === 0 ? 'Tu membresía vence hoy' : d === 1 ? 'Tu membresía vence mañana' : 'Tu membresía vence en ' + d + ' días';
+      headerBg = 'linear-gradient(135deg,#F8F8F7,#FFF5EC)';
+      msg = 'El <strong>' + est.fechaVenc.toLocaleDateString('es-AR', {day:'numeric', month:'long'}) +
+        '</strong> se da de baja tu membresía. Recordá que <strong>se suspende la actividad que estés realizando</strong> y no vas a poder ingresar si no abonás.';
+    } else {
+      return;
+    }
+
+    document.getElementById('venc-emoji').textContent = emoji;
+    document.getElementById('venc-titulo').textContent = titulo;
+    document.getElementById('venc-msg').innerHTML = msg;
+    document.getElementById('venc-header').style.background = headerBg;
+    document.getElementById('venc-overlay').style.display = 'flex';
+    sessionStorage.setItem('aviso_venc_visto', '1');
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -3543,7 +3685,9 @@
     document.getElementById('mobile-misclases').style.display = esProfe ? 'flex' : 'none';
 
     await loadCatalogo();
+    await verificarVencimientoMembresia();
     await verificarRetornoMP();
+    setTimeout(mostrarAvisoVencimiento, 1200);
     if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAdminPagos(); loadUsers(); }
 
     showScreen('screen-home');

@@ -747,6 +747,23 @@
     </div>
   </div>
 
+  <!-- AVISO GENERAL DEL EQUIPO -->
+  <div id="anuncio-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card" style="max-width:460px;">
+      <div class="pagos-header">
+        <div style="font-size:40px;margin-bottom:8px;">📢</div>
+        <div class="pagos-titulo" id="anuncio-titulo"></div>
+        <div class="pagos-sub">Un mensaje de Ohla Academy</div>
+      </div>
+      <div class="pagos-body">
+        <div style="font-size:14px;color:var(--gris);line-height:1.8;white-space:pre-wrap;" id="anuncio-mensaje"></div>
+      </div>
+      <div class="pagos-footer" style="justify-content:center;">
+        <button class="btn-small" onclick="cerrarAnuncio()">Entendido 🌸</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AVISO DE VENCIMIENTO DE MEMBRESIA -->
   <div id="venc-overlay" class="pagos-overlay" style="display:none;">
     <div class="pagos-card" style="max-width:440px;">
@@ -912,6 +929,31 @@
               <div style="font-size:11px;color:var(--gris-medio);margin-top:8px;">💡 Consejo: dejala visible 1 semana para que no se acumulen muchas. Después la podés vender como curso pregrabado.</div>
             </div>
             <div class="msg msg-success" id="grab-ok" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📢 Aviso para las alumnas</div>
+            <div class="admin-section-sub">Escribí un mensaje y le aparece como popup a todas apenas entran a la app. Ideal para avisar aumentos, cambios de horario o novedades.</div>
+            <div class="field-group">
+              <label class="field-label">Título del aviso</label>
+              <input type="text" id="aviso-titulo" class="field-input" placeholder="Ej: Aumento a partir de agosto">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Mensaje</label>
+              <textarea id="aviso-mensaje" class="content-textarea" style="min-height:100px;" placeholder="Ej: A partir del mes de agosto las clases mensuales tendrán un aumento del 10%. Las alumnas con plan semestral no se ven afectadas."></textarea>
+            </div>
+            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gris);cursor:pointer;">
+                <input type="checkbox" id="aviso-activo" style="width:18px;height:18px;accent-color:#C4723A;cursor:pointer;">
+                Mostrar este aviso ahora
+              </label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:12px;color:var(--gris-medio);">Ocultar después del</span>
+                <input type="date" id="aviso-hasta" class="content-input" style="width:150px;margin:0;">
+              </div>
+            </div>
+            <button class="btn-small" onclick="guardarAviso()">Guardar aviso</button>
+            <div class="msg msg-success" id="aviso-ok" style="margin-top:10px;"></div>
           </div>
 
           <div class="admin-panel">
@@ -1157,6 +1199,8 @@
   function elegirHorarioCV(h,t) { if(window._elegirHorarioCV) window._elegirHorarioCV(h,t); }
   function confirmarCursoAdmin(k) { if(window._confirmarCursoAdmin) window._confirmarCursoAdmin(k); }
   function cerrarAvisoVenc() { if(window._cerrarAvisoVenc) window._cerrarAvisoVenc(); }
+  function guardarAviso() { if(window._guardarAviso) window._guardarAviso(); }
+  function cerrarAnuncio() { if(window._cerrarAnuncio) window._cerrarAnuncio(); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -3607,6 +3651,62 @@
     sessionStorage.setItem('aviso_venc_visto', '1');
   }
 
+  // ── AVISO GENERAL DEL EQUIPO ──
+  window.loadAvisoAdmin = async function() {
+    try {
+      const snap = await get(ref(db, 'config/aviso'));
+      if (!snap.exists()) return;
+      const a = snap.val();
+      const t = document.getElementById('aviso-titulo');
+      if (!t) return;
+      t.value = a.titulo || '';
+      document.getElementById('aviso-mensaje').value = a.mensaje || '';
+      document.getElementById('aviso-activo').checked = !!a.activo;
+      document.getElementById('aviso-hasta').value = a.hasta || '';
+    } catch(e) {}
+  }
+
+  window._guardarAviso = async function() {
+    const titulo = document.getElementById('aviso-titulo').value.trim();
+    const mensaje = document.getElementById('aviso-mensaje').value.trim();
+    const activo = document.getElementById('aviso-activo').checked;
+    const hasta = document.getElementById('aviso-hasta').value;
+    if (activo && (!titulo || !mensaje)) { alert('Escribí el título y el mensaje del aviso.'); return; }
+    try {
+      await set(ref(db, 'config/aviso'), {
+        titulo, mensaje, activo, hasta,
+        version: Date.now()
+      });
+      const ok = document.getElementById('aviso-ok');
+      ok.textContent = activo ? '✦ Aviso guardado — ya lo ven las alumnas al entrar' : '✦ Aviso guardado (desactivado)';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3500);
+    } catch(e) { alert('Error al guardar el aviso.'); }
+  }
+
+  window._cerrarAnuncio = function() {
+    document.getElementById('anuncio-overlay').style.display = 'none';
+  }
+
+  async function mostrarAnuncio() {
+    try {
+      const snap = await get(ref(db, 'config/aviso'));
+      if (!snap.exists()) return false;
+      const a = snap.val();
+      if (!a.activo || !a.titulo || !a.mensaje) return false;
+      // Si tiene fecha límite y ya pasó, no mostrar
+      if (a.hasta && a.hasta < new Date().toISOString().split('T')[0]) return false;
+      // Se muestra una vez por sesión por cada versión del mensaje
+      const clave = 'anuncio_visto_' + (a.version || '0');
+      if (sessionStorage.getItem(clave)) return false;
+      document.getElementById('anuncio-titulo').textContent = a.titulo;
+      document.getElementById('anuncio-mensaje').textContent = a.mensaje;
+      document.getElementById('anuncio-overlay').style.display = 'flex';
+      sessionStorage.setItem(clave, '1');
+      return true;
+    } catch(e) { return false; }
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -3687,8 +3787,11 @@
     await loadCatalogo();
     await verificarVencimientoMembresia();
     await verificarRetornoMP();
-    setTimeout(mostrarAvisoVencimiento, 1200);
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAdminPagos(); loadUsers(); }
+    setTimeout(async () => {
+      const mostro = await mostrarAnuncio();
+      if (!mostro) mostrarAvisoVencimiento();
+    }, 1200);
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadUsers(); }
 
     showScreen('screen-home');
 
@@ -3712,7 +3815,7 @@
     });
     if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
-    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAdminPagos(); loadUsers(); }
+    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));

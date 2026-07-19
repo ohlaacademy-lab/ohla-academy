@@ -612,6 +612,20 @@
         <div id="tab-meetings" style="display:none;">
           <div class="greeting">📅 Meetings en vivo</div>
           <div class="greeting-sub">Consultas semanales con Flor y Mery</div>
+
+          <!-- REGLAS DE LA CLASE -->
+          <div style="background:linear-gradient(135deg,#FFF5EC,#FFF0F7);border:1px solid #F0C5A0;border-radius:16px;padding:20px 24px;margin-bottom:24px;max-width:640px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#8B3A1A;margin-bottom:12px;">✦ Cómo funcionan nuestras clases</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">⏱️</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">Cada clase dura <strong>50 minutos</strong>.</div></div>
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">🎥</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">Las clases <strong>se graban</strong> para que puedas verlas después.</div></div>
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">🔇</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">Entrá siempre con el <strong>micrófono apagado</strong>.</div></div>
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">📷</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">La <strong>cámara tiene que estar prendida</strong> durante la clase.</div></div>
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">✍️</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">Todas las consultas se hacen <strong>por escrito en el chat</strong>.</div></div>
+              <div style="display:flex;gap:10px;align-items:flex-start;"><span style="flex-shrink:0;">🌸</span><div style="font-size:13px;color:var(--gris);line-height:1.5;">La profe responde <strong>en orden, de la primera pregunta a la última</strong> — no hace falta que la repitas, ya la vimos.</div></div>
+            </div>
+          </div>
+
           <div id="meetings-content">
             <div class="loading"><div class="spinner"></div> Cargando meetings...</div>
           </div>
@@ -638,6 +652,16 @@
         <!-- Planes -->
         <div id="planes-aviso" style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px 14px;font-size:13px;color:#8B3A1A;margin-bottom:12px;">Por favor ingresá tu fecha de nacimiento para ver los planes disponibles. Esto nos permite aplicar descuentos especiales automáticamente.</div>
         <div id="planes-container"></div>
+
+        <!-- Reglas resumidas antes de pagar -->
+        <div style="background:var(--gris-claro);border:1px solid var(--borde);border-radius:12px;padding:14px 16px;margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--gris);margin-bottom:8px;">✦ Sobre las clases en vivo</div>
+          <div style="font-size:12px;color:var(--gris-medio);line-height:1.7;">
+            ⏱️ Duran 50 minutos &nbsp;·&nbsp; 🎥 Se graban &nbsp;·&nbsp; 🔇 Micrófono apagado<br>
+            📷 Cámara prendida &nbsp;·&nbsp; ✍️ Consultas por escrito en el chat<br>
+            🌸 La profe responde en orden, de la primera pregunta a la última
+          </div>
+        </div>
 
         <!-- Brick de MercadoPago -->
         <div id="mp-brick-container"></div>
@@ -797,12 +821,28 @@
           </div>
 
           <div class="admin-panel">
-            <div class="admin-section-title">📅 Meetings en vivo</div>
-            <div class="admin-section-sub">Programá las reuniones semanales. Las alumnas con membresía las verán automáticamente.</div>
-            <div id="meetings-admin-list"></div>
-            <button class="add-cat-btn" style="margin-top:12px;" onclick="agregarMeeting()">+ Programar nuevo meeting</button>
-            <div style="margin-top:12px;"><button class="btn-small" onclick="guardarMeetings()">Guardar meetings</button></div>
-            <div class="msg msg-success" id="meetings-ok" style="margin-top:10px;"></div>
+            <div class="admin-section-title">📼 Clases grabadas</div>
+            <div class="admin-section-sub">Subí las grabaciones de las clases en vivo. Elegís hasta cuándo quedan visibles para las alumnas — después se ocultan solas y podés venderlas como curso pregrabado.</div>
+            <div id="grabaciones-lista"></div>
+            <div style="background:var(--gris-claro);border-radius:12px;padding:16px;margin-top:12px;">
+              <div style="font-size:13px;font-weight:700;color:var(--gris);margin-bottom:10px;">+ Agregar grabación</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <input type="text" id="grab-titulo" class="content-input" style="flex:2;min-width:180px;margin:0;" placeholder="Título de la clase (ej: Crochet — Semana 1)">
+                <input type="text" id="grab-profe" class="content-input" style="flex:1;min-width:120px;margin:0;" placeholder="Profe">
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <input type="text" id="grab-url" class="content-input" style="flex:2;min-width:200px;margin:0;" placeholder="Link de YouTube (no listado) o Google Drive">
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                <div style="flex:1;min-width:150px;">
+                  <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Visible hasta</div>
+                  <input type="date" id="grab-hasta" class="content-input" style="margin:0;">
+                </div>
+                <button class="btn-small" onclick="agregarGrabacion()">+ Agregar</button>
+              </div>
+              <div style="font-size:11px;color:var(--gris-medio);margin-top:8px;">💡 Consejo: dejala visible 1 semana para que no se acumulen muchas. Después la podés vender como curso pregrabado.</div>
+            </div>
+            <div class="msg msg-success" id="grab-ok" style="margin-top:10px;"></div>
           </div>
 
           <div class="admin-panel">
@@ -961,6 +1001,8 @@
   function programarClaseProfe() { if(window._programarClaseProfe) window._programarClaseProfe(); }
   function eliminarClaseProfe(k) { if(window._eliminarClaseProfe) window._eliminarClaseProfe(k); }
   function entrarComoProfe(k) { if(window._entrarComoProfe) window._entrarComoProfe(k); }
+  function agregarGrabacion() { if(window._agregarGrabacion) window._agregarGrabacion(); }
+  function eliminarGrabacion(k) { if(window._eliminarGrabacion) window._eliminarGrabacion(k); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -1797,6 +1839,33 @@
     });
 
     container.innerHTML = html;
+    renderGrabacionesAlumna(container);
+  }
+
+  async function renderGrabacionesAlumna(container) {
+    try {
+      const snap = await get(ref(db, 'grabaciones'));
+      if (!snap.exists()) return;
+      const hoy = new Date().toISOString().split('T')[0];
+      const visibles = Object.values(snap.val()).filter(g => !g.visibleHasta || g.visibleHasta >= hoy);
+      if (visibles.length === 0) return;
+      visibles.sort((a,b) => new Date(b.fechaAlta||0) - new Date(a.fechaAlta||0));
+      const html = '<div class="section-label" style="margin-top:28px;">📼 Clases grabadas disponibles</div>' +
+        visibles.map(g => `<div class="meeting-card">
+          <div class="meeting-card-header">
+            <div style="width:10px;flex-shrink:0;"></div>
+            <div class="meeting-card-info">
+              <div class="meeting-titulo">${g.titulo}</div>
+              <div class="meeting-fecha">${g.profe ? 'Con ' + g.profe : ''}${g.visibleHasta ? ' · disponible hasta el ' + new Date(g.visibleHasta+'T12:00').toLocaleDateString('es-AR') : ''}</div>
+            </div>
+          </div>
+          <div class="meeting-card-footer">
+            <span class="meeting-estado estado-grabado">📼 Grabación</span>
+            <a href="${g.url}" target="_blank"><button class="btn-grabacion">▶ Ver clase</button></a>
+          </div>
+        </div>`).join('');
+      container.insertAdjacentHTML('beforeend', html);
+    } catch(e) { console.error('Error grabaciones:', e); }
   }
 
   function tiempoHasta(fecha) {
@@ -1832,8 +1901,33 @@
           width: '100%',
           height: '100%',
           userInfo: { displayName: (esHostSala ? '⭐ ' : '') + nombre },
-          configOverwrite: { prejoinPageEnabled: false, disableDeepLinking: true },
-          interfaceConfigOverwrite: { TOOLBAR_BUTTONS: ['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','tileview','select-background'] }
+          configOverwrite: {
+            prejoinPageEnabled: false,
+            disableDeepLinking: true,
+            startWithAudioMuted: false,
+            startWithVideoMuted: false,
+            enableWelcomePage: false,
+            disableThirdPartyRequests: true,
+            p2p: { enabled: true },
+            disableInviteFunctions: true,
+            hideConferenceSubject: true,
+            hideConferenceTimer: false,
+            requireDisplayName: false
+          },
+          interfaceConfigOverwrite: {
+            TOOLBAR_BUTTONS: ['microphone','camera','desktop','fullscreen','hangup','chat','raisehand','tileview','settings'],
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+            DISPLAY_WELCOME_PAGE_CONTENT: false,
+            DISPLAY_WELCOME_FOOTER: false,
+            MOBILE_APP_PROMO: false,
+            HIDE_DEEP_LINKING_LOGO: true,
+            DEFAULT_BACKGROUND: '#1a1a1a',
+            DISABLE_JOIN_LEAVE_NOTIFICATIONS: false
+          }
         });
         jitsiApi.addEventListener('participantJoined', updateParticipantesCount);
         jitsiApi.addEventListener('participantLeft', updateParticipantesCount);
@@ -1949,69 +2043,71 @@
     document.getElementById('tab-part-btn').style.borderBottom = tab === 'participantes' ? '2px solid #C4723A' : 'none';
   }
 
-  // ── ADMIN MEETINGS ──
-  let meetingsEdit = [];
+  // ── ADMIN: CLASES GRABADAS ──
+  let grabacionesData = [];
 
-  async function loadMeetingsAdmin() {
-    const snap = await get(ref(db, 'meetings'));
-    meetingsEdit = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key: k})) : [];
-    renderMeetingsAdmin();
+  window.loadGrabacionesAdmin = async function() {
+    const cont = document.getElementById('grabaciones-lista');
+    if (!cont) return;
+    try {
+      const snap = await get(ref(db, 'grabaciones'));
+      grabacionesData = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+      grabacionesData.sort((a,b) => new Date(b.fechaAlta||0) - new Date(a.fechaAlta||0));
+      renderGrabacionesAdmin();
+    } catch(e) {
+      cont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar grabaciones.</div>';
+    }
   }
 
-  function renderMeetingsAdmin() {
-    const list = document.getElementById('meetings-admin-list');
-    if (!list) return;
-    if (meetingsEdit.length === 0) {
-      list.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">No hay meetings programados aún.</div>';
+  function renderGrabacionesAdmin() {
+    const cont = document.getElementById('grabaciones-lista');
+    if (!cont) return;
+    if (grabacionesData.length === 0) {
+      cont.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">Todavía no hay grabaciones cargadas.</div>';
       return;
     }
-    list.innerHTML = meetingsEdit.map((m, i) => `
-      <div class="meeting-admin-row">
-        <div style="flex:1;min-width:160px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Título</div>
-          <input class="content-input" value="${m.titulo||''}" placeholder="Ej: Consultas semana 1" oninput="meetingsEdit[${i}].titulo=this.value">
+    const hoy = new Date().toISOString().split('T')[0];
+    cont.innerHTML = grabacionesData.map(g => {
+      const vencida = g.visibleHasta && g.visibleHasta < hoy;
+      return `<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap;">
+        <div style="flex:2;min-width:160px;">
+          <div style="font-size:14px;font-weight:700;color:var(--gris);">${g.titulo}</div>
+          <div style="font-size:11px;color:var(--gris-medio);">${g.profe||''} ${g.visibleHasta ? '· visible hasta ' + new Date(g.visibleHasta+'T12:00').toLocaleDateString('es-AR') : '· sin límite'}</div>
         </div>
-        <div style="min-width:160px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Fecha y hora</div>
-          <input type="datetime-local" class="content-input" value="${m.fecha ? toLocalInput(new Date(m.fecha)) : ''}" oninput="meetingsEdit[${i}].fecha=new Date(this.value + ':00-03:00').toISOString()">
-        </div>
-        <div style="width:80px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Duración (min)</div>
-          <input type="number" class="content-input" value="${m.duracion||60}" min="15" max="240" oninput="meetingsEdit[${i}].duracion=parseInt(this.value)">
-        </div>
-        <div style="flex:1;min-width:160px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">ID de sala (ej: consultas-ohla)</div>
-          <input class="content-input" value="${m.roomUrl||''}" placeholder="consultas-ohla" oninput="meetingsEdit[${i}].roomUrl=this.value">
-        </div>
-        <div style="flex:1;min-width:160px;">
-          <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Link grabación (opcional)</div>
-          <input class="content-input" value="${m.grabacionUrl||''}" placeholder="Link de YouTube o Drive" oninput="meetingsEdit[${i}].grabacionUrl=this.value">
-        </div>
-        <button class="btn-danger" style="align-self:flex-end;" onclick="eliminarMeeting(${i})">✕</button>
-      </div>`).join('');
+        <span class="fin-badge ${vencida ? 'vencida' : 'activa'}">${vencida ? 'Oculta' : 'Visible'}</span>
+        <a href="${g.url}" target="_blank"><button class="btn-outline" style="font-size:11px;padding:5px 10px;">▶ Ver</button></a>
+        <button class="btn-danger" onclick="eliminarGrabacion('${g._key}')">✕</button>
+      </div>`;
+    }).join('');
   }
 
-  window.agregarMeeting = function() {
-    meetingsEdit.push({ titulo: 'Consultas en vivo', fecha: new Date().toISOString(), duracion: 60, roomUrl: '', grabacionUrl: '' });
-    renderMeetingsAdmin();
-  }
-
-  window.eliminarMeeting = function(i) {
-    meetingsEdit.splice(i, 1);
-    renderMeetingsAdmin();
-  }
-
-  window.guardarMeetings = async function() {
+  window._agregarGrabacion = async function() {
+    const titulo = document.getElementById('grab-titulo').value.trim();
+    const profe = document.getElementById('grab-profe').value.trim();
+    const url = document.getElementById('grab-url').value.trim();
+    const visibleHasta = document.getElementById('grab-hasta').value;
+    if (!titulo || !url) { alert('Completá al menos el título y el link de la grabación.'); return; }
     try {
-      const obj = {};
-      meetingsEdit.forEach((m, i) => { obj[m._key || `meeting_${Date.now()}_${i}`] = m; });
-      await set(ref(db, 'meetings'), obj);
-      loadMeetings();
-      const ok = document.getElementById('meetings-ok');
-      ok.textContent = '✦ Meetings guardados correctamente';
+      await set(ref(db, 'grabaciones/' + Date.now()), {
+        titulo, profe, url, visibleHasta,
+        fechaAlta: new Date().toISOString()
+      });
+      document.getElementById('grab-titulo').value = '';
+      document.getElementById('grab-profe').value = '';
+      document.getElementById('grab-url').value = '';
+      document.getElementById('grab-hasta').value = '';
+      const ok = document.getElementById('grab-ok');
+      ok.textContent = '✦ Grabación agregada — ya la ven las alumnas con membresía';
       ok.classList.add('show');
-      setTimeout(() => ok.classList.remove('show'), 3000);
-    } catch(e) { alert('Error al guardar.'); }
+      setTimeout(() => ok.classList.remove('show'), 3500);
+      loadGrabacionesAdmin();
+    } catch(e) { alert('Error al guardar la grabación.'); }
+  }
+
+  window._eliminarGrabacion = async function(key) {
+    if (!confirm('¿Eliminar esta grabación?')) return;
+    try { await set(ref(db, 'grabaciones/' + key), null); loadGrabacionesAdmin(); }
+    catch(e) { alert('Error al eliminar.'); }
   }
 
   // ── SISTEMA DE CERTIFICADOS ──
@@ -2988,7 +3084,7 @@
 
     await loadCatalogo();
     await verificarRetornoMP();
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadAdminPagos(); loadUsers(); }
 
     showScreen('screen-home');
 
@@ -3012,7 +3108,7 @@
     });
     if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
-    if (id === 'tab-admin' && currentUser) { loadMeetingsAdmin(); loadAdminPagos(); loadUsers(); }
+    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadAdminPagos(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));

@@ -934,18 +934,46 @@
               <input type="text" id="mc-titulo" class="field-input" placeholder="Ej: Crochet — Puntos básicos">
             </div>
             <div class="field-group">
+              <label class="field-label">Link de Google Meet</label>
+              <input type="text" id="mc-meet" class="field-input" placeholder="https://meet.google.com/abc-defg-hij">
+              <div style="font-size:11px;color:var(--gris-medio);margin-top:5px;">Creá el link una vez en meet.google.com y usalo siempre para esta clase.</div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">¿Cada cuánto se dicta?</label>
+              <select id="mc-tipo" class="field-input" onchange="cambiarTipoClase()">
+                <option value="unica">Una sola vez (fecha puntual)</option>
+                <option value="semanal">Todas las semanas (fijo)</option>
+              </select>
+            </div>
+            <div class="field-group" id="mc-grupo-unica">
               <label class="field-label">Fecha y hora</label>
               <input type="datetime-local" id="mc-fecha" class="field-input">
             </div>
+            <div class="field-group" id="mc-grupo-semanal" style="display:none;">
+              <label class="field-label">Día de la semana y horario</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <select id="mc-dia" class="field-input" style="flex:2;min-width:130px;">
+                  <option value="1">Lunes</option>
+                  <option value="2">Martes</option>
+                  <option value="3">Miércoles</option>
+                  <option value="4">Jueves</option>
+                  <option value="5">Viernes</option>
+                  <option value="6">Sábado</option>
+                  <option value="0">Domingo</option>
+                </select>
+                <input type="time" id="mc-hora" class="field-input" style="flex:1;min-width:110px;" value="15:00">
+              </div>
+            </div>
             <div class="field-group">
               <label class="field-label">Duración (minutos)</label>
-              <input type="number" id="mc-duracion" class="field-input" value="60" min="15" max="240">
+              <input type="number" id="mc-duracion" class="field-input" value="50" min="15" max="240">
             </div>
             <button class="btn-primary" onclick="programarClaseProfe()">Programar mi clase →</button>
             <div class="msg msg-success" id="mc-ok" style="margin-top:12px;"></div>
           </div>
-          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:14px;margin-top:16px;font-size:12px;color:#8B3A1A;">
-            💡 Para que la clase se grabe, activá la grabación de pantalla de tu compu antes de entrar (Windows: <strong>Win+G</strong> — Mac: <strong>Cmd+Shift+5</strong>). Al terminar, subí el video a YouTube como "No listado" y pasale el link a Flor o Mery para agregarlo como grabación.
+          <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:14px;margin-top:16px;font-size:12px;color:#8B3A1A;line-height:1.6;">
+            💡 <strong>Cómo crear tu link de Meet:</strong> entrá a <strong>meet.google.com</strong> → "Nueva reunión" → "Crear una reunión para más tarde" → copiá el link y pegalo acá. Ese link te sirve para siempre.<br><br>
+            🎥 <strong>Para grabar:</strong> activá la grabación de pantalla antes de entrar (Windows: <strong>Win+G</strong> — Mac: <strong>Cmd+Shift+5</strong>). Al terminar subí el video a YouTube como "No listado" y pasale el link a Flor o Mery.
           </div>
         </div>
 
@@ -999,6 +1027,7 @@
   function recalcularFinanzas() { if(window._recalcularFinanzas) window._recalcularFinanzas(); }
   function eliminarGastoFin(k) { if(window._eliminarGastoFin) window._eliminarGastoFin(k); }
   function programarClaseProfe() { if(window._programarClaseProfe) window._programarClaseProfe(); }
+  function cambiarTipoClase() { if(window._cambiarTipoClase) window._cambiarTipoClase(); }
   function eliminarClaseProfe(k) { if(window._eliminarClaseProfe) window._eliminarClaseProfe(k); }
   function entrarComoProfe(k) { if(window._entrarComoProfe) window._entrarComoProfe(k); }
   function agregarGrabacion() { if(window._agregarGrabacion) window._agregarGrabacion(); }
@@ -1788,9 +1817,13 @@
       return;
     }
 
+    const DIAS_SEM = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
     let html = '';
     meetingsData.forEach(m => {
-      const fecha = new Date(m.fecha);
+      // Para clases semanales, calcular la proxima ocurrencia real
+      const fecha = m.recurrente
+        ? proximaOcurrencia(m.diaSemana, m.hora, m.duracion)
+        : new Date(m.fecha);
       const fin = new Date(fecha.getTime() + (m.duracion || 60) * 60000);
       const estaVivo = ahora >= fecha && ahora <= fin;
       const esProximo = fecha > ahora;
@@ -1804,14 +1837,15 @@
       const msAntes2 = fecha - ahora;
       const minAntes2 = msAntes2 / 60000;
       let botonHtml = '';
-      if (yaTermino) {
+      const linkClase = m.meetUrl || '';
+      if (yaTermino && !m.recurrente) {
         botonHtml = m.grabacionUrl
           ? `<a href="${m.grabacionUrl}" target="_blank"><button class="btn-grabacion">▶ Ver grabación</button></a>`
           : `<span style="font-size:12px;color:var(--gris-medio);">Grabación no disponible</span>`;
-      } else if (esHost2 && minAntes2 <= 10) {
-        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',true)">${estaVivo ? '🔴 Iniciar clase' : '⚙️ Preparar sala'}</button>`;
-      } else if (!esHost2 && estaVivo) {
-        botonHtml = `<button class="btn-entrar" onclick="entrarSala('${m.roomUrl || 'consultas-ohla'}','${m.titulo}',false)">🔴 Entrar ahora</button>`;
+      } else if (linkClase && (estaVivo || (esHost2 && minAntes2 <= 10))) {
+        botonHtml = `<a href="${linkClase}" target="_blank" rel="noopener"><button class="btn-entrar">${estaVivo ? '🔴 Entrar a la clase' : '⚙️ Abrir sala'}</button></a>`;
+      } else if (!linkClase && (estaVivo || (esHost2 && minAntes2 <= 10))) {
+        botonHtml = `<span style="font-size:12px;color:var(--gris-medio);">Falta cargar el link de la clase</span>`;
       } else if (esProximo) {
         botonHtml = `<div style="text-align:right;"><div style="font-size:12px;color:var(--terracota);font-weight:700;">⏰ En ${tiempoHasta(fecha)}</div></div>`;
       }
@@ -1821,7 +1855,8 @@
           ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
           <div class="meeting-card-info">
             <div class="meeting-titulo">${m.titulo}</div>
-            <div class="meeting-fecha">${fechaStr} · ${horaStr} hs · ${m.duracion || 60} min · Con Flor y Mery</div>
+            <div class="meeting-fecha">${m.recurrente ? 'Todos los ' + DIAS_SEM[m.diaSemana] + ' · ' + (m.hora||'') + ' hs' : fechaStr + ' · ' + horaStr + ' hs'} · ${m.duracion || 50} min${m.profeNombre ? ' · Con ' + m.profeNombre : ''}</div>
+            ${m.recurrente ? `<div style="font-size:11px;color:var(--terracota);margin-top:3px;">🔁 Clase semanal · próxima: ${fechaStr}</div>` : ''}
             ${m.descripcion ? `<div style="font-size:13px;color:var(--gris-medio);margin-top:6px;">${m.descripcion}</div>` : ''}
           </div>
         </div>
@@ -2937,25 +2972,30 @@
         return;
       }
       const ahora = new Date();
+      const DIAS_S = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
       cont.innerHTML = mias.map(m => {
-        const fecha = new Date(m.fecha);
-        const fin = new Date(fecha.getTime() + (m.duracion||60)*60000);
+        const fecha = m.recurrente ? proximaOcurrencia(m.diaSemana, m.hora, m.duracion) : new Date(m.fecha);
+        const fin = new Date(fecha.getTime() + (m.duracion||50)*60000);
         const estaVivo = ahora >= fecha && ahora <= fin;
-        const yaTermino = ahora > fin;
+        const yaTermino = !m.recurrente && ahora > fin;
         const msAntes = (fecha - ahora) / 60000;
         const puedeEntrar = !yaTermino && msAntes <= 10;
+        const cuando = m.recurrente
+          ? 'Todos los ' + DIAS_S[m.diaSemana] + ' · ' + (m.hora||'') + ' hs'
+          : fecha.toLocaleDateString('es-AR') + ' · ' + fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) + ' hs';
         return `<div class="meeting-card">
           <div class="meeting-card-header">
             ${estaVivo ? '<div class="meeting-live-dot"></div>' : '<div style="width:10px;flex-shrink:0;"></div>'}
             <div class="meeting-card-info">
               <div class="meeting-titulo">${m.titulo}</div>
-              <div class="meeting-fecha">${fecha.toLocaleDateString('es-AR')} · ${fecha.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})} hs · ${m.duracion||60} min</div>
+              <div class="meeting-fecha">${cuando} · ${m.duracion||50} min</div>
+              ${m.recurrente ? `<div style="font-size:11px;color:var(--terracota);margin-top:3px;">🔁 Semanal · próxima: ${fecha.toLocaleDateString('es-AR')}</div>` : ''}
             </div>
           </div>
           <div class="meeting-card-footer">
             <span class="meeting-estado ${estaVivo?'estado-vivo':yaTermino?'estado-grabado':'estado-proximo'}">${estaVivo?'🔴 En vivo':yaTermino?'📼 Finalizada':'⏰ Programada'}</span>
             <div style="display:flex;gap:8px;">
-              ${puedeEntrar ? `<button class="btn-entrar" onclick="entrarComoProfe('${m._key}')">${estaVivo?'🔴 Iniciar clase':'⚙️ Preparar sala'}</button>` : ''}
+              ${puedeEntrar && m.meetUrl ? `<a href="${m.meetUrl}" target="_blank" rel="noopener"><button class="btn-entrar">${estaVivo?'🔴 Iniciar clase':'⚙️ Abrir sala'}</button></a>` : ''}
               ${!yaTermino ? `<button class="btn-danger" onclick="eliminarClaseProfe('${m._key}')">✕ Cancelar</button>` : ''}
             </div>
           </div>
@@ -2964,27 +3004,71 @@
     } catch(e) { cont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar tus clases.</div>'; }
   }
 
+  window._cambiarTipoClase = function() {
+    const tipo = document.getElementById('mc-tipo').value;
+    document.getElementById('mc-grupo-unica').style.display = tipo === 'unica' ? 'block' : 'none';
+    document.getElementById('mc-grupo-semanal').style.display = tipo === 'semanal' ? 'block' : 'none';
+  }
+
+  // Calcula la proxima ocurrencia de una clase semanal (dia 0=domingo..6=sabado, hora "HH:MM")
+  function proximaOcurrencia(diaSemana, hora, duracionMin) {
+    const [h, m] = (hora || '15:00').split(':').map(Number);
+    const ahora = new Date();
+    const d = new Date(ahora);
+    d.setHours(h, m, 0, 0);
+    let diff = (Number(diaSemana) - d.getDay() + 7) % 7;
+    d.setDate(d.getDate() + diff);
+    // Si es hoy pero ya termino, pasar a la semana que viene
+    if (diff === 0 && (ahora - d) > (duracionMin || 50) * 60000) {
+      d.setDate(d.getDate() + 7);
+    }
+    return d;
+  }
+
   window._programarClaseProfe = async function() {
     const titulo = document.getElementById('mc-titulo').value.trim();
-    const fechaVal = document.getElementById('mc-fecha').value;
-    const duracion = parseInt(document.getElementById('mc-duracion').value) || 60;
-    if (!titulo || !fechaVal) { alert('Completá el tema y la fecha de tu clase.'); return; }
-    const fecha = new Date(fechaVal + ':00-03:00').toISOString();
+    const meetUrl = document.getElementById('mc-meet').value.trim();
+    const tipo = document.getElementById('mc-tipo').value;
+    const duracion = parseInt(document.getElementById('mc-duracion').value) || 50;
+
+    if (!titulo) { alert('Poné el tema de tu clase.'); return; }
+    if (!meetUrl || !meetUrl.includes('meet.google.com')) {
+      alert('Pegá un link válido de Google Meet (tiene que empezar con https://meet.google.com/).');
+      return;
+    }
+
     const key = 'clase_' + currentUser.uid + '_' + Date.now();
+    const base = {
+      titulo: (userData?.nombre || 'Profe') + ' — ' + titulo,
+      duracion,
+      meetUrl,
+      profeUid: currentUser.uid,
+      profeNombre: userData?.nombre || currentUser.email
+    };
+
+    if (tipo === 'semanal') {
+      const diaSemana = document.getElementById('mc-dia').value;
+      const hora = document.getElementById('mc-hora').value || '15:00';
+      base.recurrente = true;
+      base.diaSemana = Number(diaSemana);
+      base.hora = hora;
+      base.fecha = proximaOcurrencia(diaSemana, hora, duracion).toISOString();
+    } else {
+      const fechaVal = document.getElementById('mc-fecha').value;
+      if (!fechaVal) { alert('Elegí la fecha y hora de tu clase.'); return; }
+      base.recurrente = false;
+      base.fecha = new Date(fechaVal + ':00-03:00').toISOString();
+    }
+
     try {
-      await set(ref(db, 'meetings/' + key), {
-        titulo: (userData?.nombre || 'Profe') + ' — ' + titulo,
-        fecha,
-        duracion,
-        roomUrl: key,
-        grabacionUrl: '',
-        profeUid: currentUser.uid,
-        profeNombre: userData?.nombre || currentUser.email
-      });
+      await set(ref(db, 'meetings/' + key), base);
       document.getElementById('mc-titulo').value = '';
+      document.getElementById('mc-meet').value = '';
       document.getElementById('mc-fecha').value = '';
       const ok = document.getElementById('mc-ok');
-      ok.textContent = '✦ Clase programada — ya aparece para las alumnas con membresía';
+      ok.textContent = tipo === 'semanal'
+        ? '✦ Clase semanal programada — se repite sola todas las semanas'
+        : '✦ Clase programada — ya la ven las alumnas con membresía';
       ok.classList.add('show');
       setTimeout(() => ok.classList.remove('show'), 4000);
       loadMisClasesProfe();

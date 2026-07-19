@@ -232,6 +232,21 @@
     .fin-badge.vencida { background:#FFF0EC; color:#8B3A1A; }
     .fin-gasto-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--borde); flex-wrap:wrap; }
 
+    /* CURSOS EN VIVO */
+    .cv-card { background:#fff;border:1px solid #D8C5E8;border-radius:16px;overflow:hidden;margin-bottom:16px; }
+    .cv-header { background:linear-gradient(135deg,#F7F0FF,#FFF5EC);padding:18px 20px; }
+    .cv-nombre { font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gris);font-weight:700; }
+    .cv-profe { font-size:12px;color:var(--gris-medio);margin-top:2px; }
+    .cv-precio { font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--terracota);font-weight:700;margin-top:8px; }
+    .cv-body { padding:16px 20px; }
+    .cv-horario-opt { border:2px solid var(--borde);border-radius:10px;padding:10px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;color:var(--gris);transition:all .2s; }
+    .cv-horario-opt:hover { border-color:var(--terracota);background:var(--terracota-light); }
+    .cv-horario-opt.sel { border-color:var(--terracota);background:var(--terracota-light);font-weight:700; }
+    .cv-estado { display:inline-block;font-size:11px;padding:3px 10px;border-radius:10px;margin-top:6px; }
+    .cv-confirmado { background:#F0FBF5;color:#1A6B3A; }
+    .cv-aconfirmar { background:#FFF5EC;color:#8B3A1A; }
+    .cv-admin-block { border:1px solid var(--borde);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--gris-claro); }
+
     /* SOPORTE IA */
 
     .soporte-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:var(--terracota); color:#fff; border:none; font-size:24px; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:5000; display:flex; align-items:center; justify-content:center; transition:transform 0.2s; }
@@ -699,6 +714,39 @@
     </div>
   </div>
 
+  <!-- INSCRIPCION A CURSO EN VIVO -->
+  <div id="cv-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card">
+      <div class="pagos-header">
+        <div style="font-size:34px;margin-bottom:6px;" id="cv-pop-icon">🪡</div>
+        <div class="pagos-titulo" id="cv-pop-nombre">Curso en vivo</div>
+        <div class="pagos-sub" id="cv-pop-profe"></div>
+      </div>
+      <div class="pagos-body">
+        <div id="cv-pop-estado"></div>
+        <div style="font-size:13px;color:var(--gris);margin-bottom:14px;" id="cv-pop-desc"></div>
+
+        <div style="font-size:12px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">1 · Elegí tu horario preferido</div>
+        <div id="cv-pop-horarios"></div>
+
+        <div style="font-size:12px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin:16px 0 8px;">2 · Elegí un horario alternativo</div>
+        <div style="font-size:11px;color:var(--gris-medio);margin-bottom:8px;">Por si el primero no llega al mínimo de alumnas</div>
+        <div id="cv-pop-horarios-alt"></div>
+
+        <div style="background:var(--gris-claro);border:1px solid var(--borde);border-radius:12px;padding:14px;margin-top:16px;font-size:12px;color:var(--gris-medio);line-height:1.7;">
+          ⏱️ Clases de 50 minutos &nbsp;·&nbsp; 🎥 Se graban &nbsp;·&nbsp; 🔇 Micrófono apagado<br>
+          📷 Cámara prendida &nbsp;·&nbsp; ✍️ Consultas por escrito en el chat<br>
+          📧 Dudas: <strong>ohlaacademy@gmail.com</strong>
+        </div>
+        <div class="msg msg-success" id="cv-pop-ok" style="margin-top:12px;"></div>
+      </div>
+      <div class="pagos-footer">
+        <button class="btn-outline" onclick="cerrarInscripcionCV()">Cancelar</button>
+        <button class="btn-small" onclick="confirmarInscripcionCV()">Anotarme →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CERTIFICADO POPUP -->
   <div id="cert-overlay" class="cert-overlay" style="display:none;">
     <div class="cert-card" style="max-width:min(720px,95vw);max-height:95vh;overflow-y:auto;">
@@ -843,6 +891,53 @@
               <div style="font-size:11px;color:var(--gris-medio);margin-top:8px;">💡 Consejo: dejala visible 1 semana para que no se acumulen muchas. Después la podés vender como curso pregrabado.</div>
             </div>
             <div class="msg msg-success" id="grab-ok" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">🎥 Cursos en vivo (clases semanales)</div>
+            <div class="admin-section-sub">Cursos con clases en vivo por videollamada. Cada uno tiene su precio mensual y los horarios que ofrece la profe.</div>
+            <div id="cv-admin-lista"></div>
+            <div style="background:var(--gris-claro);border-radius:12px;padding:16px;margin-top:12px;">
+              <div style="font-size:13px;font-weight:700;color:var(--gris);margin-bottom:10px;">+ Crear curso en vivo</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <input type="text" id="cv-icon" class="content-input" style="width:60px;margin:0;text-align:center;" placeholder="🪡" value="🪡">
+                <input type="text" id="cv-nombre" class="content-input" style="flex:2;min-width:160px;margin:0;" placeholder="Nombre (ej: Bordado online)">
+                <input type="text" id="cv-profe" class="content-input" style="flex:1;min-width:120px;margin:0;" placeholder="Profe a cargo">
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:11px;color:var(--gris-medio);">ARS $</span>
+                  <input type="number" id="cv-precio" class="content-input" style="width:110px;margin:0;" placeholder="30000">
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:11px;color:var(--gris-medio);">USD $</span>
+                  <input type="number" id="cv-precio-usd" class="content-input" style="width:90px;margin:0;" placeholder="20">
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:11px;color:var(--gris-medio);">Mín. alumnas</span>
+                  <input type="number" id="cv-min" class="content-input" style="width:70px;margin:0;" value="5" min="1">
+                </div>
+              </div>
+              <input type="text" id="cv-desc" class="content-input" style="margin-bottom:8px;" placeholder="Descripción breve del curso">
+              <div style="font-size:11px;color:var(--gris-medio);margin-bottom:6px;">Horarios que ofrece la profe (agregá los que quieras):</div>
+              <div id="cv-horarios-nuevos"></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <select id="cv-dia" class="content-input" style="width:130px;margin:0;">
+                  <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option>
+                  <option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option>
+                </select>
+                <input type="time" id="cv-hora" class="content-input" style="width:110px;margin:0;" value="15:00">
+                <button class="btn-outline" style="font-size:12px;padding:6px 12px;" onclick="agregarHorarioCV()">+ Horario</button>
+              </div>
+              <button class="btn-small" onclick="crearCursoVivo()">Crear curso en vivo</button>
+              <div class="msg msg-success" id="cv-ok" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">📋 Inscripciones a cursos en vivo</div>
+            <div class="admin-section-sub">Quién se anotó y qué horario pidió. Confirmá cuando llegues al mínimo de alumnas.</div>
+            <div id="cv-inscripciones-lista"><div class="loading"><div class="spinner"></div> Cargando...</div></div>
           </div>
 
           <div class="admin-panel">
@@ -1032,6 +1127,14 @@
   function entrarComoProfe(k) { if(window._entrarComoProfe) window._entrarComoProfe(k); }
   function agregarGrabacion() { if(window._agregarGrabacion) window._agregarGrabacion(); }
   function eliminarGrabacion(k) { if(window._eliminarGrabacion) window._eliminarGrabacion(k); }
+  function agregarHorarioCV() { if(window._agregarHorarioCV) window._agregarHorarioCV(); }
+  function crearCursoVivo() { if(window._crearCursoVivo) window._crearCursoVivo(); }
+  function eliminarCursoVivo(k) { if(window._eliminarCursoVivo) window._eliminarCursoVivo(k); }
+  function abrirInscripcionCV(k) { if(window._abrirInscripcionCV) window._abrirInscripcionCV(k); }
+  function cerrarInscripcionCV() { if(window._cerrarInscripcionCV) window._cerrarInscripcionCV(); }
+  function confirmarInscripcionCV() { if(window._confirmarInscripcionCV) window._confirmarInscripcionCV(); }
+  function elegirHorarioCV(h,t) { if(window._elegirHorarioCV) window._elegirHorarioCV(h,t); }
+  function confirmarCursoAdmin(k) { if(window._confirmarCursoAdmin) window._confirmarCursoAdmin(k); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -1268,6 +1371,7 @@
 
     if (!html) html = '<div style="font-size:13px;color:var(--gris-medio);padding:20px 0;">No hay cursos disponibles aún.</div>';
     container.innerHTML = html;
+    renderCursosVivoAlumna(container);
 
     // Agregar event listeners a las cards de cursos
     container.querySelectorAll('.curso-card').forEach(card => {
@@ -1372,6 +1476,7 @@
     });
 
     container.innerHTML = html;
+    renderCursosVivoAlumna(container);
 
     // Event listeners para cursos comprados
     container.querySelectorAll('.curso-card[data-bloqueado="false"]').forEach(card => {
@@ -3089,6 +3194,277 @@
     });
   }
 
+  // ── CURSOS EN VIVO (clases semanales con inscripción) ──
+  const DIAS_CV = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  let horariosNuevos = [];
+  let cursosVivoData = [];
+  let cvSeleccion = { cursoId: null, pref: null, alt: null };
+
+  window._agregarHorarioCV = function() {
+    const dia = Number(document.getElementById('cv-dia').value);
+    const hora = document.getElementById('cv-hora').value || '15:00';
+    horariosNuevos.push({ id: 'h' + Date.now(), dia, hora });
+    renderHorariosNuevos();
+  }
+
+  function renderHorariosNuevos() {
+    const cont = document.getElementById('cv-horarios-nuevos');
+    if (!cont) return;
+    cont.innerHTML = horariosNuevos.map((h,i) =>
+      `<div style="display:inline-flex;align-items:center;gap:6px;background:var(--terracota-light);color:#8B3A1A;border-radius:14px;padding:4px 12px;font-size:12px;margin:0 6px 6px 0;">
+        ${DIAS_CV[h.dia]} ${h.hora}
+        <span style="cursor:pointer;font-weight:700;" onclick="horariosNuevos.splice(${i},1);document.getElementById('cv-horarios-nuevos').innerHTML='';renderHorariosNuevosGlobal()">✕</span>
+      </div>`).join('');
+  }
+  window.renderHorariosNuevosGlobal = renderHorariosNuevos;
+  window.horariosNuevos = horariosNuevos;
+
+  window._crearCursoVivo = async function() {
+    const nombre = document.getElementById('cv-nombre').value.trim();
+    const icon = document.getElementById('cv-icon').value.trim() || '🎥';
+    const profe = document.getElementById('cv-profe').value.trim();
+    const precio = parseInt(document.getElementById('cv-precio').value) || 0;
+    const precioUSD = parseFloat(document.getElementById('cv-precio-usd').value) || 0;
+    const minAlumnas = parseInt(document.getElementById('cv-min').value) || 5;
+    const desc = document.getElementById('cv-desc').value.trim();
+
+    if (!nombre || !precio) { alert('Poné al menos el nombre y el precio del curso.'); return; }
+    if (horariosNuevos.length === 0) { alert('Agregá al menos un horario.'); return; }
+
+    try {
+      await set(ref(db, 'cursosVivo/' + Date.now()), {
+        nombre, icon, profe, precio, precioUSD, minAlumnas, desc,
+        horarios: horariosNuevos,
+        activo: true,
+        creado: new Date().toISOString()
+      });
+      document.getElementById('cv-nombre').value = '';
+      document.getElementById('cv-profe').value = '';
+      document.getElementById('cv-precio').value = '';
+      document.getElementById('cv-precio-usd').value = '';
+      document.getElementById('cv-desc').value = '';
+      horariosNuevos.length = 0;
+      renderHorariosNuevos();
+      const ok = document.getElementById('cv-ok');
+      ok.textContent = '✦ Curso en vivo creado — ya lo ven las alumnas';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3500);
+      loadCursosVivoAdmin();
+    } catch(e) { alert('Error al crear el curso.'); }
+  }
+
+  window.loadCursosVivoAdmin = async function() {
+    const cont = document.getElementById('cv-admin-lista');
+    if (!cont) return;
+    try {
+      const [cvSnap, insSnap] = await Promise.all([
+        get(ref(db, 'cursosVivo')),
+        get(ref(db, 'inscripcionesVivo'))
+      ]);
+      cursosVivoData = cvSnap.exists() ? Object.entries(cvSnap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+      const inscripciones = insSnap.exists() ? insSnap.val() : {};
+
+      cont.innerHTML = cursosVivoData.length === 0
+        ? '<div style="font-size:13px;color:var(--gris-medio);padding:8px 0;">Todavía no hay cursos en vivo creados.</div>'
+        : cursosVivoData.map(cv => {
+            const ins = inscripciones[cv._key] || {};
+            const total = Object.keys(ins).length;
+            const llego = total >= (cv.minAlumnas || 5);
+            return `<div class="cv-admin-block">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:180px;">
+                  <div style="font-size:15px;font-weight:700;color:var(--gris);">${cv.icon} ${cv.nombre}</div>
+                  <div style="font-size:12px;color:var(--gris-medio);">${cv.profe||''} · $${(cv.precio||0).toLocaleString('es-AR')}/mes${cv.precioUSD ? ' / USD $' + cv.precioUSD : ''}</div>
+                  <div style="font-size:11px;color:var(--gris-medio);margin-top:4px;">${(cv.horarios||[]).map(h => DIAS_CV[h.dia] + ' ' + h.hora).join(' · ')}</div>
+                  <div style="margin-top:6px;"><span class="cv-estado ${llego ? 'cv-confirmado' : 'cv-aconfirmar'}">${total} anotada${total!==1?'s':''} de ${cv.minAlumnas||5} · ${llego ? 'Confirmado' : 'A confirmar'}</span></div>
+                </div>
+                <button class="btn-danger" onclick="eliminarCursoVivo('${cv._key}')">✕</button>
+              </div>
+            </div>`;
+          }).join('');
+
+      renderInscripcionesAdmin(inscripciones);
+    } catch(e) { cont.innerHTML = '<div style="color:#c0392b;font-size:13px;">Error al cargar cursos en vivo.</div>'; }
+  }
+
+  function renderInscripcionesAdmin(inscripciones) {
+    const cont = document.getElementById('cv-inscripciones-lista');
+    if (!cont) return;
+    const filas = [];
+    Object.entries(inscripciones).forEach(([cursoId, alumnas]) => {
+      const curso = cursosVivoData.find(c => c._key === cursoId);
+      Object.entries(alumnas).forEach(([uid, ins]) => {
+        filas.push({ curso: curso ? curso.nombre : '(curso eliminado)', cursoObj: curso, ...ins });
+      });
+    });
+    if (filas.length === 0) {
+      cont.innerHTML = '<div style="font-size:13px;color:var(--gris-medio);">Todavía no hay inscripciones.</div>';
+      return;
+    }
+    cont.innerHTML = filas.map(f => {
+      const hp = f.cursoObj?.horarios?.find(h => h.id === f.horarioPreferido);
+      const ha = f.cursoObj?.horarios?.find(h => h.id === f.horarioAlternativo);
+      return `<div class="user-row">
+        <div class="user-avatar">🌸</div>
+        <div class="user-info">
+          <div class="user-name">${f.alumnaNombre}</div>
+          <div class="user-email">${f.curso} · ${f.alumnaEmail}</div>
+          <div style="font-size:11px;color:var(--terracota);margin-top:2px;">
+            Prefiere: ${hp ? DIAS_CV[hp.dia] + ' ' + hp.hora : '—'}${ha ? ' · Alternativo: ' + DIAS_CV[ha.dia] + ' ' + ha.hora : ''}
+          </div>
+        </div>
+        <span class="cv-estado ${f.estado==='confirmado'?'cv-confirmado':'cv-aconfirmar'}">${f.estado==='confirmado'?'Confirmada':'Pendiente'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  window._eliminarCursoVivo = async function(key) {
+    if (!confirm('¿Eliminar este curso en vivo y sus inscripciones?')) return;
+    try {
+      await set(ref(db, 'cursosVivo/' + key), null);
+      await set(ref(db, 'inscripcionesVivo/' + key), null);
+      loadCursosVivoAdmin();
+    } catch(e) { alert('Error al eliminar.'); }
+  }
+
+  // ── CURSOS EN VIVO: vista de la alumna ──
+  async function renderCursosVivoAlumna(container) {
+    try {
+      const [cvSnap, insSnap] = await Promise.all([
+        get(ref(db, 'cursosVivo')),
+        get(ref(db, 'inscripcionesVivo'))
+      ]);
+      if (!cvSnap.exists()) return;
+      const cursos = Object.entries(cvSnap.val()).map(([k,v]) => ({...v, _key:k})).filter(c => c.activo !== false);
+      if (cursos.length === 0) return;
+      const inscripciones = insSnap.exists() ? insSnap.val() : {};
+      cursosVivoData = cursos;
+
+      let html = '<div class="section-label" style="margin-top:28px;">🎥 Cursos en vivo — clases semanales</div>';
+      cursos.forEach(cv => {
+        const ins = inscripciones[cv._key] || {};
+        const total = Object.keys(ins).length;
+        const min = cv.minAlumnas || 5;
+        const confirmado = total >= min;
+        const yaAnotada = !!ins[currentUser?.uid];
+        html += `<div class="cv-card">
+          <div class="cv-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:30px;">${cv.icon||'🎥'}</span>
+              <div style="flex:1;">
+                <div class="cv-nombre">${cv.nombre}</div>
+                <div class="cv-profe">${cv.profe ? 'Con ' + cv.profe : ''} · Clases de 50 min</div>
+              </div>
+            </div>
+            <div class="cv-precio">$${(cv.precio||0).toLocaleString('es-AR')}<span style="font-size:14px;color:var(--gris-medio);">/mes</span>${cv.precioUSD ? '<span style="font-size:14px;color:var(--gris-medio);"> / USD $' + cv.precioUSD + '</span>' : ''}</div>
+            <span class="cv-estado ${confirmado ? 'cv-confirmado' : 'cv-aconfirmar'}">${confirmado ? '✓ Curso confirmado' : '⏳ Curso a confirmar — faltan ' + (min-total) + ' alumna' + ((min-total)!==1?'s':'')}</span>
+          </div>
+          <div class="cv-body">
+            ${cv.desc ? `<div style="font-size:13px;color:var(--gris-medio);margin-bottom:12px;">${cv.desc}</div>` : ''}
+            <div style="font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Horarios disponibles</div>
+            <div style="font-size:13px;color:var(--gris);margin-bottom:14px;">${(cv.horarios||[]).map(h => DIAS_CV[h.dia] + ' ' + h.hora + ' hs').join(' · ')}</div>
+            ${yaAnotada
+              ? '<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Ya estás anotada. Te vamos a confirmar el horario por mail.</div>'
+              : `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme a este curso →</button>`}
+          </div>
+        </div>`;
+      });
+      container.insertAdjacentHTML('beforeend', html);
+    } catch(e) { console.error('Error cursos vivo:', e); }
+  }
+
+  window._abrirInscripcionCV = function(cursoId) {
+    const cv = cursosVivoData.find(c => c._key === cursoId);
+    if (!cv) return;
+    cvSeleccion = { cursoId, pref: null, alt: null };
+    document.getElementById('cv-pop-icon').textContent = cv.icon || '🎥';
+    document.getElementById('cv-pop-nombre').textContent = cv.nombre;
+    document.getElementById('cv-pop-profe').textContent = (cv.profe ? 'Con ' + cv.profe + ' · ' : '') + '$' + (cv.precio||0).toLocaleString('es-AR') + '/mes';
+    document.getElementById('cv-pop-desc').textContent = cv.desc || '';
+    document.getElementById('cv-pop-ok').classList.remove('show');
+    renderHorariosPopup(cv);
+    document.getElementById('cv-overlay').style.display = 'flex';
+  }
+
+  function renderHorariosPopup(cv) {
+    const hs = cv.horarios || [];
+    const html = t => hs.map(h =>
+      `<div class="cv-horario-opt ${cvSeleccion[t]===h.id?'sel':''}" onclick="elegirHorarioCV('${h.id}','${t}')">${DIAS_CV[h.dia].charAt(0).toUpperCase()+DIAS_CV[h.dia].slice(1)} a las ${h.hora} hs</div>`
+    ).join('');
+    document.getElementById('cv-pop-horarios').innerHTML = html('pref');
+    document.getElementById('cv-pop-horarios-alt').innerHTML = html('alt');
+  }
+
+  window._elegirHorarioCV = function(hId, tipo) {
+    cvSeleccion[tipo] = hId;
+    const cv = cursosVivoData.find(c => c._key === cvSeleccion.cursoId);
+    if (cv) renderHorariosPopup(cv);
+  }
+
+  window._cerrarInscripcionCV = function() {
+    document.getElementById('cv-overlay').style.display = 'none';
+  }
+
+  window._confirmarInscripcionCV = async function() {
+    if (!cvSeleccion.pref) { alert('Elegí tu horario preferido.'); return; }
+    const cv = cursosVivoData.find(c => c._key === cvSeleccion.cursoId);
+    if (!cv) return;
+    const hp = cv.horarios.find(h => h.id === cvSeleccion.pref);
+    const ha = cv.horarios.find(h => h.id === cvSeleccion.alt);
+    const nombre = userData?.nombre || currentUser.email;
+
+    try {
+      await set(ref(db, 'inscripcionesVivo/' + cvSeleccion.cursoId + '/' + currentUser.uid), {
+        alumnaNombre: nombre,
+        alumnaEmail: currentUser.email,
+        horarioPreferido: cvSeleccion.pref,
+        horarioAlternativo: cvSeleccion.alt || '',
+        fecha: new Date().toISOString(),
+        estado: 'pendiente'
+      });
+
+      const insSnap = await get(ref(db, 'inscripcionesVivo/' + cvSeleccion.cursoId));
+      const total = insSnap.exists() ? Object.keys(insSnap.val()).length : 1;
+      const min = cv.minAlumnas || 5;
+      const confirmado = total >= min;
+
+      const detalle = 'Curso: ' + cv.nombre + '. Horario preferido: ' + DIAS_CV[hp.dia] + ' ' + hp.hora + ' hs' +
+        (ha ? '. Alternativo: ' + DIAS_CV[ha.dia] + ' ' + ha.hora + ' hs' : '') +
+        '. Precio: $' + (cv.precio||0).toLocaleString('es-AR') + '/mes. ' +
+        (confirmado ? 'El curso ya está confirmado.' : 'El curso está a confirmar (faltan ' + (min-total) + ' alumnas para el mínimo).');
+
+      // Mail a la alumna
+      try {
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+          alumna_nombre: nombre,
+          curso_nombre: cv.nombre,
+          fecha_emision: new Date().toLocaleDateString('es-AR'),
+          to_email: currentUser.email,
+          mensaje: '¡Recibimos tu inscripción! ' + detalle + ' Te vamos a confirmar el horario definitivo por este mismo mail. Cualquier duda escribinos a ohlaacademy@gmail.com'
+        });
+      } catch(e) { console.error('mail alumna', e); }
+
+      // Aviso al equipo
+      try {
+        await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+          alumna_nombre: nombre,
+          curso_nombre: 'Nueva inscripción: ' + cv.nombre,
+          fecha_emision: new Date().toLocaleDateString('es-AR'),
+          to_email: 'ohlaacademy@gmail.com',
+          mensaje: nombre + ' (' + currentUser.email + ') se anotó. ' + detalle + ' Total anotadas: ' + total + '.'
+        });
+      } catch(e) { console.error('mail equipo', e); }
+
+      const ok = document.getElementById('cv-pop-ok');
+      ok.textContent = confirmado
+        ? '✦ ¡Listo! Te llegó un mail con los datos. El curso ya está confirmado.'
+        : '✦ ¡Listo! Te anotamos. El curso está a confirmar — te avisamos por mail apenas se complete el cupo.';
+      ok.classList.add('show');
+      setTimeout(() => { cerrarInscripcionCV(); renderCursos(); }, 3500);
+
+    } catch(e) { alert('Error al anotarte. Intentá de nuevo o escribinos a ohlaacademy@gmail.com'); }
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -3168,7 +3544,7 @@
 
     await loadCatalogo();
     await verificarRetornoMP();
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadAdminPagos(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAdminPagos(); loadUsers(); }
 
     showScreen('screen-home');
 
@@ -3192,7 +3568,7 @@
     });
     if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
-    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadAdminPagos(); loadUsers(); }
+    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAdminPagos(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));

@@ -759,6 +759,22 @@
     </div>
   </div>
 
+  <!-- BIENVENIDA POST-PAGO -->
+  <div id="bienvenida-overlay" class="pagos-overlay" style="display:none;">
+    <div class="pagos-card" style="max-width:480px;">
+      <div class="pagos-header" style="background:linear-gradient(135deg,#FFF5EC,#FFF0F7);">
+        <div style="font-size:52px;margin-bottom:10px;">🌸</div>
+        <div class="pagos-titulo" id="bienvenida-titulo">¡Bienvenida a Ohla Academy!</div>
+      </div>
+      <div class="pagos-body" style="text-align:center;">
+        <div style="font-size:14px;color:var(--gris);line-height:1.8;" id="bienvenida-msg"></div>
+      </div>
+      <div class="pagos-footer" style="justify-content:center;">
+        <button class="btn-small" id="bienvenida-btn" style="padding:12px 28px;"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- TERMINOS Y PRIVACIDAD -->
   <div id="legal-overlay" class="pagos-overlay" style="display:none;">
     <div class="pagos-card" style="max-width:640px;">
@@ -1261,6 +1277,7 @@
   function abrirLegal(t) { if(window._abrirLegal) window._abrirLegal(t); }
   function cerrarLegal() { if(window._cerrarLegal) window._cerrarLegal(); }
   function pedirBajaMembresia() { if(window._pedirBajaMembresia) window._pedirBajaMembresia(); }
+  function cerrarBienvenida() { if(window._cerrarBienvenida) window._cerrarBienvenida(); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -2768,11 +2785,12 @@
           }
           if (typeof registrarVentaFin === 'function') await registrarVentaFin({ plan: planId, montoBruto: precio, medio: 'PayPal' });
           cerrarPagos();
-          const div = document.createElement('div');
-          div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1A6B3A;color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;z-index:9999;';
-          div.textContent = 'Pago realizado con PayPal! Ya tenes acceso a Ohla Academy.';
-          document.body.appendChild(div);
-          setTimeout(() => div.remove(), 5000);
+          if (planId === 'curso') {
+            const nom = document.getElementById('pagos-titulo')?.textContent || '';
+            mostrarBienvenidaCurso(nom);
+          } else {
+            mostrarBienvenidaMembresia();
+          }
           renderCursos();
         },
         onError: (err) => console.error('PayPal error:', err)
@@ -3098,6 +3116,7 @@
           }
           await registrarVentaFin({ plan: planId, montoBruto: plan.precio, medio: 'Mercado Pago' });
           sessionStorage.setItem('mp_registrado_' + params.get('payment_id'), '1');
+          sessionStorage.setItem('mostrar_bienvenida', planId === 'curso' ? 'curso' : 'membresia');
         }
       }
       // Limpiar la URL para que no se re-procese al refrescar
@@ -4140,6 +4159,42 @@ La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás q
     }
   }
 
+  // ── BIENVENIDA POST-PAGO ──
+  let _accionBienvenida = null;
+
+  function mostrarBienvenidaMembresia() {
+    const nombre = (userData?.nombre || '').split(' ')[0] || '';
+    document.getElementById('bienvenida-titulo').textContent = '¡Bienvenida' + (nombre ? ', ' + nombre : '') + '! 🌸';
+    document.getElementById('bienvenida-msg').innerHTML =
+      'Gracias por confiar en nosotras 💛<br><br>' +
+      'Estás a un pasito de empezar tu camino creativo. Para no marearte con tantos cursos de golpe, primero te vamos a hacer <strong>unas preguntas rápidas</strong> para saber con qué te gustaría empezar.<br><br>' +
+      'Tranquila: vas a ir sumando más cursos mes a mes, y siempre podés cambiar tus elecciones. 🌷';
+    const btn = document.getElementById('bienvenida-btn');
+    btn.textContent = 'Elegir por dónde empiezo →';
+    _accionBienvenida = () => { cerrarBienvenida(); startOnboarding(); };
+    btn.onclick = _accionBienvenida;
+    document.getElementById('bienvenida-overlay').style.display = 'flex';
+  }
+
+  function mostrarBienvenidaCurso(nombreCurso) {
+    const nombre = (userData?.nombre || '').split(' ')[0] || '';
+    document.getElementById('bienvenida-titulo').textContent = '¡Gracias' + (nombre ? ', ' + nombre : '') + '! 🌸';
+    document.getElementById('bienvenida-msg').innerHTML =
+      'Gracias por confiar en nosotras 💛<br><br>' +
+      'Compraste el curso <strong>' + (nombreCurso || 'que elegiste') + '</strong>.<br><br>' +
+      'Es tuyo para siempre: tenés <strong>acceso permanente</strong>, no se te vence ni se te borra nunca. Podés verlo las veces que quieras y a tu ritmo. 🌷<br><br>' +
+      'Cuando quieras sumar más, vas a encontrar todo en tu inicio.';
+    const btn = document.getElementById('bienvenida-btn');
+    btn.textContent = 'Empezar mi curso →';
+    _accionBienvenida = () => { cerrarBienvenida(); renderCursos(); };
+    btn.onclick = _accionBienvenida;
+    document.getElementById('bienvenida-overlay').style.display = 'flex';
+  }
+
+  window._cerrarBienvenida = function() {
+    document.getElementById('bienvenida-overlay').style.display = 'none';
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -4221,6 +4276,14 @@ La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás q
     await verificarVencimientoMembresia();
     await verificarRetornoMP();
     setTimeout(async () => {
+      // Si volvió de pagar con Mercado Pago, mostrar la bienvenida
+      const bienv = sessionStorage.getItem('mostrar_bienvenida');
+      if (bienv) {
+        sessionStorage.removeItem('mostrar_bienvenida');
+        if (bienv === 'curso') mostrarBienvenidaCurso('');
+        else mostrarBienvenidaMembresia();
+        return;
+      }
       const mostro = await mostrarAnuncio();
       if (!mostro) mostrarAvisoVencimiento();
     }, 1200);

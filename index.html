@@ -1087,7 +1087,14 @@
                 <input type="text" id="cv-nombre" class="content-input" style="flex:2;min-width:160px;margin:0;" placeholder="Nombre (ej: Bordado online)">
                 <input type="text" id="cv-profe" class="content-input" style="flex:1;min-width:120px;margin:0;" placeholder="Profe a cargo">
               </div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:11px;color:var(--gris-medio);margin-bottom:5px;">¿Cómo se accede a este curso?</div>
+                <select id="cv-modalidad" class="content-input" style="width:100%;margin:0;" onchange="cambiarModalidadCV()">
+                  <option value="pago">💳 De pago aparte (cupo mínimo + cobro mensual)</option>
+                  <option value="membresia">🌸 Incluido en la membresía (sin cobro extra, sin mínimo)</option>
+                </select>
+              </div>
+              <div id="cv-campos-pago" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                 <div style="display:flex;align-items:center;gap:5px;">
                   <span style="font-size:11px;color:var(--gris-medio);">ARS $</span>
                   <input type="number" id="cv-precio" class="content-input" style="width:110px;margin:0;" placeholder="30000">
@@ -1326,6 +1333,7 @@
   function agregarGrabacion() { if(window._agregarGrabacion) window._agregarGrabacion(); }
   function eliminarGrabacion(k) { if(window._eliminarGrabacion) window._eliminarGrabacion(k); }
   function agregarHorarioCV() { if(window._agregarHorarioCV) window._agregarHorarioCV(); }
+  function cambiarModalidadCV() { if(window._cambiarModalidadCV) window._cambiarModalidadCV(); }
   function crearCursoVivo() { if(window._crearCursoVivo) window._crearCursoVivo(); }
   function eliminarCursoVivo(k) { if(window._eliminarCursoVivo) window._eliminarCursoVivo(k); }
   function abrirInscripcionCV(k) { if(window._abrirInscripcionCV) window._abrirInscripcionCV(k); }
@@ -3500,6 +3508,11 @@
   let cursosVivoData = [];
   let cvSeleccion = { cursoId: null, pref: null, alt: null };
 
+  window._cambiarModalidadCV = function() {
+    const mod = document.getElementById('cv-modalidad').value;
+    document.getElementById('cv-campos-pago').style.display = mod === 'membresia' ? 'none' : 'flex';
+  }
+
   window._agregarHorarioCV = function() {
     const dia = Number(document.getElementById('cv-dia').value);
     const hora = document.getElementById('cv-hora').value || '15:00';
@@ -3528,12 +3541,20 @@
     const minAlumnas = parseInt(document.getElementById('cv-min').value) || 5;
     const desc = document.getElementById('cv-desc').value.trim();
 
-    if (!nombre || !precio) { alert('Poné al menos el nombre y el precio del curso.'); return; }
+    const modalidadSel = document.getElementById('cv-modalidad').value;
+    if (!nombre) { alert('Poné el nombre del curso.'); return; }
+    if (modalidadSel === 'pago' && !precio) { alert('Poné el precio del curso (o cambialo a modalidad membresía).'); return; }
     if (horariosNuevos.length === 0) { alert('Agregá al menos un horario.'); return; }
 
     try {
+      const modalidad = document.getElementById('cv-modalidad').value;
       await set(ref(db, 'cursosVivo/' + Date.now()), {
-        nombre, icon, profe, precio, precioUSD, minAlumnas, desc,
+        nombre, icon, profe,
+        precio: modalidad === 'membresia' ? 0 : precio,
+        precioUSD: modalidad === 'membresia' ? 0 : precioUSD,
+        minAlumnas: modalidad === 'membresia' ? 1 : minAlumnas,
+        modalidad,
+        desc,
         horarios: horariosNuevos,
         activo: true,
         creado: new Date().toISOString()
@@ -3651,24 +3672,38 @@
         const yaPago = miInscripcion?.pagado === true;
         const vencePago = miInscripcion?.vencePago ? new Date(miInscripcion.vencePago) : null;
         const pagoVencido = yaPago && vencePago && vencePago < new Date();
+        const esMembresia = cv.modalidad === 'membresia';
+        const tieneMembresiaActiva = userData?.membresia || userData?.rol === 'admin' || ADMIN_EMAILS.includes(currentUser?.email);
 
-        // Determinar qué mostrar en la parte de acción
         let accionHtml = '';
-        if (!yaAnotada) {
-          accionHtml = `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme a este curso →</button>`;
-        } else if (yaPago && !pagoVencido) {
-          const f = vencePago ? vencePago.toLocaleDateString('es-AR') : '';
-          accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Tu lugar está pago y confirmado.${f ? ' Vence el ' + f + '.' : ''}</div>`;
-        } else if (yaPago && pagoVencido) {
-          accionHtml = `<div style="background:#FFF0EC;border:1px solid #F0A090;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;margin-bottom:10px;">Tu mes venció. Volvé a abonar para seguir en el curso.</div>
-            <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Volver a abonar el mes →</button>`;
-        } else if (confirmado && !yaPago) {
-          // Cupo completo, tiene que pagar
-          accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;margin-bottom:10px;">🎉 ¡Se completó el cupo! Ya podés abonar tu lugar para arrancar.</div>
-            <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Abonar mi lugar →</button>`;
+        if (esMembresia) {
+          // ── CURSO INCLUIDO EN LA MEMBRESÍA ──
+          if (tieneMembresiaActiva) {
+            if (yaAnotada) {
+              accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Estás anotada. Nos vemos en la clase 🌸</div>`;
+            } else {
+              accionHtml = `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme (incluido en tu membresía) →</button>`;
+            }
+          } else {
+            accionHtml = `<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;margin-bottom:10px;">Este curso está incluido en la membresía. Activá tu membresía para participar.</div>
+              <button class="btn-primary" style="max-width:260px;" onclick="abrirPagos('mensual')">Ver membresía →</button>`;
+          }
         } else {
-          // Anotada pero falta cupo
-          accionHtml = `<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;">⏳ Ya estás anotada. Se confirmará tu cupo cuando se completen las ${min} alumnas — te avisamos por mail y ahí abonás.</div>`;
+          // ── CURSO DE PAGO APARTE ──
+          if (!yaAnotada) {
+            accionHtml = `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme a este curso →</button>`;
+          } else if (yaPago && !pagoVencido) {
+            const f = vencePago ? vencePago.toLocaleDateString('es-AR') : '';
+            accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Tu lugar está pago y confirmado.${f ? ' Vence el ' + f + '.' : ''}</div>`;
+          } else if (yaPago && pagoVencido) {
+            accionHtml = `<div style="background:#FFF0EC;border:1px solid #F0A090;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;margin-bottom:10px;">Tu mes venció. Volvé a abonar para seguir en el curso.</div>
+              <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Volver a abonar el mes →</button>`;
+          } else if (confirmado && !yaPago) {
+            accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;margin-bottom:10px;">🎉 ¡Se completó el cupo! Ya podés abonar tu lugar para arrancar.</div>
+              <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Abonar mi lugar →</button>`;
+          } else {
+            accionHtml = `<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;">⏳ Ya estás anotada. Se confirmará tu cupo cuando se completen las ${min} alumnas — te avisamos por mail y ahí abonás.</div>`;
+          }
         }
 
         html += `<div class="cv-card">
@@ -3680,8 +3715,9 @@
                 <div class="cv-profe">${cv.profe ? 'Con ' + cv.profe : ''} · Clases de 50 min</div>
               </div>
             </div>
-            <div class="cv-precio">$${(cv.precio||0).toLocaleString('es-AR')}<span style="font-size:14px;color:var(--gris-medio);">/mes</span>${cv.precioUSD ? '<span style="font-size:14px;color:var(--gris-medio);"> / USD $' + cv.precioUSD + '</span>' : ''}</div>
-            <span class="cv-estado ${confirmado ? 'cv-confirmado' : 'cv-aconfirmar'}">${confirmado ? '✓ Curso confirmado' : '⏳ Curso a confirmar — faltan ' + (min-total) + ' alumna' + ((min-total)!==1?'s':'')}</span>
+            ${cv.modalidad === 'membresia'
+              ? '<div class="cv-precio" style="font-size:18px;">🌸 Incluido en tu membresía</div><span class="cv-estado cv-confirmado">✓ Sin costo extra</span>'
+              : '<div class="cv-precio">$' + (cv.precio||0).toLocaleString('es-AR') + '<span style="font-size:14px;color:var(--gris-medio);">/mes</span>' + (cv.precioUSD ? '<span style="font-size:14px;color:var(--gris-medio);"> / USD $' + cv.precioUSD + '</span>' : '') + '</div><span class="cv-estado ' + (confirmado ? 'cv-confirmado' : 'cv-aconfirmar') + '">' + (confirmado ? '✓ Curso confirmado' : '⏳ Curso a confirmar — faltan ' + (min-total) + ' alumna' + ((min-total)!==1?'s':'')) + '</span>'}
           </div>
           <div class="cv-body">
             ${cv.desc ? `<div style="font-size:13px;color:var(--gris-medio);margin-bottom:12px;">${cv.desc}</div>` : ''}
@@ -3858,14 +3894,35 @@
     const nombre = userData?.nombre || currentUser.email;
 
     try {
+      const esMembresiaCV = cv.modalidad === 'membresia';
       await set(ref(db, 'inscripcionesVivo/' + cvSeleccion.cursoId + '/' + currentUser.uid), {
         alumnaNombre: nombre,
         alumnaEmail: currentUser.email,
         horarioPreferido: cvSeleccion.pref,
         horarioAlternativo: cvSeleccion.alt || '',
         fecha: new Date().toISOString(),
-        estado: 'pendiente'
+        estado: esMembresiaCV ? 'confirmado' : 'pendiente',
+        pagado: esMembresiaCV ? true : false,
+        porMembresia: esMembresiaCV
       });
+
+      // Si es curso incluido en membresía: confirmar directo, sin cupo ni pago
+      if (esMembresiaCV) {
+        try {
+          await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+            alumna_nombre: nombre,
+            curso_nombre: cv.nombre,
+            fecha_emision: new Date().toLocaleDateString('es-AR'),
+            to_email: currentUser.email,
+            mensaje: '¡Te anotaste a ' + cv.nombre + '! Este curso está incluido en tu membresía, así que no tenés que pagar nada extra. Nos vemos en la clase 🌸 Horarios: ' + (cv.horarios||[]).map(h => DIAS_CV[h.dia] + ' ' + h.hora + ' hs').join(' · ') + '. Dudas: ohlaacademy@gmail.com'
+          });
+        } catch(e) {}
+        const ok = document.getElementById('cv-pop-ok');
+        ok.textContent = '✦ ¡Listo! Ya estás anotada. Es parte de tu membresía, sin costo extra 🌸';
+        ok.classList.add('show');
+        setTimeout(() => { cerrarInscripcionCV(); renderCursos(); }, 3000);
+        return;
+      }
 
       const insSnap = await get(ref(db, 'inscripcionesVivo/' + cvSeleccion.cursoId));
       const insActuales = insSnap.exists() ? insSnap.val() : {};

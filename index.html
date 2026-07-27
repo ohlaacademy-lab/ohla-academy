@@ -676,6 +676,16 @@
           <div class="descuento-aviso" id="aviso-jubilada">🎉 ¡Aplicamos tu descuento especial para jubiladas!</div>
         </div>
 
+        <!-- Código de descuento -->
+        <div id="codigo-section" style="margin-bottom:16px;">
+          <label style="font-size:12px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:6px;">¿Tenés un código de descuento?</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="input-codigo" class="nacimiento-field" style="flex:1;text-transform:uppercase;" placeholder="Ej: HOTWEEK">
+            <button class="btn-outline" style="font-size:13px;padding:8px 16px;white-space:nowrap;" onclick="aplicarCodigoDesc()">Aplicar</button>
+          </div>
+          <div class="descuento-aviso" id="aviso-codigo" style="display:none;"></div>
+        </div>
+
         <!-- Planes -->
         <div id="planes-aviso" style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px 14px;font-size:13px;color:#8B3A1A;margin-bottom:12px;">Por favor ingresá tu fecha de nacimiento para ver los planes disponibles. Esto nos permite aplicar descuentos especiales automáticamente.</div>
         <div id="planes-container"></div>
@@ -989,6 +999,59 @@
           </div>
 
           <div class="admin-panel">
+            <div class="admin-section-title">🎁 Acceso liberado / regalos</div>
+            <div class="admin-section-sub">Dale acceso gratis a una alumna (ganó un sorteo, un premio, etc.) sin que tenga que pagar.</div>
+            <div style="background:var(--gris-claro);border-radius:12px;padding:16px;">
+              <div class="field-group">
+                <label class="field-label">Elegí la alumna</label>
+                <select id="regalo-alumna" class="content-input" style="width:100%;"><option value="">— Seleccioná —</option></select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">¿Qué le das?</label>
+                <select id="regalo-tipo" class="content-input" style="width:100%;" onchange="cambiarTipoRegalo()">
+                  <option value="membresia-mes">🌸 Membresía por 1 mes</option>
+                  <option value="membresia-permanente">👑 Membresía permanente (sin vencimiento)</option>
+                  <option value="curso">🎓 Un curso individual (permanente)</option>
+                </select>
+              </div>
+              <div class="field-group" id="regalo-curso-grupo" style="display:none;">
+                <label class="field-label">¿Qué curso?</label>
+                <select id="regalo-curso" class="content-input" style="width:100%;"></select>
+              </div>
+              <button class="btn-small" onclick="darAccesoLiberado()">Dar acceso gratis</button>
+              <div class="msg msg-success" id="regalo-ok" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div class="admin-panel">
+            <div class="admin-section-title">🏷️ Códigos de descuento</div>
+            <div class="admin-section-sub">Creá códigos que las alumnas escriben al pagar. Ej: HOTWEEK con 20% para todos. Se pueden sumar al descuento de jubiladas.</div>
+            <div id="codigos-lista"></div>
+            <div style="background:var(--gris-claro);border-radius:12px;padding:16px;margin-top:12px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                <div style="flex:2;min-width:140px;">
+                  <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Código (sin espacios)</div>
+                  <input type="text" id="codigo-nombre" class="content-input" style="margin:0;text-transform:uppercase;" placeholder="HOTWEEK">
+                </div>
+                <div style="width:110px;">
+                  <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Descuento %</div>
+                  <input type="number" id="codigo-pct" class="content-input" style="margin:0;" placeholder="20" min="1" max="100">
+                </div>
+                <div style="width:150px;">
+                  <div style="font-size:11px;color:var(--gris-medio);margin-bottom:3px;">Vence (opcional)</div>
+                  <input type="date" id="codigo-hasta" class="content-input" style="margin:0;">
+                </div>
+                <button class="btn-small" onclick="crearCodigo()">+ Crear</button>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris-medio);margin-top:10px;cursor:pointer;">
+                <input type="checkbox" id="codigo-sumable" style="width:16px;height:16px;accent-color:#C4723A;">
+                Se puede sumar al descuento de jubiladas
+              </label>
+              <div class="msg msg-success" id="codigo-ok" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div class="admin-panel">
             <div class="admin-section-title">📢 Aviso para las alumnas</div>
             <div class="admin-section-sub">Escribí un mensaje y le aparece como popup a todas apenas entran a la app. Ideal para avisar aumentos, cambios de horario o novedades.</div>
             <div class="field-group">
@@ -1278,6 +1341,11 @@
   function cerrarLegal() { if(window._cerrarLegal) window._cerrarLegal(); }
   function pedirBajaMembresia() { if(window._pedirBajaMembresia) window._pedirBajaMembresia(); }
   function cerrarBienvenida() { if(window._cerrarBienvenida) window._cerrarBienvenida(); }
+  function cambiarTipoRegalo() { if(window._cambiarTipoRegalo) window._cambiarTipoRegalo(); }
+  function darAccesoLiberado() { if(window._darAccesoLiberado) window._darAccesoLiberado(); }
+  function crearCodigo() { if(window._crearCodigo) window._crearCodigo(); }
+  function eliminarCodigo(k) { if(window._eliminarCodigo) window._eliminarCodigo(k); }
+  function aplicarCodigoDesc() { if(window._aplicarCodigoDesc) window._aplicarCodigoDesc(); }
   function showMembresiaBanner() { if(window._showMembresiaBanner) window._showMembresiaBanner(); }
 </script>
 <script type="module">
@@ -2650,6 +2718,8 @@
   let mp = null;
   let planSeleccionado = null;
   let descuentoAplicado = 0;
+  let descuentoCodigo = 0;
+  let codigoSumable = false;
   let configPagos = {
     descuentoJubilada: 30, // % de descuento para mayores de 60
     planes: [
@@ -2725,7 +2795,12 @@
 
     container.innerHTML = planes.map(p => {
       if (p.precio === 0) return '';
-      const precioFinal = descuentoAplicado > 0 ? Math.round(p.precio * (1 - descuentoAplicado/100)) : p.precio;
+      // Combinar descuento de jubilada + código
+      let descTotal = descuentoAplicado;
+      if (descuentoCodigo > 0) {
+        descTotal = codigoSumable ? Math.min(descuentoAplicado + descuentoCodigo, 90) : Math.max(descuentoAplicado, descuentoCodigo);
+      }
+      const precioFinal = descTotal > 0 ? Math.round(p.precio * (1 - descTotal/100)) : p.precio;
       const tieneDescuento = precioFinal !== p.precio;
       return `<div class="plan-card ${planSeleccionado === p.id ? 'selected' : ''} ${p.recomendado ? 'recommended' : ''}" onclick="seleccionarPlan('${p.id}', ${precioFinal})">
         <div class="plan-nombre">${p.nombre}</div>
@@ -2737,7 +2812,7 @@
         </div>
         <div class="plan-desc">${p.desc}</div>
         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
-          ${tieneDescuento ? '<span class="plan-descuento">✓ ' + descuentoAplicado + '% descuento jubilada</span>' : ''}
+          ${descTotal > 0 ? '<span class="plan-descuento">✓ ' + descTotal + '% de descuento</span>' : ''}
           ${p.tipo === 'recurrente' ? '<span class="plan-descuento" style="background:#FFF5EC;color:#8B3A1A;">⚠ El precio puede variar mensualmente</span>' : ''}
           ${p.cuotas ? '<span class="plan-descuento" style="background:#F0F7FF;color:#1A4A8B;">💳 Disponible en cuotas</span>' : ''}
         </div>
@@ -4195,6 +4270,115 @@ La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás q
     document.getElementById('bienvenida-overlay').style.display = 'none';
   }
 
+  // ── ACCESO LIBERADO / REGALOS ──
+  window.loadRegalosAdmin = async function() {
+    // Poblar selector de alumnas
+    const selA = document.getElementById('regalo-alumna');
+    if (selA && datosFichas.usuarios) {
+      selA.innerHTML = '<option value="">— Seleccioná —</option>';
+      Object.entries(datosFichas.usuarios).forEach(([uid,u]) => {
+        const o = document.createElement('option');
+        o.value = uid; o.textContent = (u.nombre||u.email);
+        selA.appendChild(o);
+      });
+    }
+    // Poblar selector de cursos
+    const selC = document.getElementById('regalo-curso');
+    if (selC) {
+      selC.innerHTML = '';
+      catalogo.forEach(cat => cat.cursos.forEach(cu => {
+        const o = document.createElement('option');
+        o.value = cu.id; o.textContent = cu.icon + ' ' + cu.nombre;
+        selC.appendChild(o);
+      }));
+    }
+    loadCodigosAdmin();
+  }
+
+  window._cambiarTipoRegalo = function() {
+    const tipo = document.getElementById('regalo-tipo').value;
+    document.getElementById('regalo-curso-grupo').style.display = tipo === 'curso' ? 'block' : 'none';
+  }
+
+  window._darAccesoLiberado = async function() {
+    const uid = document.getElementById('regalo-alumna').value;
+    const tipo = document.getElementById('regalo-tipo').value;
+    if (!uid) { alert('Elegí una alumna.'); return; }
+    try {
+      if (tipo === 'curso') {
+        const cid = document.getElementById('regalo-curso').value;
+        await set(ref(db, 'usuarios/' + uid + '/cursosComprados/' + cid), {
+          fecha: new Date().toISOString(), medio: 'Regalo', permanente: true
+        });
+      } else if (tipo === 'membresia-permanente') {
+        await set(ref(db, 'usuarios/' + uid + '/membresia'), true);
+        await set(ref(db, 'usuarios/' + uid + '/membresiaPlan'), 'regalo');
+        await set(ref(db, 'usuarios/' + uid + '/membresiaVencimiento'), null);
+      } else {
+        // membresia por 1 mes
+        const venc = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+        await set(ref(db, 'usuarios/' + uid + '/membresia'), true);
+        await set(ref(db, 'usuarios/' + uid + '/membresiaPlan'), 'regalo');
+        await set(ref(db, 'usuarios/' + uid + '/membresiaVencimiento'), venc);
+      }
+      const ok = document.getElementById('regalo-ok');
+      ok.textContent = '✦ ¡Listo! Ya tiene el acceso liberado.';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3500);
+    } catch(e) { alert('Error al dar el acceso.'); }
+  }
+
+  // ── CÓDIGOS DE DESCUENTO ──
+  let codigosData = [];
+  window.loadCodigosAdmin = async function() {
+    const cont = document.getElementById('codigos-lista');
+    if (!cont) return;
+    try {
+      const snap = await get(ref(db, 'codigosDescuento'));
+      codigosData = snap.exists() ? Object.entries(snap.val()).map(([k,v]) => ({...v, _key:k})) : [];
+      const hoy = new Date().toISOString().split('T')[0];
+      cont.innerHTML = codigosData.length === 0
+        ? '<div style="font-size:13px;color:var(--gris-medio);padding:6px 0;">No hay códigos creados.</div>'
+        : codigosData.map(cod => {
+            const vencido = cod.hasta && cod.hasta < hoy;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap;gap:8px;">
+              <div>
+                <span style="font-family:monospace;font-weight:700;color:var(--terracota);font-size:14px;">${cod.codigo}</span>
+                <span style="font-size:12px;color:var(--gris-medio);margin-left:8px;">${cod.pct}% ${cod.sumable ? '· sumable' : ''} ${cod.hasta ? '· hasta ' + new Date(cod.hasta+'T12:00').toLocaleDateString('es-AR') : ''}</span>
+                ${vencido ? '<span class="fin-badge vencida" style="margin-left:6px;">Vencido</span>' : ''}
+              </div>
+              <button class="btn-danger" onclick="eliminarCodigo('${cod._key}')">✕</button>
+            </div>`;
+          }).join('');
+    } catch(e) {}
+  }
+
+  window._crearCodigo = async function() {
+    const codigo = (document.getElementById('codigo-nombre').value || '').trim().toUpperCase().replace(/\s/g,'');
+    const pct = parseInt(document.getElementById('codigo-pct').value) || 0;
+    const hasta = document.getElementById('codigo-hasta').value;
+    const sumable = document.getElementById('codigo-sumable').checked;
+    if (!codigo || !pct) { alert('Poné el código y el porcentaje.'); return; }
+    try {
+      await set(ref(db, 'codigosDescuento/' + codigo), { codigo, pct, hasta, sumable, creado: new Date().toISOString() });
+      document.getElementById('codigo-nombre').value = '';
+      document.getElementById('codigo-pct').value = '';
+      document.getElementById('codigo-hasta').value = '';
+      document.getElementById('codigo-sumable').checked = false;
+      const ok = document.getElementById('codigo-ok');
+      ok.textContent = '✦ Código creado';
+      ok.classList.add('show');
+      setTimeout(() => ok.classList.remove('show'), 3000);
+      loadCodigosAdmin();
+    } catch(e) { alert('Error al crear el código.'); }
+  }
+
+  window._eliminarCodigo = async function(key) {
+    if (!confirm('¿Eliminar este código?')) return;
+    try { await set(ref(db, 'codigosDescuento/' + key), null); loadCodigosAdmin(); }
+    catch(e) {}
+  }
+
   async function loadUsers() {
     const list = document.getElementById('users-list');
     try {
@@ -4287,7 +4471,7 @@ La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás q
       const mostro = await mostrarAnuncio();
       if (!mostro) mostrarAvisoVencimiento();
     }, 1200);
-    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadUsers(); }
+    if (isAdmin) { renderCatsEditor(); poblarSelectorCursos(); loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadRegalosAdmin(); loadUsers(); }
 
     showScreen('screen-home');
 
@@ -4312,7 +4496,7 @@ La plataforma está pensada para mayores de 18 años. Si sos menor, necesitás q
     if (id === 'tab-cursos' && currentUser) renderCursos();
     if (id === 'tab-perfil' && currentUser) renderPerfilMembresia();
     if (id === 'tab-meetings' && currentUser) loadMeetings();
-    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadUsers(); }
+    if (id === 'tab-admin' && currentUser) { loadGrabacionesAdmin(); loadCursosVivoAdmin(); loadAvisoAdmin(); loadAdminPagos(); loadEstadisticas(); loadRegalosAdmin(); loadUsers(); }
     if (id === 'tab-finanzas' && currentUser) loadFinanzas();
     if (id === 'tab-misclases' && currentUser) loadMisClasesProfe();
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));

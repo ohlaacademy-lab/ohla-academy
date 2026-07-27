@@ -1331,6 +1331,7 @@
   function abrirInscripcionCV(k) { if(window._abrirInscripcionCV) window._abrirInscripcionCV(k); }
   function cerrarInscripcionCV() { if(window._cerrarInscripcionCV) window._cerrarInscripcionCV(); }
   function confirmarInscripcionCV() { if(window._confirmarInscripcionCV) window._confirmarInscripcionCV(); }
+  function pagarCursoVivo(k) { if(window._pagarCursoVivo) window._pagarCursoVivo(k); }
   function elegirHorarioCV(h,t) { if(window._elegirHorarioCV) window._elegirHorarioCV(h,t); }
   function confirmarCursoAdmin(k) { if(window._confirmarCursoAdmin) window._confirmarCursoAdmin(k); }
   function cerrarAvisoVenc() { if(window._cerrarAvisoVenc) window._cerrarAvisoVenc(); }
@@ -2746,6 +2747,12 @@
     if (!mp) mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
     planSeleccionado = planId;
     descuentoAplicado = 0;
+    window._cursoVivoEnPago = null;
+    // Restaurar secciones que el pago de curso en vivo pudo haber ocultado
+    const nacSec = document.getElementById('nacimiento-section'); if (nacSec) nacSec.style.display = 'block';
+    const codSec = document.getElementById('codigo-section'); if (codSec) codSec.style.display = 'block';
+    document.getElementById('pagos-titulo').textContent = 'Elegí tu plan';
+    document.getElementById('pagos-sub').textContent = 'Accedé a todo el contenido de Ohla Academy';
     document.getElementById('aviso-jubilada').style.display = 'none';
     document.getElementById('fecha-nacimiento').value = '';
     document.getElementById('planes-container').innerHTML = '';
@@ -3165,8 +3172,29 @@
     const extRef = params.get('external_reference');
     if (status === 'approved' && extRef && currentUser) {
       const partes = extRef.split('_');
-      const planId = partes[partes.length - 1];
       const yaRegistrado = sessionStorage.getItem('mp_registrado_' + params.get('payment_id'));
+
+      // ¿Es un pago de curso en vivo? external_reference = uid_cursovivo_KEY
+      if (extRef.includes('_cursovivo_') && !yaRegistrado) {
+        const cvKey = extRef.split('_cursovivo_')[1];
+        try {
+          const cvSnap = await get(ref(db, 'cursosVivo/' + cvKey));
+          if (cvSnap.exists()) {
+            const cv = { ...cvSnap.val(), _key: cvKey };
+            const vence = calcularVencimientoCursoVivo(cv).toISOString();
+            await set(ref(db, 'inscripcionesVivo/' + cvKey + '/' + currentUser.uid + '/pagado'), true);
+            await set(ref(db, 'inscripcionesVivo/' + cvKey + '/' + currentUser.uid + '/vencePago'), vence);
+            await set(ref(db, 'inscripcionesVivo/' + cvKey + '/' + currentUser.uid + '/estado'), 'confirmado');
+            await registrarVentaFin({ plan: 'curso-vivo:' + cv.nombre, montoBruto: cv.precio, medio: 'Mercado Pago' });
+            sessionStorage.setItem('mp_registrado_' + params.get('payment_id'), '1');
+            sessionStorage.setItem('mostrar_bienvenida', 'curso');
+          }
+        } catch(e) { console.error('Error registrando pago curso vivo:', e); }
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+      }
+
+      const planId = partes[partes.length - 1];
       if (!yaRegistrado) {
         await loadConfigPagos();
         const plan = configPagos.planes?.find(p => p.id === planId);
@@ -3618,7 +3646,31 @@
         const total = Object.keys(ins).length;
         const min = cv.minAlumnas || 5;
         const confirmado = total >= min;
-        const yaAnotada = !!ins[currentUser?.uid];
+        const miInscripcion = ins[currentUser?.uid];
+        const yaAnotada = !!miInscripcion;
+        const yaPago = miInscripcion?.pagado === true;
+        const vencePago = miInscripcion?.vencePago ? new Date(miInscripcion.vencePago) : null;
+        const pagoVencido = yaPago && vencePago && vencePago < new Date();
+
+        // Determinar qué mostrar en la parte de acción
+        let accionHtml = '';
+        if (!yaAnotada) {
+          accionHtml = `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme a este curso →</button>`;
+        } else if (yaPago && !pagoVencido) {
+          const f = vencePago ? vencePago.toLocaleDateString('es-AR') : '';
+          accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Tu lugar está pago y confirmado.${f ? ' Vence el ' + f + '.' : ''}</div>`;
+        } else if (yaPago && pagoVencido) {
+          accionHtml = `<div style="background:#FFF0EC;border:1px solid #F0A090;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;margin-bottom:10px;">Tu mes venció. Volvé a abonar para seguir en el curso.</div>
+            <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Volver a abonar el mes →</button>`;
+        } else if (confirmado && !yaPago) {
+          // Cupo completo, tiene que pagar
+          accionHtml = `<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;margin-bottom:10px;">🎉 ¡Se completó el cupo! Ya podés abonar tu lugar para arrancar.</div>
+            <button class="btn-primary" style="max-width:260px;" onclick="pagarCursoVivo('${cv._key}')">Abonar mi lugar →</button>`;
+        } else {
+          // Anotada pero falta cupo
+          accionHtml = `<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:12px;font-size:13px;color:#8B3A1A;">⏳ Ya estás anotada. Se confirmará tu cupo cuando se completen las ${min} alumnas — te avisamos por mail y ahí abonás.</div>`;
+        }
+
         html += `<div class="cv-card">
           <div class="cv-header">
             <div style="display:flex;align-items:center;gap:12px;">
@@ -3635,9 +3687,7 @@
             ${cv.desc ? `<div style="font-size:13px;color:var(--gris-medio);margin-bottom:12px;">${cv.desc}</div>` : ''}
             <div style="font-size:11px;color:var(--gris-medio);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Horarios disponibles</div>
             <div style="font-size:13px;color:var(--gris);margin-bottom:14px;">${(cv.horarios||[]).map(h => DIAS_CV[h.dia] + ' ' + h.hora + ' hs').join(' · ')}</div>
-            ${yaAnotada
-              ? '<div style="background:#F0FBF5;border:1px solid #A8DCBC;border-radius:10px;padding:12px;font-size:13px;color:#1A6B3A;">✓ Ya estás anotada. Te vamos a confirmar el horario por mail.</div>'
-              : `<button class="btn-primary" style="max-width:260px;" onclick="abrirInscripcionCV('${cv._key}')">Anotarme a este curso →</button>`}
+            ${accionHtml}
           </div>
         </div>`;
       });
@@ -3677,6 +3727,128 @@
     document.getElementById('cv-overlay').style.display = 'none';
   }
 
+  window._cursoVivoEnPago = null;
+
+  window._pagarCursoVivo = function(cursoId) {
+    const cv = cursosVivoData.find(c => c._key === cursoId);
+    if (!cv) return;
+    window._cursoVivoEnPago = cursoId;
+    // Abrir el popup de pagos en modo "curso en vivo"
+    document.getElementById('pagos-titulo').textContent = cv.nombre + ' — 1 mes';
+    document.getElementById('pagos-sub').textContent = 'Abonás el mes completo con todas las clases';
+    // Ocultar fecha nacimiento y código (no aplican descuentos acá) y mostrar un solo plan
+    const nacSec = document.getElementById('nacimiento-section'); if (nacSec) nacSec.style.display = 'none';
+    const codSec = document.getElementById('codigo-section'); if (codSec) codSec.style.display = 'none';
+    document.getElementById('planes-aviso').style.display = 'none';
+
+    const cont = document.getElementById('planes-container');
+    cont.innerHTML = `<div class="plan-card selected" style="cursor:default;">
+      <div class="plan-nombre">${cv.nombre}</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin:6px 0;">
+        <span class="plan-precio">$${(cv.precio||0).toLocaleString('es-AR')}</span>
+        <span style="font-size:12px;color:var(--gris-medio);">/mes</span>
+        ${cv.precioUSD ? '<span style="font-size:13px;color:var(--gris-medio);">/ USD $' + cv.precioUSD + '</span>' : ''}
+      </div>
+      <div class="plan-desc">Acceso al curso en vivo por 1 mes, con todas las clases semanales. Se renueva mes a mes.</div>
+    </div>`;
+
+    // Botones de pago
+    seleccionarPlanCursoVivo(cv);
+    document.getElementById('pagos-overlay').style.display = 'flex';
+  }
+
+  async function seleccionarPlanCursoVivo(cv) {
+    const brickContainer = document.getElementById('mp-brick-container');
+    if (brickContainer) brickContainer.innerHTML = '<div class="loading"><div class="spinner"></div> Preparando el pago...</div>';
+    try {
+      if (!mp) mp = new MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer TEST-4624206418289389-070917-660d8b289b2b02a2df0da17e44fdc93d-243395966'
+        },
+        body: JSON.stringify({
+          items: [{ title: cv.nombre + ' (1 mes)', quantity: 1, unit_price: cv.precio, currency_id: 'ARS' }],
+          payer: { email: currentUser.email },
+          back_urls: { success: window.location.href, failure: window.location.href, pending: window.location.href },
+          auto_return: 'approved',
+          external_reference: currentUser.uid + '_cursovivo_' + cv._key
+        })
+      });
+      const pref = await response.json();
+      if (pref.id && brickContainer) {
+        brickContainer.innerHTML = '<div id="mp-wallet-brick-cv"></div>';
+        mp.bricks().create('wallet', 'mp-wallet-brick-cv', { initialization: { preferenceId: pref.id } });
+      } else { throw new Error('sin preferencia'); }
+    } catch(e) {
+      console.error('MP curso vivo:', e);
+      if (brickContainer) brickContainer.innerHTML = '<div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:12px;padding:16px;text-align:center;font-size:13px;color:#8B3A1A;">No se pudo cargar Mercado Pago. Probá con PayPal o escribinos a ohlaacademy@gmail.com</div>';
+    }
+    await crearBotonPayPalCursoVivo(cv);
+  }
+
+  async function crearBotonPayPalCursoVivo(cv) {
+    const sec = document.getElementById('paypal-section');
+    const cont = document.getElementById('paypal-container');
+    if (!sec || !cont) return;
+    cont.innerHTML = '';
+    if (typeof paypal === 'undefined' || !cv.precioUSD) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+    try {
+      paypal.Buttons({
+        style: { layout: 'horizontal', color: 'gold', shape: 'rect', label: 'pay', height: 40 },
+        createOrder: (data, actions) => actions.order.create({
+          purchase_units: [{ description: cv.nombre + ' (1 mes)', amount: { value: cv.precioUSD.toString(), currency_code: 'USD' } }]
+        }),
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          await registrarPagoCursoVivo(cv, 'PayPal');
+        },
+        onError: (err) => console.error('PayPal curso vivo:', err)
+      }).render('#paypal-container');
+    } catch(e) { sec.style.display = 'none'; }
+  }
+
+  // Calcula el vencimiento: 30 días desde la PRÓXIMA clase (no desde el pago)
+  function calcularVencimientoCursoVivo(cv) {
+    const horarios = cv.horarios || [];
+    if (horarios.length === 0) {
+      // Sin horarios definidos: contar desde hoy
+      return new Date(Date.now() + 30*24*60*60*1000);
+    }
+    // Buscar la próxima ocurrencia más cercana entre todos los horarios del curso
+    const ahora = new Date();
+    let proximaClase = null;
+    horarios.forEach(h => {
+      const [hh, mm] = (h.hora || '15:00').split(':').map(Number);
+      const d = new Date(ahora);
+      d.setHours(hh, mm, 0, 0);
+      let diff = (Number(h.dia) - d.getDay() + 7) % 7;
+      d.setDate(d.getDate() + diff);
+      if (diff === 0 && d < ahora) d.setDate(d.getDate() + 7);
+      if (!proximaClase || d < proximaClase) proximaClase = d;
+    });
+    // 30 días desde esa primera clase
+    const venc = new Date(proximaClase.getTime() + 30*24*60*60*1000);
+    return venc;
+  }
+
+  async function registrarPagoCursoVivo(cv, medio) {
+    const vence = calcularVencimientoCursoVivo(cv).toISOString();
+    try {
+      await set(ref(db, 'inscripcionesVivo/' + cv._key + '/' + currentUser.uid + '/pagado'), true);
+      await set(ref(db, 'inscripcionesVivo/' + cv._key + '/' + currentUser.uid + '/vencePago'), vence);
+      await set(ref(db, 'inscripcionesVivo/' + cv._key + '/' + currentUser.uid + '/estado'), 'confirmado');
+      if (typeof registrarVentaFin === 'function') {
+        await registrarVentaFin({ plan: 'curso-vivo:' + cv.nombre, montoBruto: cv.precio, medio });
+      }
+      cerrarPagos();
+      mostrarBienvenidaCurso(cv.nombre + ' (curso en vivo)');
+      renderCursos();
+    } catch(e) { alert('Error al registrar el pago. Escribinos a ohlaacademy@gmail.com'); }
+  }
+
   window._confirmarInscripcionCV = async function() {
     if (!cvSeleccion.pref) { alert('Elegí tu horario preferido.'); return; }
     const cv = cursosVivoData.find(c => c._key === cvSeleccion.cursoId);
@@ -3696,9 +3868,27 @@
       });
 
       const insSnap = await get(ref(db, 'inscripcionesVivo/' + cvSeleccion.cursoId));
-      const total = insSnap.exists() ? Object.keys(insSnap.val()).length : 1;
+      const insActuales = insSnap.exists() ? insSnap.val() : {};
+      const total = Object.keys(insActuales).length;
       const min = cv.minAlumnas || 5;
       const confirmado = total >= min;
+
+      // Si con esta inscripción se ACABA de completar el cupo, avisar a TODAS por mail
+      if (total === min) {
+        try {
+          for (const [uid, insc] of Object.entries(insActuales)) {
+            if (insc.email) {
+              await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE_CURSO, {
+                alumna_nombre: insc.alumnaNombre || 'Alumna',
+                curso_nombre: '¡Cupo confirmado! ' + cv.nombre,
+                fecha_emision: new Date().toLocaleDateString('es-AR'),
+                to_email: insc.email,
+                mensaje: '¡Buenas noticias! Se completó el cupo de ' + cv.nombre + ' y el curso ya está confirmado. Entrá a la app de Ohla Academy y vas a ver el botón para abonar tu lugar del mes ($' + (cv.precio||0).toLocaleString('es-AR') + '). Una vez que abones, quedás lista para arrancar. Cualquier duda escribinos a ohlaacademy@gmail.com'
+              });
+            }
+          }
+        } catch(e) { console.error('Error avisando cupo completo:', e); }
+      }
 
       const detalle = 'Curso: ' + cv.nombre + '. Horario preferido: ' + DIAS_CV[hp.dia] + ' ' + hp.hora + ' hs' +
         (ha ? '. Alternativo: ' + DIAS_CV[ha.dia] + ' ' + ha.hora + ' hs' : '') +

@@ -1559,7 +1559,7 @@
     let html = '';
     catalogo.forEach(cat => {
       const catHabilitada = faseActual >= 4 || categoriasElegidas.includes(cat.id);
-      const cursosVisibles = cat.cursos.filter(c => c.tipo === 'gratis' || catHabilitada);
+      const cursosVisibles = cat.cursos.filter(c => !c.oculto && (c.tipo === 'gratis' || catHabilitada));
       if (cursosVisibles.length === 0) return;
 
       html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
@@ -1645,8 +1645,10 @@
 
     let html = '';
     catalogo.forEach((cat, ci) => {
+      const cursosVis = cat.cursos.filter(c => !c.oculto);
+      if (cursosVis.length === 0) return;
       html += `<div class="section-label" style="margin-top:20px;">${cat.icon} ${cat.nombre}</div><div class="cursos-grid">`;
-      cat.cursos.forEach((curso, i) => {
+      cursosVis.forEach((curso, i) => {
         const comprado = userData?.cursosComprados?.[curso.id];
         const precioCurso = configPagos?.planes?.find(p => p.id === 'curso')?.precio || 0;
         const precioMembresia = configPagos?.planes?.find(p => p.id === 'mensual')?.precio || 0;
@@ -1904,17 +1906,25 @@
     const esGratis = c.tipo === 'gratis' || esGratisTemporal;
     const hoy = new Date().toISOString().split('T')[0];
     const vencido = esGratisTemporal && c.gratisHasta && c.gratisHasta < hoy;
+    const oculto = c.oculto === true;
     return `
-      <div class="curso-row" style="flex-direction:column;align-items:stretch;gap:8px;background:${esGratis?'#F5FBF8':'#fff'};padding:10px;border-radius:10px;border:1px solid ${esGratis?'#A8DCBC':'var(--borde)'};">
+      <div class="curso-row" style="flex-direction:column;align-items:stretch;gap:8px;background:${oculto?'#F5F2EE':esGratis?'#F5FBF8':'#fff'};padding:10px;border-radius:10px;border:1px solid ${oculto?'#D0C8BE':esGratis?'#A8DCBC':'var(--borde)'};opacity:${oculto?'0.7':'1'};">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input class="curso-icon-input" value="${c.icon}" oninput="catalogo[${ci}].cursos[${coi}].icon=this.value">
           <input class="curso-name-input" value="${c.nombre}" oninput="catalogo[${ci}].cursos[${coi}].nombre=this.value">
           <select class="curso-type-select" onchange="changeTipo(${ci},${coi},this.value)">
             <option value="membresia" ${c.tipo==='membresia'?'selected':''}>✦ Membresía</option>
+            <option value="unico" ${c.tipo==='unico'?'selected':''}>💳 Venta individual</option>
             <option value="gratis" ${c.tipo==='gratis'?'selected':''}>✓ Gratis permanente</option>
             <option value="gratis-temporal" ${esGratisTemporal?'selected':''}>⏰ Gratis por tiempo limitado</option>
           </select>
-          <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕</button>
+          <button class="btn-danger" onclick="removeCurso(${ci},${coi})">✕ Eliminar</button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris-medio);cursor:pointer;">
+            <input type="checkbox" ${oculto?'checked':''} style="width:16px;height:16px;accent-color:#C4723A;cursor:pointer;" onchange="toggleOcultoCurso(${ci},${coi},this.checked)">
+            👁️ Ocultar de la app ${oculto ? '<strong style="color:#8B3A1A;">(oculto ahora)</strong>' : '(no lo damos este mes)'}
+          </label>
         </div>
         ${esGratisTemporal ? `
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 4px;border-top:1px solid #E0DED8;">
@@ -1928,7 +1938,14 @@
       </div>`;
   }
 
+  window.toggleOcultoCurso = (ci, coi, val) => {
+    sincronizarCatalogoDesdeDOM();
+    catalogo[ci].cursos[coi].oculto = val;
+    renderCatsEditor();
+  }
+
   window.changeTipo = (ci, coi, val) => {
+    sincronizarCatalogoDesdeDOM();
     catalogo[ci].cursos[coi].tipo = val;
     if (val !== 'gratis-temporal') {
       delete catalogo[ci].cursos[coi].gratisDesde;
@@ -1953,10 +1970,10 @@
       </div>`).join('');
   }
 
-  window.addCategoria = () => { catalogo.push({ id: `cat-${Date.now()}`, icon: '✨', nombre: 'Nueva categoría', cursos: [] }); renderCatsEditor(); }
-  window.removeCat = i => { catalogo.splice(i, 1); renderCatsEditor(); }
-  window.addCurso = ci => { catalogo[ci].cursos.push({ id: `curso-${Date.now()}`, icon: '📖', nombre: 'Nuevo curso', tipo: 'membresia' }); renderCatsEditor(); }
-  window.removeCurso = (ci, coi) => { catalogo[ci].cursos.splice(coi, 1); renderCatsEditor(); }
+  window.addCategoria = () => { sincronizarCatalogoDesdeDOM(); catalogo.push({ id: `cat-${Date.now()}`, icon: '✨', nombre: 'Nueva categoría', cursos: [] }); renderCatsEditor(); }
+  window.removeCat = i => { sincronizarCatalogoDesdeDOM(); catalogo.splice(i, 1); renderCatsEditor(); }
+  window.addCurso = ci => { sincronizarCatalogoDesdeDOM(); catalogo[ci].cursos.push({ id: `curso-${Date.now()}`, icon: '📖', nombre: 'Nuevo curso', tipo: 'membresia' }); renderCatsEditor(); }
+  window.removeCurso = (ci, coi) => { if(!confirm('¿Eliminar este curso?')) return; sincronizarCatalogoDesdeDOM(); catalogo[ci].cursos.splice(coi, 1); renderCatsEditor(); }
 
   // ── EDITOR DE MÓDULOS ADMIN ──
   function poblarSelectorCursos() {
@@ -2069,8 +2086,29 @@
     } catch(e) { alert('Error al guardar módulos.'); }
   }
 
+  // Lee todos los valores actuales del DOM al array (evita perder cambios sin guardar)
+  function sincronizarCatalogoDesdeDOM() {
+    const ed = document.getElementById('cats-editor');
+    if (!ed) return;
+    ed.querySelectorAll('.cat-block').forEach((catBlock, ci) => {
+      if (!catalogo[ci]) return;
+      const catIcon = catBlock.querySelector('.cat-icon-input');
+      const catName = catBlock.querySelector('.cat-name-input');
+      if (catIcon) catalogo[ci].icon = catIcon.value;
+      if (catName) catalogo[ci].nombre = catName.value;
+      catBlock.querySelectorAll('.curso-row').forEach((row, coi) => {
+        if (!catalogo[ci].cursos[coi]) return;
+        const cIcon = row.querySelector('.curso-icon-input');
+        const cName = row.querySelector('.curso-name-input');
+        if (cIcon) catalogo[ci].cursos[coi].icon = cIcon.value;
+        if (cName) catalogo[ci].cursos[coi].nombre = cName.value;
+      });
+    });
+  }
+
   window.saveCatalogo = async () => {
     try {
+      sincronizarCatalogoDesdeDOM();
       await set(ref(db, 'catalogo'), catalogo);
       poblarSelectorCursos();
       const ok = document.getElementById('admin-ok');

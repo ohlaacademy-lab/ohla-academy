@@ -2111,6 +2111,11 @@
   window.saveCatalogo = async () => {
     try {
       sincronizarCatalogoDesdeDOM();
+      // Limpiar posibles huecos (null/undefined) para que Firebase lo guarde como array, no como objeto
+      catalogo = catalogo.filter(cat => cat && typeof cat === 'object').map(cat => ({
+        ...cat,
+        cursos: (cat.cursos || []).filter(c => c && typeof c === 'object')
+      }));
       await set(ref(db, 'catalogo'), catalogo);
       poblarSelectorCursos();
       const ok = document.getElementById('admin-ok');
@@ -2123,7 +2128,20 @@
   async function loadCatalogo() {
     try {
       const snap = await get(ref(db, 'catalogo'));
-      catalogo = snap.exists() ? snap.val() : [...DEFAULT_CATALOGO];
+      if (snap.exists()) {
+        const val = snap.val();
+        // Firebase puede devolver un objeto en vez de array si hubo índices salteados.
+        // Normalizamos SIEMPRE a array para que el resto del código funcione igual.
+        let arr = Array.isArray(val) ? val : Object.values(val);
+        // Filtrar posibles huecos (null) y asegurar que cada categoría tenga cursos como array
+        arr = arr.filter(cat => cat && typeof cat === 'object').map(cat => ({
+          ...cat,
+          cursos: Array.isArray(cat.cursos) ? cat.cursos : (cat.cursos ? Object.values(cat.cursos).filter(Boolean) : [])
+        }));
+        catalogo = arr.length > 0 ? arr : [...DEFAULT_CATALOGO];
+      } else {
+        catalogo = [...DEFAULT_CATALOGO];
+      }
     } catch(e) { catalogo = [...DEFAULT_CATALOGO]; }
   }
 

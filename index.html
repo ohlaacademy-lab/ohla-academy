@@ -965,6 +965,7 @@
           <div class="admin-panel">
             <div class="admin-section-title">📚 Editor de módulos</div>
             <div class="admin-section-sub">Seleccioná un curso para editar sus módulos, agregar videos, textos y archivos.</div>
+            <div style="background:#FFF5EC;border:1px solid #F0C5A0;border-radius:10px;padding:10px 14px;font-size:12px;color:#8B3A1A;margin-bottom:12px;">💡 Si acabás de crear un curso nuevo arriba, primero tocá <strong>"Guardar cambios"</strong> en Categorías y cursos — recién ahí aparece acá para cargarle los módulos.</div>
             <div style="margin-bottom:16px;">
               <select id="curso-selector" class="curso-type-select" style="width:100%;padding:10px;font-size:14px;" onchange="cargarEditorModulos(this.value)">
                 <option value="">— Seleccioná un curso —</option>
@@ -1968,6 +1969,7 @@
         </div>
         <button class="add-row-btn" onclick="addCurso(${ci})">+ Agregar curso</button>
       </div>`).join('');
+    poblarSelectorCursos();
   }
 
   window.addCategoria = () => { sincronizarCatalogoDesdeDOM(); catalogo.push({ id: `cat-${Date.now()}`, icon: '✨', nombre: 'Nueva categoría', cursos: [] }); renderCatsEditor(); }
